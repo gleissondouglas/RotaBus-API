@@ -1,7 +1,7 @@
 const axios = require('axios');
 const env = require('../../../config/env');
 
-async function computeTransitRouter({ origin, destination, departureTime }) {
+async function computeTransitRoute({ origin, destination, departureTime }) {
     if (!env.googleMapsApiKey) {
         const error = new Error('GOOGLE_MAPS_API_KEY não configurada.');
         error.statusCode = 500;
@@ -77,5 +77,5 @@ async function computeTransitRouter({ origin, destination, departureTime }) {
 
 
 module.exports = {
-
+    computeTransitRoute,
 };
