@@ -1,5 +1,6 @@
 const { validatePlanJourneyInput } = require('./journeys.validator');
 const { computeTransitRoute } = require('./providers/googleRoutes.provider');
+const { mapGoogleRouteToJourney } = require('./journey.mapper');
 
 async function planJourney({ origin, destination, departureTime }) {
     validatePlanJourneyInput({ origin, destination });
@@ -10,7 +11,9 @@ async function planJourney({ origin, destination, departureTime }) {
         departureTime,
     });
 
-    return googleResponse;
+    const mappedJourney = mapGoogleRouteToJourney(googleResponse);
+
+    return mappedJourney;
 }
 
 module.exports = {
