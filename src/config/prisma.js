@@ -1,4 +1,6 @@
-const { PrismaClient } = require("../generated/prisma");
+require("dotenv").config();
+
+const { PrismaClient } = require("@prisma/client");
 const { PrismaPg } = require("@prisma/adapter-pg");
 
 const adapter = new PrismaPg({

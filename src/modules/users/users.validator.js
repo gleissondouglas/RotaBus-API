@@ -78,5 +78,6 @@ function validateCreateUserInput({ name, email, password }) {
 }
 
 module.exports = {
+  ValidationError,
   validateCreateUserInput,
 };

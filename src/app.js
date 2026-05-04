@@ -3,6 +3,7 @@ const cors = require("cors");
 
 const journeysRoutes = require("./modules/journeys/journeys.routes");
 const errorMiddleware = require("./shared/middlewares/error.middleware");
+const usersRoutes = require("./modules/users/users.routes");
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/journeys", journeysRoutes);
+app.use("/users", usersRoutes);
 
 app.use(errorMiddleware);
 
