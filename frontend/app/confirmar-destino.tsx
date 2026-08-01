@@ -68,9 +68,17 @@ export default function ConfirmDestinationScreen() {
   const screenHorizontalPadding = isSmallHeight
     ? layout.screenHorizontalPaddingSmall
     : layout.screenHorizontalPadding;
-  const carouselCardWidth = width - screenHorizontalPadding * 2 - 48; // 48 = paddingHorizontal 24*2
+  const carouselCardWidth = width - screenHorizontalPadding * 2; // 48 = paddingHorizontal 24*2
   const usableHeight = height - insets.top - insets.bottom;
-  const cardMinHeight = Math.max(290, Math.min(usableHeight * 0.50, 460));
+
+  const interactionMode = getInteractionMode(params.interactionMode);
+  const isVoiceMode = interactionMode === "voice";
+
+  // Em modo voz, temos o visualizer e os botões grandes ocupando muito espaço, então o card deve ser menor.
+  const maxPercent = isVoiceMode ? 0.40 : 0.50;
+  const maxHeight = isVoiceMode ? 360 : 460;
+  const minAbsolute = isVoiceMode ? 290 : 290;
+  const cardMinHeight = Math.max(minAbsolute, Math.min(usableHeight * maxPercent, maxHeight));
 
   const latitude = getSingleParam(params.latitude);
   const longitude = getSingleParam(params.longitude);
@@ -78,8 +86,6 @@ export default function ConfirmDestinationScreen() {
   const address = getSingleParam(params.address);
   const city = getSingleParam(params.city, "Uberaba - MG");
   const backendMode = getSingleParam(params.mode);
-  const interactionMode = getInteractionMode(params.interactionMode);
-  const isVoiceMode = interactionMode === "voice";
 
   const [sessionId] = useState(getSingleParam(params.sessionId));
   const [displayData] = useState<any>(
@@ -372,7 +378,7 @@ export default function ConfirmDestinationScreen() {
         contentContainerStyle={[
           styles.scrollContent,
           {
-            paddingTop: insets.top + 70,
+            paddingTop: insets.top + (isVoiceMode ? 48 : 70),
             paddingBottom: insets.bottom + (isVoiceMode ? 220 : 112),
           },
         ]}
@@ -468,33 +474,35 @@ export default function ConfirmDestinationScreen() {
 
                             {/* Centro do Card: Ícone + nome + detalhes */}
                             <View style={{ flex: 1, justifyContent: "center" }}>
-                              <View style={styles.cardPlaceRow}>
-                                <DestinationCategoryIcon category={optionCategory} />
-                                <View style={styles.placeTextBox}>
-                                  <Text style={styles.placeName} numberOfLines={2}>
-                                    {option.name}
-                                  </Text>
-                                  <Text style={styles.placeType}>
-                                    {getDestinationCategoryLabel(optionCategory)}
-                                  </Text>
-                                </View>
-                              </View>
-
-                              <View style={styles.cardDetails}>
-                                <View style={styles.cardDetailRow}>
-                                  <Ionicons name="location-outline" size={16} color={theme.primary} />
-                                  <Text style={styles.cardDetailText} numberOfLines={2}>
-                                    {addressDetails.main}
-                                  </Text>
-                                </View>
-                                {!!addressDetails.area && (
-                                  <View style={styles.cardDetailRow}>
-                                    <Ionicons name="business-outline" size={16} color={theme.primary} />
-                                    <Text style={styles.cardDetailText} numberOfLines={1}>
-                                      {addressDetails.area}
+                              <View style={styles.infoBox}>
+                                <View style={styles.cardPlaceRow}>
+                                  <DestinationCategoryIcon category={optionCategory} />
+                                  <View style={styles.placeTextBox}>
+                                    <Text style={styles.placeName} numberOfLines={2}>
+                                      {option.name}
+                                    </Text>
+                                    <Text style={styles.placeType}>
+                                      {getDestinationCategoryLabel(optionCategory)}
                                     </Text>
                                   </View>
-                                )}
+                                </View>
+
+                                <View style={styles.cardDetails}>
+                                  <View style={styles.cardDetailRow}>
+                                    <Ionicons name="location-outline" size={16} color={theme.primary} />
+                                    <Text style={styles.cardDetailText} numberOfLines={2}>
+                                      {addressDetails.main}
+                                    </Text>
+                                  </View>
+                                  {!!addressDetails.area && (
+                                    <View style={styles.cardDetailRow}>
+                                      <Ionicons name="business-outline" size={16} color={theme.primary} />
+                                      <Text style={styles.cardDetailText} numberOfLines={1}>
+                                        {addressDetails.area}
+                                      </Text>
+                                    </View>
+                                  )}
+                                </View>
                               </View>
                             </View>
 
@@ -545,38 +553,43 @@ export default function ConfirmDestinationScreen() {
             /* ── CARD ÚNICO — mesmo estilo compactSummary da rota pronta ── */
             <Animated.View
               entering={FadeInUp.delay(150).duration(400)}
-              style={[styles.destCard, { minHeight: cardMinHeight }]}
+              style={[
+                styles.destCard, 
+                { minHeight: cardMinHeight, width: carouselCardWidth, alignSelf: "center" }
+              ]}
             >
               <View style={styles.cardContent}>
                   {/* Centro do Card Único: Ícone + nome + detalhes */}
                   <View style={{ flex: 1, justifyContent: "center" }}>
-                    <View style={styles.cardPlaceRow}>
-                      <DestinationCategoryIcon category={activeDestinationCategory} />
-                      <View style={styles.placeTextBox}>
-                        <Text style={styles.placeName} numberOfLines={2}>
-                          {activeDestinationName}
-                        </Text>
-                        <Text style={styles.placeType}>
-                          {getDestinationCategoryLabel(activeDestinationCategory)}
-                        </Text>
-                      </View>
-                    </View>
-
-                    <View style={styles.cardDetails}>
-                      <View style={styles.cardDetailRow}>
-                        <Ionicons name="location-outline" size={16} color={theme.primary} />
-                        <Text style={styles.cardDetailText} numberOfLines={2}>
-                          {activeAddressDetails.main}
-                        </Text>
-                      </View>
-                      {!!activeAddressDetails.area && (
-                        <View style={styles.cardDetailRow}>
-                          <Ionicons name="business-outline" size={16} color={theme.primary} />
-                          <Text style={styles.cardDetailText} numberOfLines={1}>
-                            {activeAddressDetails.area}
+                    <View style={styles.infoBox}>
+                      <View style={styles.cardPlaceRow}>
+                        <DestinationCategoryIcon category={activeDestinationCategory} />
+                        <View style={styles.placeTextBox}>
+                          <Text style={styles.placeName} numberOfLines={2}>
+                            {activeDestinationName}
+                          </Text>
+                          <Text style={styles.placeType}>
+                            {getDestinationCategoryLabel(activeDestinationCategory)}
                           </Text>
                         </View>
-                      )}
+                      </View>
+
+                      <View style={styles.cardDetails}>
+                        <View style={styles.cardDetailRow}>
+                          <Ionicons name="location-outline" size={16} color={theme.primary} />
+                          <Text style={styles.cardDetailText} numberOfLines={2}>
+                            {activeAddressDetails.main}
+                          </Text>
+                        </View>
+                        {!!activeAddressDetails.area && (
+                          <View style={styles.cardDetailRow}>
+                            <Ionicons name="business-outline" size={16} color={theme.primary} />
+                            <Text style={styles.cardDetailText} numberOfLines={1}>
+                              {activeAddressDetails.area}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
                     </View>
 
                     {!selectedSuggestion && confidence === "medium" && (
@@ -677,7 +690,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 24,
-    gap: 24,
+    gap: 12,
   },
 
   // ─── Header à esquerda (igual melhor-rota) ──────────────────────────
@@ -715,7 +728,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     gap: 6,
-    marginTop: 10,
+    marginTop: 16,
   },
   carouselDot: {
     width: 7,
@@ -809,10 +822,13 @@ const styles = StyleSheet.create({
   },
 
   // ─── Detalhes de endereço ────────────────────────────────────────────
-  cardDetails: {
+  infoBox: {
     backgroundColor: "#F8FAFC",
-    borderRadius: 14,
-    padding: 12,
+    borderRadius: 16,
+    padding: 16,
+    gap: 14,
+  },
+  cardDetails: {
     gap: 8,
   },
   cardDetailRow: {
@@ -839,9 +855,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 5,
     borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    backgroundColor: "rgba(37,99,235,0.07)",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: "#EEF4FF",
   },
   chipText: {
     color: "#1D4ED8",
