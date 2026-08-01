@@ -27,46 +27,33 @@ interface AssistantLoadingStateProps {
 }
 
 const RouteAnimation = () => {
-  const busPos = useSharedValue(0);
-  const pulse = useSharedValue(1);
+  const pulse1 = useSharedValue(0);
+  const pulse2 = useSharedValue(0);
 
   useEffect(() => {
-    busPos.value = withRepeat(
-      withTiming(1, { duration: 3000 }),
-      -1,
-      false
-    );
-    pulse.value = withRepeat(
-      withSequence(
-        withTiming(1.2, { duration: 1000 }),
-        withTiming(1, { duration: 1000 })
-      ),
-      -1,
-      true
-    );
-  }, [busPos, pulse]);
+    pulse1.value = withRepeat(withTiming(1, { duration: 2000 }), -1, false);
+    const timer = setTimeout(() => {
+      pulse2.value = withRepeat(withTiming(1, { duration: 2000 }), -1, false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [pulse1, pulse2]);
 
-  const busStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: interpolate(busPos.value, [0, 1], [-40, 40]) },
-      { scaleX: -1 } // Inverter ônibus para parecer que está indo pra direita/frente
-    ],
-    opacity: interpolate(busPos.value, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
+  const ring1Style = useAnimatedStyle(() => ({
+    transform: [{ scale: interpolate(pulse1.value, [0, 1], [0.5, 2.5]) }],
+    opacity: interpolate(pulse1.value, [0, 0.5, 1], [0.8, 0.3, 0]),
   }));
-
-  const pinStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: pulse.value }]
+  const ring2Style = useAnimatedStyle(() => ({
+    transform: [{ scale: interpolate(pulse2.value, [0, 1], [0.5, 2.5]) }],
+    opacity: interpolate(pulse2.value, [0, 0.5, 1], [0.8, 0.3, 0]),
   }));
 
   return (
     <View style={styles.animationContainer}>
-      <View style={styles.routeLine} />
-      <Animated.View style={[styles.busIcon, busStyle]}>
-        <MaterialCommunityIcons name="bus" size={32} color={colors.primary} />
-      </Animated.View>
-      <Animated.View style={[styles.destPin, pinStyle]}>
-        <Ionicons name="location" size={36} color={colors.primary} />
-      </Animated.View>
+      <Animated.View style={[styles.ring, ring1Style]} />
+      <Animated.View style={[styles.ring, ring2Style]} />
+      <View style={styles.centerPin}>
+        <MaterialCommunityIcons name="google-maps" size={36} color={colors.primary} />
+      </View>
     </View>
   );
 };
@@ -101,31 +88,39 @@ export const AssistantLoadingState: React.FC<AssistantLoadingStateProps> = ({
       )}
 
       {steps && steps.length > 0 && (
-        <Animated.View entering={FadeIn.delay(400)} style={[styles.stepsCard, { padding: isSmallHeight ? layout.cardPaddingSmall : layout.cardPadding, borderRadius: layout.cardBorderRadius }]}>
-          {steps.map((step) => (
-            <View key={step.id} style={[styles.stepItem, { gap: isSmallHeight ? 8 : 12 }]}>
-              <View style={styles.iconContainer}>
-                {step.status === 'completed' ? (
-                  <Ionicons name="checkmark-circle" size={isSmallHeight ? 20 : 22} color={colors.success} />
-                ) : step.status === 'loading' ? (
-                  <ActivityIndicator size="small" color={colors.primary} />
-                ) : (
-                  <Ionicons name="ellipse-outline" size={isSmallHeight ? 18 : 20} color={colors.border} />
+        <Animated.View entering={FadeIn.delay(400)} style={[styles.stepsCard, { padding: isSmallHeight ? 20 : 28 }]}>
+          {steps.map((step, index) => {
+            const isLast = index === steps.length - 1;
+            return (
+              <View key={step.id} style={styles.stepWrapper}>
+                <View style={styles.stepRow}>
+                  <View style={styles.iconContainer}>
+                    {step.status === 'completed' ? (
+                      <Ionicons name="checkmark-circle" size={26} color={colors.success} />
+                    ) : step.status === 'loading' ? (
+                      <ActivityIndicator size="small" color={colors.primary} />
+                    ) : (
+                      <View style={styles.pendingDot} />
+                    )}
+                  </View>
+                  <Text
+                    maxFontSizeMultiplier={1.2}
+                    style={[
+                      styles.stepText,
+                      { fontSize: isSmallHeight ? layout.cardSubtitleFontSizeSmall : layout.cardSubtitleFontSize },
+                      step.status === 'completed' && styles.stepTextCompleted,
+                      step.status === 'loading' && styles.stepTextActive,
+                    ]}
+                  >
+                    {step.label}
+                  </Text>
+                </View>
+                {!isLast && (
+                  <View style={[styles.stepLine, { backgroundColor: step.status === 'completed' ? colors.success : colors.border }]} />
                 )}
               </View>
-              <Text
-                maxFontSizeMultiplier={1.2}
-                style={[
-                  styles.stepText,
-                  { fontSize: isSmallHeight ? layout.cardSubtitleFontSizeSmall : layout.cardSubtitleFontSize },
-                  step.status === 'completed' && styles.stepTextCompleted,
-                  step.status === 'loading' && styles.stepTextActive,
-                ]}
-              >
-                {step.label}
-              </Text>
-            </View>
-          ))}
+            );
+          })}
         </Animated.View>
       )}
     </View>
@@ -140,30 +135,31 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   animationContainer: {
-    width: 200,
-    height: 100,
+    width: 120,
+    height: 120,
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'relative',
-    marginBottom: 10,
+    marginBottom: 20,
   },
-  routeLine: {
+  ring: {
     position: 'absolute',
-    width: 120,
-    height: 4,
-    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-    borderRadius: 2,
-    top: '50%',
-    left: '20%',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: colors.primary,
   },
-  busIcon: {
-    position: 'absolute',
-    top: '30%',
-  },
-  destPin: {
-    position: 'absolute',
-    right: '15%',
-    top: '20%',
+  centerPin: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
   },
   orbContainer: {
     marginBottom: 0,
@@ -213,21 +209,42 @@ const styles = StyleSheet.create({
   stepsCard: {
     width: '100%',
     backgroundColor: 'white',
+    borderRadius: 24,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.03,
-    shadowRadius: 10,
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
     elevation: 2,
-    gap: 12,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.02)",
   },
-  stepItem: {
+  stepWrapper: {
+    flexDirection: 'column',
+  },
+  stepRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 16,
+  },
+  stepLine: {
+    width: 2,
+    height: 20,
+    backgroundColor: colors.border,
+    marginLeft: 13, // align center with the 28px width icon container
+    marginVertical: 4,
+    borderRadius: 1,
   },
   iconContainer: {
     width: 28,
+    height: 28,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  pendingDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: colors.border,
   },
   stepText: {
     color: colors.textMuted,

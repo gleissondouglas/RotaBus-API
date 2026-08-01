@@ -293,11 +293,10 @@ export async function startListening(options: {
     console.log("[SpeechService] Permissão:", permission.status);
 
     if (!permission.granted) {
-      Alert.alert(
-        "Sem permissão",
-        "Você precisa permitir o uso do microfone para usar o comando de voz."
-      );
-      options.onError(new Error("Permission denied"));
+      options.onError({
+        error: "permission-denied",
+        message: "Microfone bloqueado. Redirecionando...",
+      });
       return;
     }
 

@@ -224,6 +224,19 @@ export function useVoiceConversationLoop({
           return;
         }
 
+        const isPermissionDenied = err?.error === "permission-denied";
+        if (isPermissionDenied) {
+          retryCountRef.current = 0;
+          onRecognitionIssueRef.current?.({
+            type: "SPEECH_ERROR",
+            message: err.message,
+            error: err,
+          });
+          updateStatus("error");
+          vibrationService.error();
+          return;
+        }
+
         const isSilent = err?.isSilentError || err?.error === "no-speech";
 
         if (isSilent && retryCountRef.current < maxSilentRetriesRef.current) {

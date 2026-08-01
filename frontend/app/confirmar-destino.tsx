@@ -70,7 +70,7 @@ export default function ConfirmDestinationScreen() {
     : layout.screenHorizontalPadding;
   const carouselCardWidth = width - screenHorizontalPadding * 2 - 48; // 48 = paddingHorizontal 24*2
   const usableHeight = height - insets.top - insets.bottom;
-  const cardMinHeight = Math.max(210, Math.min(usableHeight * 0.38, 340));
+  const cardMinHeight = Math.max(290, Math.min(usableHeight * 0.50, 460));
 
   const latitude = getSingleParam(params.latitude);
   const longitude = getSingleParam(params.longitude);
@@ -446,7 +446,6 @@ export default function ConfirmDestinationScreen() {
                         accessibilityLabel={`Selecionar ${index + 1}: ${option.name}, ${option.address}`}
                       >
                         <View style={styles.cardContent}>
-                          <View>
                             {/* Contador */}
                             <View style={styles.cardTopRow}>
                               <View
@@ -467,37 +466,37 @@ export default function ConfirmDestinationScreen() {
                               )}
                             </View>
 
-                            {/* Ícone + nome */}
-                            <View style={styles.cardPlaceRow}>
-                              <DestinationCategoryIcon category={optionCategory} />
-                              <View style={styles.placeTextBox}>
-                                <Text style={styles.placeName} numberOfLines={2}>
-                                  {option.name}
-                                </Text>
-                                <Text style={styles.placeType}>
-                                  {getDestinationCategoryLabel(optionCategory)}
-                                </Text>
-                              </View>
-                            </View>
-
-                            {/* Detalhes */}
-                            <View style={styles.cardDetails}>
-                              <View style={styles.cardDetailRow}>
-                                <Ionicons name="location-outline" size={16} color={theme.primary} />
-                                <Text style={styles.cardDetailText} numberOfLines={2}>
-                                  {addressDetails.main}
-                                </Text>
-                              </View>
-                              {!!addressDetails.area && (
-                                <View style={styles.cardDetailRow}>
-                                  <Ionicons name="business-outline" size={16} color={theme.primary} />
-                                  <Text style={styles.cardDetailText} numberOfLines={1}>
-                                    {addressDetails.area}
+                            {/* Centro do Card: Ícone + nome + detalhes */}
+                            <View style={{ flex: 1, justifyContent: "center" }}>
+                              <View style={styles.cardPlaceRow}>
+                                <DestinationCategoryIcon category={optionCategory} />
+                                <View style={styles.placeTextBox}>
+                                  <Text style={styles.placeName} numberOfLines={2}>
+                                    {option.name}
+                                  </Text>
+                                  <Text style={styles.placeType}>
+                                    {getDestinationCategoryLabel(optionCategory)}
                                   </Text>
                                 </View>
-                              )}
+                              </View>
+
+                              <View style={styles.cardDetails}>
+                                <View style={styles.cardDetailRow}>
+                                  <Ionicons name="location-outline" size={16} color={theme.primary} />
+                                  <Text style={styles.cardDetailText} numberOfLines={2}>
+                                    {addressDetails.main}
+                                  </Text>
+                                </View>
+                                {!!addressDetails.area && (
+                                  <View style={styles.cardDetailRow}>
+                                    <Ionicons name="business-outline" size={16} color={theme.primary} />
+                                    <Text style={styles.cardDetailText} numberOfLines={1}>
+                                      {addressDetails.area}
+                                    </Text>
+                                  </View>
+                                )}
+                              </View>
                             </View>
-                          </View>
 
                           {/* Chips */}
                           <View style={styles.chipsContainer}>
@@ -549,45 +548,46 @@ export default function ConfirmDestinationScreen() {
               style={[styles.destCard, { minHeight: cardMinHeight }]}
             >
               <View style={styles.cardContent}>
-                <View>
-                  <View style={styles.cardPlaceRow}>
-                    <DestinationCategoryIcon category={activeDestinationCategory} />
-                    <View style={styles.placeTextBox}>
-                      <Text style={styles.placeName} numberOfLines={2}>
-                        {activeDestinationName}
-                      </Text>
-                      <Text style={styles.placeType}>
-                        {getDestinationCategoryLabel(activeDestinationCategory)}
-                      </Text>
+                  {/* Centro do Card Único: Ícone + nome + detalhes */}
+                  <View style={{ flex: 1, justifyContent: "center" }}>
+                    <View style={styles.cardPlaceRow}>
+                      <DestinationCategoryIcon category={activeDestinationCategory} />
+                      <View style={styles.placeTextBox}>
+                        <Text style={styles.placeName} numberOfLines={2}>
+                          {activeDestinationName}
+                        </Text>
+                        <Text style={styles.placeType}>
+                          {getDestinationCategoryLabel(activeDestinationCategory)}
+                        </Text>
+                      </View>
                     </View>
-                  </View>
 
-                  <View style={styles.cardDetails}>
-                    <View style={styles.cardDetailRow}>
-                      <Ionicons name="location-outline" size={16} color={theme.primary} />
-                      <Text style={styles.cardDetailText} numberOfLines={2}>
-                        {activeAddressDetails.main}
-                      </Text>
-                    </View>
-                    {!!activeAddressDetails.area && (
+                    <View style={styles.cardDetails}>
                       <View style={styles.cardDetailRow}>
-                        <Ionicons name="business-outline" size={16} color={theme.primary} />
-                        <Text style={styles.cardDetailText} numberOfLines={1}>
-                          {activeAddressDetails.area}
+                        <Ionicons name="location-outline" size={16} color={theme.primary} />
+                        <Text style={styles.cardDetailText} numberOfLines={2}>
+                          {activeAddressDetails.main}
+                        </Text>
+                      </View>
+                      {!!activeAddressDetails.area && (
+                        <View style={styles.cardDetailRow}>
+                          <Ionicons name="business-outline" size={16} color={theme.primary} />
+                          <Text style={styles.cardDetailText} numberOfLines={1}>
+                            {activeAddressDetails.area}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+
+                    {!selectedSuggestion && confidence === "medium" && (
+                      <View style={[styles.statusBox, styles.statusBoxWarning, { marginTop: 12 }]}>
+                        <Ionicons name="alert-circle" size={18} color={theme.warning} />
+                        <Text style={[styles.statusDesc, { color: theme.warning, marginLeft: 8 }]}>
+                          Confira o endereço com atenção.
                         </Text>
                       </View>
                     )}
                   </View>
-
-                  {!selectedSuggestion && confidence === "medium" && (
-                    <View style={[styles.statusBox, styles.statusBoxWarning, { marginTop: 12 }]}>
-                      <Ionicons name="alert-circle" size={18} color={theme.warning} />
-                      <Text style={[styles.statusDesc, { color: theme.warning, marginLeft: 8 }]}>
-                        Confira o endereço com atenção.
-                      </Text>
-                    </View>
-                  )}
-                </View>
 
                 <View style={styles.chipsContainer}>
                   <View style={styles.chipsRow}>
@@ -747,7 +747,8 @@ const styles = StyleSheet.create({
   },
 
   cardContent: {
-    gap: 16,
+    flex: 1,
+    justifyContent: "space-between",
   },
   chipsContainer: {
     paddingTop: 16,

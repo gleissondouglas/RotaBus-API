@@ -7,7 +7,19 @@ const Groq = require("groq-sdk");
  */
 class NLPProvider {
   constructor() {
-    this.groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    // Groq client é criado de forma lazy para não crashar o servidor
+    // na inicialização caso GROQ_API_KEY não esteja configurada.
+    this._groq = null;
+  }
+
+  _getGroqClient() {
+    if (!this._groq) {
+      if (!process.env.GROQ_API_KEY) {
+        return null;
+      }
+      this._groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    }
+    return this._groq;
   }
 
   /**
@@ -19,6 +31,13 @@ class NLPProvider {
    * @returns {{ time_mode: string, target_datetime: string|null, confidence: string }}
    */
   async parseTimeIntent(text, serverTimestamp) {
+    const groq = this._getGroqClient();
+
+    if (!groq) {
+      console.warn("[NLP/Groq] GROQ_API_KEY não configurada — retornando UNKNOWN.");
+      return { time_mode: "UNKNOWN", target_datetime: null, confidence: "low" };
+    }
+
     const prompt = `Você é um assistente de mobilidade urbana de ônibus.
 O usuário JÁ definiu o destino. Agora ele está dizendo QUANDO quer partir ou chegar.
 
@@ -48,7 +67,7 @@ Responda APENAS com JSON válido no formato:
 }`;
 
     try {
-      const response = await this.groq.chat.completions.create({
+      const response = await groq.chat.completions.create({
         model: "llama-3.1-8b-instant",
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" },
