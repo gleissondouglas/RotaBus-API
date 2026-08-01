@@ -301,6 +301,20 @@ export default function HomeScreen() {
       setIsTranscriptFinal(true);
     }
 
+    const isPermissionDenied = issue.type === "SPEECH_ERROR" && (issue as any).error?.error === "permission-denied";
+    if (isPermissionDenied) {
+      // Redirect to typing screen
+      const originLat = originCoords.latitude;
+      const originLng = originCoords.longitude;
+      setTimeout(() => {
+        router.push({
+          pathname: "/digitar-destino",
+          params: { latitude: originLat, longitude: originLng },
+        });
+      }, 300);
+      return;
+    }
+
     // Quando é erro de silêncio (usuário não falou nada), usa a mensagem de fallback
     const isSilentError =
       issue.type === "EMPTY_TRANSCRIPT" || issue.type === "SPEECH_ERROR";
@@ -309,7 +323,7 @@ export default function HomeScreen() {
       ? SILENCE_FALLBACK_MESSAGE
       : issue.message;
     setErrorMessage(isSilentError ? SILENCE_FALLBACK_MESSAGE : issue.message);
-  }, []);
+  }, [originCoords]);
 
   const { startLoop, stopAll, stopListeningAndSubmit } = useVoiceConversationLoop({
     onIntent: handleIntent,

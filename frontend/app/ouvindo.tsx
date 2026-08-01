@@ -22,14 +22,13 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ScreenContainer } from "../src/components/ScreenContainer";
-import { useAutoSpeak } from "../src/hooks/useAutoSpeak";
-import { startListening, stopListening, isSpeechRecognitionAvailable } from "../src/services/speech.service";
+import { speak, speakAndWait, startListening, stopListening, isSpeechRecognitionAvailable } from "../src/services/speech.service";
 import { useThemeColors } from "../src/theme/colors";
 import { journeyService } from "../src/services/journey.service";
 import { sessionService } from "../src/services/session.service";
 import { vibrationService } from "../src/services/vibration.service";
 
-type ScreenStatus = "listening" | "processing" | "success" | "error";
+type ScreenStatus = "speaking" | "listening" | "processing" | "success" | "error";
 
 const VoiceWaveform = () => {
   const theme = useThemeColors();
@@ -189,9 +188,13 @@ export default function ListeningScreen() {
   }));
 
   async function startListeningSession() {
-    setStatus("listening");
+    setStatus("speaking");
     setTranscript("");
     setErrorMessage("");
+    
+    await speakAndWait("Estou ouvindo. Fale para onde quer ir.");
+    
+    setStatus("listening");
     vibrationService.light();
 
     if (!isSpeechRecognitionAvailable()) {
@@ -211,6 +214,16 @@ export default function ListeningScreen() {
         }
       },
       onError: (err: any) => {
+        if (err.error === "permission-denied") {
+          setTimeout(() => {
+            router.push({
+              pathname: "/digitar-destino",
+              params: { latitude, longitude },
+            });
+          }, 300);
+          return;
+        }
+
         if (err.isSilentError || err.error === "no-speech") {
           console.log("[SpeechService] Silêncio detectado (no-speech).");
           setErrorMessage("Não ouvi seu destino. Tente falar novamente.");
@@ -239,6 +252,9 @@ export default function ListeningScreen() {
     if (isLoading) return;
     setStatus("processing");
     setIsLoading(true);
+    
+    speak("Entendendo seu destino...");
+    
     try {
       // Limpa a sessão conversacional anterior ao iniciar novo diálogo de busca
       sessionService.clearSessionId();
@@ -326,14 +342,6 @@ export default function ListeningScreen() {
     });
   }
 
-  const welcomeMessage = status === "listening" 
-    ? "Estou ouvindo. Fale para onde quer ir." 
-    : status === "processing" 
-    ? "Entendendo seu destino..." 
-    : "";
-
-  useAutoSpeak(welcomeMessage);
-
   return (
     <ScreenContainer withPadding={false} style={{ backgroundColor: "#F6F8FA" }}>
       <View style={[styles.topBar, { paddingTop: Math.max(insets.top, 16) }]}>
@@ -356,7 +364,7 @@ export default function ListeningScreen() {
           <Text style={[styles.cardLabel, { color: theme.primary }]}>Transcrição ao vivo</Text>
           <View style={styles.transcriptWrapper}>
             <Text style={[styles.transcriptText, { color: "#000" }]}>
-              {transcript || (status === "listening" ? "Aguardando voz..." : "Processando...")}
+              {transcript || (status === "speaking" ? "Ouvindo em instantes..." : status === "listening" ? "Aguardando voz..." : "Processando...")}
             </Text>
             {status === "listening" && <BlinkingCursor />}
           </View>
@@ -392,7 +400,7 @@ export default function ListeningScreen() {
 
           <View style={styles.statusContainer}>
             <Text style={[styles.statusText, { color: theme.primary }]}>
-              {status === "processing" ? "Entendendo..." : "Ouvindo..."}
+              {status === "processing" ? "Entendendo..." : status === "speaking" ? "Falando..." : "Ouvindo..."}
             </Text>
             {status === "listening" && <VoiceWaveform />}
             {status === "processing" && <ActivityIndicator size="small" color={theme.primary} />}
