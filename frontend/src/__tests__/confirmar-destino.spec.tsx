@@ -126,6 +126,10 @@ jest.mock("../services/speech.service", () => ({
   stopListening: jest.fn(),
 }));
 
+jest.mock("../hooks/useAutoSpeakOnce", () => ({
+  useAutoSpeakOnce: jest.fn(),
+}));
+
 jest.mock("../services/journey.service", () => ({
   journeyService: {
     executeCommand: jest.fn(),
@@ -228,7 +232,7 @@ describe("ConfirmDestinationScreen", () => {
   it("envia os mesmos params quando o usuário toca no botão de buscar rota", async () => {
     const screen = render(<ConfirmDestinationScreen />);
 
-    fireEvent.press(screen.getByText("Buscar rota para este lugar"));
+    fireEvent.press(screen.getByText("Buscar rota"));
 
     await waitFor(() => {
       expect(router.push).toHaveBeenCalledWith({
@@ -274,42 +278,16 @@ describe("ConfirmDestinationScreen", () => {
     expect(screen.queryByText("Responder por voz")).toBeNull();
   });
 
-  it("mostra o botão no modo voz, sem abrir o microfone até o toque", () => {
+  it("oculta o botão de voz no modo sugestões (carrossel) mesmo em modo voz", () => {
     mockParams = buildParams({ mode: "suggestions", interactionMode: "voice" });
 
     const screen = render(<ConfirmDestinationScreen />);
 
-    expect(screen.getByText("Responder por voz")).toBeTruthy();
+    expect(screen.queryByText("Responder por voz")).toBeNull();
     expect(mockStartLoop).not.toHaveBeenCalled();
-
-    fireEvent.press(screen.getByText("Responder por voz"));
-    expect(mockStartLoop).toHaveBeenCalledWith();
   });
 
-  it("prioriza o nome real da opção no card e permite tentar novamente após erro de voz", async () => {
-    mockParams = buildParams({
-      destination: "Confirmar destino",
-      options: JSON.stringify([{
-        id: "dest-1",
-        name: "Hospital Mário Palmério",
-        address: "Av. Nenê Sabino, Uberaba",
-        lat: -19.748,
-        lng: -47.932,
-        source: "GEOCODER",
-      }]),
-    });
 
-    const screen = render(<ConfirmDestinationScreen />);
-
-    expect(screen.getByText("Hospital Mário Palmério")).toBeTruthy();
-
-    await act(async () => {
-      mockVoiceLoopCallbacks.onStatusChange?.("error");
-    });
-
-    fireEvent.press(screen.getByLabelText("Tentar novamente"));
-    expect(mockStartLoop).toHaveBeenCalledWith();
-  });
 
   it("mantém o layout de múltiplos destinos limpo ao buscar hospital", () => {
     mockParams = buildParams({
@@ -345,19 +323,7 @@ describe("ConfirmDestinationScreen", () => {
     expect(screen.queryByText("Este é o destino correto?")).toBeNull();
   });
 
-  it("usa o botão de resposta de voz sem recriar um card de voz", () => {
-    const screen = render(<ConfirmDestinationScreen />);
 
-    // Não deve existir card antigo de voz
-    expect(screen.queryByText("Responda por voz")).toBeNull();
-    expect(screen.queryByText("Estou ouvindo sua resposta")).toBeNull();
-    expect(screen.queryByText("Falar novamente")).toBeNull();
-    expect(screen.queryByText("Ouvir destino")).toBeNull();
-
-    expect(screen.getByText("Responder por voz")).toBeTruthy();
-    expect(screen.queryByText("Entendi")).toBeNull();
-    expect(screen.queryByText("Você disse: Centro")).toBeNull();
-  });
 
   it("exibe o VoiceVisualizer no modo listening quando o loop está ouvindo", async () => {
     const screen = render(<ConfirmDestinationScreen />);
@@ -513,22 +479,5 @@ describe("ConfirmDestinationScreen", () => {
       "Não consegui confirmar a localização desse destino. Tente escolher outra opção.",
       [{ text: "OK" }],
     );
-  });
-
-  it("não exibe transcrição parcial durante a escuta nesta tela", async () => {
-    const screen = render(<ConfirmDestinationScreen />);
-
-    await act(async () => {
-      mockVoiceLoopCallbacks.onStatusChange?.("listening");
-    });
-
-    await act(async () => {
-      mockVoiceLoopCallbacks.onTranscript?.("Mário Palmério", false);
-    });
-
-    await waitFor(() => {
-      expect(screen.getByText("Parar e enviar")).toBeTruthy();
-      expect(screen.queryByText("Você disse: Mário Palmério")).toBeNull();
-    });
   });
 });

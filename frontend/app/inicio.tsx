@@ -1,13 +1,14 @@
 import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { useEffect, useState, useCallback, useRef } from "react";
 import {
+  Platform,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import Animated, { FadeIn } from "react-native-reanimated";
+import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ScreenContainer } from "../src/components/ScreenContainer";
@@ -34,7 +35,6 @@ import type {
 } from "../src/types/journey.types";
 import { VoiceVisualizer, type VoiceVisualizerState } from "../src/components/VoiceVisualizer";
 import { VoicePromptText } from "../src/components/VoicePromptText";
-import { LiveTranscript } from "../src/components/LiveTranscript";
 import { BottomActionBar } from "../src/components/BottomActionBar";
 
 type ScreenStatus = "idle" | "listening" | "processing" | "error" | "success";
@@ -529,6 +529,14 @@ export default function HomeScreen() {
   const showErrorTranscript = status === "error" && !!transcript && !!errorMessage;
   const showUserMessage = showLiveTranscript || showErrorTranscript;
 
+  /** Formata a hora atual para exibir abaixo da mensagem do usuário */
+  function getCurrentTime(): string {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    return `${hours}:${minutes}h`;
+  }
+
   return (
     <ScreenContainer withPadding={false} style={{ backgroundColor: "#F6F8FA" }}>
       {/* ─── ZONA 1: TOPO ─── */}
@@ -560,43 +568,39 @@ export default function HomeScreen() {
         {/* Barrinhas de áudio animadas */}
         <VoiceVisualizer state={toVisualizerState(status)} size="large" />
 
-        <View style={styles.conversationStack}>
-          {/* Mensagem da assistente */}
-          {!!promptText && (
-            <Animated.View
-              entering={FadeIn.duration(250)}
-              style={styles.assistantMessage}
-            >
-              <Text style={styles.messageLabel}>Assistente</Text>
-              <View style={styles.assistantBubble}>
-                <VoicePromptText
-                  text={promptText}
-                  animated={promptAnimated && status === "speaking"}
-                  align="left"
-                  style={styles.promptTextWrapper}
-                  textStyle={styles.assistantPromptText}
-                />
-              </View>
-            </Animated.View>
-          )}
+        {/* Card unificado: assistente + destino do usuário */}
+        {!!promptText && (
+          <Animated.View
+            entering={FadeIn.duration(250)}
+            style={styles.unifiedCard}
+          >
+            <Text style={styles.messageLabel}>Assistente</Text>
+            <View style={styles.assistantBubble}>
+              <VoicePromptText
+                text={promptText}
+                animated={promptAnimated && status === "speaking"}
+                align="left"
+                style={styles.promptTextWrapper}
+                textStyle={styles.assistantPromptText}
+              />
 
-          {/* Mensagem do usuário */}
-          {showUserMessage && (
-            <Animated.View
-              entering={FadeIn.duration(250)}
-              style={styles.userMessage}
-            >
-              <Text style={styles.userMessageLabel}>Você</Text>
-              <View style={[styles.userBubble, { backgroundColor: theme.primary }]}>
-                <LiveTranscript
-                  transcript={transcript}
-                  isFinal={isTranscriptFinal || showErrorTranscript}
-                  variant="conversation"
-                />
-              </View>
-            </Animated.View>
-          )}
-        </View>
+              {/* Mensagem do usuário dentro do mesmo card */}
+              {showUserMessage && (
+                <Animated.View
+                  entering={FadeInDown.duration(300)}
+                  style={styles.userMessageInCard}
+                >
+                  <Text style={styles.userTranscriptText}>
+                    {transcript}
+                  </Text>
+                  <Text style={styles.timestampText}>
+                    {getCurrentTime()}
+                  </Text>
+                </Animated.View>
+              )}
+            </View>
+          </Animated.View>
+        )}
 
         {/* Banner de erro / fallback */}
         {status === "error" && !!errorMessage && (
@@ -632,6 +636,11 @@ export default function HomeScreen() {
   );
 }
 
+const APPLE_FONT = Platform.select({
+  ios: { fontFamily: "System" },
+  default: { fontFamily: "System" },
+});
+
 const styles = StyleSheet.create({
   topHeader: {
     flexDirection: "row",
@@ -658,24 +667,16 @@ const styles = StyleSheet.create({
   centerZone: {
     flex: 1,
     alignItems: "center",
-    justifyContent: "center",
-    gap: 26,
+    justifyContent: "flex-start",
+    gap: 20,
     paddingHorizontal: 16,
-    paddingBottom: 120, // Espaço para não colidir com a barra inferior
+    paddingTop: 8,
+    paddingBottom: 120,
   },
-  conversationStack: {
+  unifiedCard: {
     width: "100%",
     maxWidth: 380,
-    gap: 18,
-  },
-  assistantMessage: {
-    alignSelf: "flex-start",
-    maxWidth: "92%",
-  },
-  userMessage: {
-    alignSelf: "flex-end",
-    maxWidth: "88%",
-    alignItems: "flex-end",
+    alignSelf: "center",
   },
   messageLabel: {
     color: "#64748B",
@@ -685,15 +686,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
     textTransform: "uppercase",
     letterSpacing: 0.6,
-  },
-  userMessageLabel: {
-    color: "#64748B",
-    fontSize: 12,
-    fontWeight: "800",
-    marginBottom: 6,
-    marginRight: 4,
-    textTransform: "uppercase",
-    letterSpacing: 0.6,
+    ...APPLE_FONT,
   },
   assistantBubble: {
     backgroundColor: "white",
@@ -701,22 +694,12 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 8,
     paddingHorizontal: 20,
     paddingVertical: 18,
+    minHeight: 180,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.05,
     shadowRadius: 16,
     elevation: 3,
-  },
-  userBubble: {
-    borderRadius: 26,
-    borderTopRightRadius: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    shadowColor: "#2563EB",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.16,
-    shadowRadius: 18,
-    elevation: 4,
   },
   promptTextWrapper: {
     paddingHorizontal: 0,
@@ -727,6 +710,29 @@ const styles = StyleSheet.create({
     lineHeight: 32,
     fontWeight: "800",
     letterSpacing: -0.2,
+    ...APPLE_FONT,
+  },
+  userMessageInCard: {
+    marginTop: 20,
+    paddingTop: 16,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "#E8ECF0",
+  },
+  userTranscriptText: {
+    color: "#011030",
+    fontSize: 24,
+    lineHeight: 32,
+    fontWeight: "800",
+    letterSpacing: -0.2,
+    ...APPLE_FONT,
+  },
+  timestampText: {
+    color: "#8E99A4",
+    fontSize: 14,
+    fontWeight: "600",
+    textAlign: "right",
+    marginTop: 8,
+    ...APPLE_FONT,
   },
   errorBanner: {
     flexDirection: "row",
@@ -750,6 +756,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     flex: 1,
     lineHeight: 20,
+    ...APPLE_FONT,
   },
   bottomContainer: {
     position: "absolute",
