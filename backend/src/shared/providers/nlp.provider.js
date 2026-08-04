@@ -38,31 +38,35 @@ class NLPProvider {
       return { time_mode: "UNKNOWN", target_datetime: null, confidence: "low" };
     }
 
-    const prompt = `Você é um assistente de mobilidade urbana de ônibus.
+    const prompt = `Você é um assistente de mobilidade urbana de ônibus no Brasil (fuso horário de Brasília).
 O usuário JÁ definiu o destino. Agora ele está dizendo QUANDO quer partir ou chegar.
 
 O usuário disse: "${text}".
-Data e hora atual do servidor: ${serverTimestamp} (use isso como referência para calcular "hoje", "amanhã", dias da semana).
+Data e hora atual do servidor (UTC): ${serverTimestamp}
+
+ATENÇÃO AO FUSO HORÁRIO:
+Os horários falados pelo usuário estão no fuso horário local de Brasília (UTC-3).
+Para preencher o 'target_datetime', NÃO USE O FINAL "Z" (que seria UTC).
+Em vez disso, construa a data no formato ISO 8601 e termine ESTRITAMENTE com o offset '-03:00'.
+Exemplo: Se o usuário pedir hoje às 15:00, você DEVE retornar algo como "YYYY-MM-DDT15:00:00-03:00".
 
 Regras de interpretação:
 - "agora", "já", "próximo ônibus", "o mais rápido" → time_mode="NOW", target_datetime=null
-- "quero sair às X", "partir às X", "ir às X" → time_mode="DEPART_AT"
+- "quero sair às X", "partir às X", "ir às X", "quero ir X", "vou X", "sair X" → time_mode="DEPART_AT"
 - "chegar às X", "quero estar lá às X", "preciso chegar às X" → time_mode="ARRIVE_BY"
-- "amanhã às X" → calcule o dia seguinte ao timestamp fornecido com o horário X
-- "hoje às X" → use a data de hoje do timestamp com horário X
-- "depois de amanhã às X" → dois dias após o timestamp
-- "na segunda", "na terça", etc → próximo dia da semana em relação ao timestamp
-- "meio-dia" = 12:00, "meia-noite" = 00:00, "uma da tarde" = 13:00, "três da tarde" = 15:00, "seis da tarde" = 18:00, "oito da noite" = 20:00
+- IMPORTANTE: Se o usuário disser apenas o horário (ex: "amanhã às 10", "10 e meia da noite", "quero ir 10h30"), considere como horário de SAÍDA (time_mode="DEPART_AT").
+- "amanhã às X" → calcule o dia seguinte (subtraindo 3h do UTC se precisar) e use o horário X local
+- "hoje às X" → use a data de hoje e o horário X local
+- "meio-dia" = 12:00, "uma da tarde" = 13:00, "três da tarde" = 15:00, "oito da noite" = 20:00, etc.
 - "da manhã" significa AM, "da tarde/da noite" significa PM (some 12h se hora < 12)
 - Se não conseguir identificar horário algum → time_mode="UNKNOWN", target_datetime=null
 
-Retorne o target_datetime no formato ISO 8601 com o offset de fuso horário correto baseado no timestamp fornecido.
 Não invente horários. Se não tiver horário claro, use time_mode="UNKNOWN".
 
 Responda APENAS com JSON válido no formato:
 {
   "time_mode": "NOW" | "DEPART_AT" | "ARRIVE_BY" | "UNKNOWN",
-  "target_datetime": "ISO 8601 string ou null",
+  "target_datetime": "ISO 8601 string ou null (COM -03:00)",
   "confidence": "high" | "medium" | "low"
 }`;
 
