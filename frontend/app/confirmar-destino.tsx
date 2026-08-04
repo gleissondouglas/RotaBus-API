@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import {
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -27,6 +28,7 @@ import { isConnected } from "../src/utils/network";
 import { parseJsonParam } from "../src/utils/helpers";
 import { layout } from "../src/theme/layout";
 import { getInteractionMode } from "../src/types/interaction.types";
+import { useAutoSpeakOnce } from "../src/hooks/useAutoSpeakOnce";
 import {
   getDestinationCategoryLabel,
   resolveDestinationCategory,
@@ -75,9 +77,9 @@ export default function ConfirmDestinationScreen() {
   const isVoiceMode = interactionMode === "voice";
 
   // Em modo voz, temos o visualizer e os botões grandes ocupando muito espaço, então o card deve ser menor.
-  const maxPercent = isVoiceMode ? 0.40 : 0.50;
-  const maxHeight = isVoiceMode ? 360 : 460;
-  const minAbsolute = isVoiceMode ? 290 : 290;
+  const maxPercent = isVoiceMode ? 0.55 : 0.60;
+  const maxHeight = isVoiceMode ? 500 : 540;
+  const minAbsolute = isVoiceMode ? 360 : 360;
   const cardMinHeight = Math.max(minAbsolute, Math.min(usableHeight * maxPercent, maxHeight));
 
   const latitude = getSingleParam(params.latitude);
@@ -154,6 +156,23 @@ export default function ConfirmDestinationScreen() {
   const isVoiceSpeaking = isVoiceMode && voiceStatus === "speaking";
   const isVoiceProcessing = isVoiceMode && voiceStatus === "processing";
   const isActionDisabled = isLoadingCommand || isVoiceSpeaking || isVoiceProcessing;
+
+  // ─── TTS automático: anuncia o destino encontrado ─────────────────────
+  const destinationSpeechText = (() => {
+    if (showSuggestions) {
+      return `Encontrei esses destinos. Selecione o desejado e toque em buscar rota.`;
+    }
+    if (activeDestinationName) {
+      return `Encontrei esse destino: ${activeDestinationName}. Se for esse, toque em buscar rota.`;
+    }
+    return "";
+  })();
+  useAutoSpeakOnce(
+    showSuggestions
+      ? `confirm-dest-suggestions-${options.length}`
+      : `confirm-dest-${activeDestinationName}`,
+    destinationSpeechText,
+  );
 
   const navigateWithSelectedDestination = useCallback(
     (selected: any) => {
@@ -378,7 +397,7 @@ export default function ConfirmDestinationScreen() {
         contentContainerStyle={[
           styles.scrollContent,
           {
-            paddingTop: insets.top + (isVoiceMode ? 48 : 70),
+            paddingTop: insets.top + (isVoiceMode ? 60 : 80),
             paddingBottom: insets.bottom + (isVoiceMode ? 220 : 112),
           },
         ]}
@@ -630,25 +649,18 @@ export default function ConfirmDestinationScreen() {
       {/* BOTÕES FIXOS — idêntico ao rodapé da rota pronta */}
       <View style={[styles.fixedBottomActions, { paddingBottom: insets.bottom + 16 }]}>
         <PrimaryButton
-          title={isChoosingSuggestion ? "Confirmar destino" : "Buscar rota para este lugar"}
+          title="Buscar rota"
           onPress={handlePrimaryAction}
           isLoading={isLoadingCommand}
           disabled={isActionDisabled}
           style={styles.mainButton}
           accessibilityLabel={
-            isChoosingSuggestion ? "Confirmar destino selecionado" : "Buscar rota para este lugar"
+            isChoosingSuggestion
+              ? "Buscar rota para o destino selecionado"
+              : "Buscar rota"
           }
         />
-        {isVoiceMode && (
-          <BottomVoiceMicButton
-            status={voiceStatus}
-            label={getVoiceActionLabel()}
-            helperText={getVoiceActionHelperText()}
-            tone="primary"
-            onPress={handleVoiceResponse}
-            accessibilityLabel={getVoiceActionLabel()}
-          />
-        )}
+
 
       </View>
     </View>
@@ -689,17 +701,18 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   content: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     gap: 12,
   },
 
   // ─── Header à esquerda (igual melhor-rota) ──────────────────────────
   header: {
     alignItems: "flex-start",
-    marginBottom: 8,
+    marginTop: 8,
+    marginBottom: 12,
   },
   title: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: "900",
     letterSpacing: -0.5,
   },
@@ -712,7 +725,7 @@ const styles = StyleSheet.create({
   // ─── VoiceVisualizer ────────────────────────────────────────────────
   visualizerWrapper: {
     alignItems: "center",
-    marginBottom: 4,
+    marginBottom: 2,
   },
 
   // ─── Carrossel ──────────────────────────────────────────────────────
@@ -795,7 +808,7 @@ const styles = StyleSheet.create({
   cardPlaceRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
+    gap: 9,
   },
   placeIconBox: {
     width: 44,
@@ -816,7 +829,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   placeType: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
     color: "#64748B",
   },
@@ -825,20 +838,20 @@ const styles = StyleSheet.create({
   infoBox: {
     backgroundColor: "#F8FAFC",
     borderRadius: 16,
-    padding: 16,
-    gap: 14,
+    padding: 36,
+    gap: 36,
   },
   cardDetails: {
-    gap: 8,
+    gap: 16,
   },
   cardDetailRow: {
     flexDirection: "row",
     alignItems: "flex-start",
-    gap: 8,
+    gap: 9,
   },
   cardDetailText: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
     color: "#334155",
     lineHeight: 18,
@@ -848,20 +861,20 @@ const styles = StyleSheet.create({
   chipsRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 6,
+    gap: 8,
   },
   chip: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 5,
+    gap: 9,
     borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     backgroundColor: "#EEF4FF",
   },
   chipText: {
     color: "#1D4ED8",
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "700",
   },
 
@@ -888,8 +901,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: "white",
-    paddingTop: 12,
-    paddingHorizontal: 24,
+    paddingTop: 10,
+    paddingHorizontal: 26,
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     shadowColor: "#000",
@@ -900,7 +913,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   mainButton: {
-    borderRadius: 32,
+    borderRadius: 30,
   },
   secondaryWrapper: {
     alignItems: "center",
@@ -921,7 +934,7 @@ const styles = StyleSheet.create({
   },
   bottomMicHelper: {
     color: "#64748B",
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "700",
     flexShrink: 1,
     marginTop: 8,

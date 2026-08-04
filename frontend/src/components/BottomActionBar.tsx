@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View, Dimensions } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View, Dimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import type { VoiceLoopStatus } from "../hooks/useVoiceConversationLoop";
@@ -37,12 +37,17 @@ export function BottomActionBar({ status, micLabel, onTypeDestination, onMicPres
   );
 }
 
+const APPLE_FONT = Platform.select({
+  ios: { fontFamily: "System" },
+  default: { fontFamily: "System" },
+});
+
 const styles = StyleSheet.create({
   pill: { width: SCREEN_WIDTH - 24, height: 88, borderRadius: 44, backgroundColor: "white", shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.12, shadowRadius: 20, elevation: 15, overflow: "hidden", borderWidth: 1, borderColor: "#EEEEEE" },
   row: { flexDirection: "row", alignItems: "center", height: 88, paddingHorizontal: 8, paddingVertical: 8 },
   typeButton: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", height: "100%", gap: 8, borderRadius: 36 },
   typeButtonPressed: { opacity: 0.6 },
   typeButtonDisabled: { opacity: 0.4 },
-  typeText: { fontSize: 16, fontWeight: "700", color: "#011030", letterSpacing: -0.3 },
+  typeText: { fontSize: 16, fontWeight: "700", color: "#011030", letterSpacing: -0.3, ...APPLE_FONT },
   divider: { width: 1, height: 40, backgroundColor: "#F0F0F0", marginHorizontal: 4 },
 });

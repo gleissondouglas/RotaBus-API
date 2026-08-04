@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  Platform,
   StyleSheet,
   View,
   type StyleProp,
@@ -117,6 +118,11 @@ export function VoicePromptText({
   );
 }
 
+const APPLE_FONT = Platform.select({
+  ios: { fontFamily: "System" },
+  default: { fontFamily: "System" },
+});
+
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
@@ -143,6 +149,7 @@ const styles = StyleSheet.create({
     lineHeight: 36,
     letterSpacing: -0.4,
     textAlign: "center",
+    ...APPLE_FONT,
   },
   leftText: {
     textAlign: "left",
@@ -154,5 +161,6 @@ const styles = StyleSheet.create({
     lineHeight: 36,
     letterSpacing: -0.4,
     textAlign: "center",
+    ...APPLE_FONT,
   },
 });
