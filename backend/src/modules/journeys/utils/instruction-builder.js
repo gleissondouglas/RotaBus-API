@@ -259,6 +259,25 @@ function buildAlerts(transfers) {
   return alerts;
 }
 
+function buildWalkingOnlyVoiceBlock(mappedSteps, summary) {
+  return {
+    shortMessage: `Você pode ir caminhando. São cerca de ${summary.totalDurationMin} minutos a pé.`,
+    detailedMessage: `Rota encontrada. Você pode ir caminhando até o destino. São ${summary.totalDistanceMeters} metros, cerca de ${summary.totalDurationMin} minutos a pé. Siga as instruções de caminhada.`,
+    firstStopQuestion: '',
+    firstStopGuideMessage: '',
+    followUpQuestion: 'Quer que eu busque outro lugar?',
+  };
+}
+
+function buildWalkingOnlyScreenBlock(summary) {
+  return {
+    title: 'Rota a pé',
+    subtitle: `${summary.totalDurationMin} min • ${summary.totalDistanceMeters}m a pé`,
+    showFirstStopHelpButton: false,
+    firstStopHelpButtonText: '',
+  };
+}
+
 module.exports = {
   humanizeWalkingInstruction,
   buildFriendlyMessage,
@@ -266,4 +285,6 @@ module.exports = {
   buildScreenBlock,
   buildFirstStopGuideBlock,
   buildAlerts,
+  buildWalkingOnlyVoiceBlock,
+  buildWalkingOnlyScreenBlock,
 };

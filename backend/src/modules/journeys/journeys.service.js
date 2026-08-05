@@ -3,7 +3,7 @@ const {
   validateResolveDestinationInput,
 } = require("./journeys.validator");
 const { computeTransitRoute, computeWalkingRoute } = require("./providers/routes.provider");
-const { mapGoogleRouteToJourney } = require("./journey.mapper");
+const { mapGoogleRouteToJourney, mapWalkingOnlyRouteToJourney } = require("./journey.mapper");
 const { findCachedRoute, createRouteCache } = require("./route-cache");
 const { getAddressFromCoordinates, geocodeAddress } = require("./providers/geocoding.provider");
 const speechProvider = require("./providers/speech.provider");
@@ -236,6 +236,28 @@ async function planJourney({ origin, destination, departureTime, timePreference 
     destination: validatedData.destination,
     timePreference: validatedData.timePreference,
   });
+
+  if (!googleResponse || !googleResponse.routes || googleResponse.routes.length === 0) {
+    if (validatedData.destination.lat && validatedData.destination.lng) {
+      const walkResponse = await computeWalkingRoute({
+        origin: validatedData.origin,
+        destination: { lat: validatedData.destination.lat, lng: validatedData.destination.lng }
+      });
+      
+      if (walkResponse && walkResponse.routes && walkResponse.routes.length > 0) {
+        const walkRoute = walkResponse.routes[0];
+        if (walkRoute.distanceMeters <= 2000) {
+          if (process.env.NODE_ENV !== "production") {
+            console.log("[Journeys] Fallback: Rota a pé encontrada para distância curta.");
+          }
+          return {
+            journey: mapWalkingOnlyRouteToJourney(walkResponse, validatedData.origin, validatedData.destination),
+            source: 'WALKING_FALLBACK'
+          };
+        }
+      }
+    }
+  }
 
   // ENRIQUECIMENTO: Garantir rota a pé detalhada até o primeiro ponto
   try {
