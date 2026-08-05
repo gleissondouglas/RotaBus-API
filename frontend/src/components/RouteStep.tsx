@@ -4,10 +4,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 
 interface JourneyStepProps {
-  time: string;
+  time?: string;
   title: string;
   description: string;
-  type: 'start' | 'bus' | 'finish';
+  type: 'start' | 'bus' | 'finish' | 'walk';
   isLast?: boolean;
   highlight?: string;
   highlightSecondary?: string;
@@ -27,6 +27,7 @@ export const RouteStep = ({
       case 'bus': return <Ionicons name="bus" size={18} color={colors.white} />;
       case 'finish': return <Ionicons name="flag" size={18} color={colors.white} />;
       case 'start': return <Ionicons name="walk" size={16} color={colors.white} />;
+      case 'walk': return <Ionicons name="walk" size={18} color={colors.white} />;
       default: return null;
     }
   };
@@ -51,7 +52,7 @@ export const RouteStep = ({
 
       {/* Content */}
       <View style={[styles.stepContent, isLast && { paddingBottom: 4 }]}>
-        <Text style={styles.stepTime} maxFontSizeMultiplier={1.3}>{time}</Text>
+        {time ? <Text style={styles.stepTime} maxFontSizeMultiplier={1.3}>{time}</Text> : null}
         <Text style={styles.stepTitle} maxFontSizeMultiplier={1.2}>{title}</Text>
         
         {type === 'bus' ? (

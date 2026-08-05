@@ -98,6 +98,7 @@ export default function BestRouteScreen() {
 
   const transitSteps = getTransitSteps(steps);
   const firstTransitStep = transitSteps[0];
+  const isWalkingOnly = transitSteps.length === 0;
 
   const stopName =
     firstTransitStep?.type === "transit"
@@ -124,11 +125,15 @@ export default function BestRouteScreen() {
   const speechTextParam = String(params.speechText || "");
   const sessionIdParam = String(params.sessionId || "");
 
-  const voiceSummary = buildVoiceSummary({
+  const baseVoiceSummary = buildVoiceSummary({
     busLine,
     departureTime: summary?.beAtStopAt || summary?.leaveHomeAt || "",
     arrivalTime: summary?.arrivalAtDestination || "",
   });
+
+  const voiceSummary = isWalkingOnly
+    ? `Você pode ir caminhando até ${destination}. São cerca de ${formatMinutesToFriendlyText(totalDurationMin)} a pé. Quer iniciar a caminhada?`
+    : baseVoiceSummary;
 
   const voiceText = speechTextParam || voiceSummary;
 
@@ -180,13 +185,15 @@ export default function BestRouteScreen() {
         alerts: JSON.stringify(alerts),
         steps: JSON.stringify(steps),
         map: mapParam,
-        busLine,
-        stopName,
-        direction:
-          firstTransitStep?.type === "transit"
+        busLine: isWalkingOnly ? "" : busLine,
+        stopName: isWalkingOnly ? destination : stopName,
+        direction: isWalkingOnly
+          ? ""
+          : firstTransitStep?.type === "transit"
             ? firstTransitStep.headsign
             : "--",
         walkTimeMinutes: String(initialWalkTimeMin),
+        ...(isWalkingOnly && { isWalkingOnly: "true" }),
       },
     });
     setTimeout(() => {
@@ -224,54 +231,71 @@ export default function BestRouteScreen() {
           {/* 2. CARD DE RESUMO PRINCIPAL */}
           <View style={[styles.summaryCard, { backgroundColor: theme.primaryDark || "#0F172A" }]}>
             {/* Badge */}
-            <View style={styles.summaryBadge}>
-              <Ionicons name="checkmark-circle" size={16} color="#34D399" />
-              <Text style={styles.summaryBadgeText}>Melhor rota encontrada</Text>
+            <View style={[styles.summaryBadge, isWalkingOnly && { backgroundColor: "rgba(59,130,246,0.15)" }]}>
+              {isWalkingOnly ? (
+                <FontAwesome6 name="person-walking" size={16} color="#3B82F6" />
+              ) : (
+                <Ionicons name="checkmark-circle" size={16} color="#34D399" />
+              )}
+              <Text style={[styles.summaryBadgeText, isWalkingOnly && { color: "#3B82F6" }]}>
+                {isWalkingOnly ? "Você pode ir a pé" : "Melhor rota encontrada"}
+              </Text>
             </View>
 
             {/* Chips de indicadores */}
             <View style={styles.chipsRow}>
               <View style={styles.chip}>
                 <Ionicons name="time" size={18} color="#FFF" />
-                <Text style={styles.chipText}>{formatMinutesToFriendlyText(totalDurationMin)}</Text>
+                <Text style={styles.chipText}>{formatMinutesToFriendlyText(totalDurationMin)}{isWalkingOnly ? " a pé" : ""}</Text>
               </View>
-              <View style={styles.chip}>
-                <FontAwesome6 name="person-walking" size={15} color="#FBBF24" />
-                <Text style={styles.chipText}>{formatMinutesToFriendlyText(initialWalkTimeMin)} a pé</Text>
-              </View>
-              <View style={styles.chip}>
-                <MaterialCommunityIcons name="bus" size={18} color="#34D399" />
-                <Text style={styles.chipText}>{transitSteps.length} {transitSteps.length === 1 ? 'ônibus' : 'ônibus'}</Text>
-              </View>
-            </View>
-
-            {/* Linha divisória */}
-            <View style={styles.summaryDivider} />
-
-            {/* Detalhes de resumo */}
-            <View style={styles.summaryDetailsGrid}>
-              {busLine ? (
-                <View style={styles.summaryDetailItem}>
-                  <Text style={styles.summaryDetailLabel}>Primeiro ônibus</Text>
-                  <View style={styles.busLineHighlight}>
-                    <MaterialCommunityIcons name="bus" size={16} color="#FFF" />
-                    <Text style={styles.busLineNumber}>{busLine}</Text>
+              {isWalkingOnly ? (
+                <View style={styles.chip}>
+                  <MaterialCommunityIcons name="map-marker-distance" size={18} color="#FFF" />
+                  <Text style={styles.chipText}>{summary?.totalDistanceMeters || summary?.initialWalkDistanceMeters || 0}m</Text>
+                </View>
+              ) : (
+                <>
+                  <View style={styles.chip}>
+                    <FontAwesome6 name="person-walking" size={15} color="#FBBF24" />
+                    <Text style={styles.chipText}>{formatMinutesToFriendlyText(initialWalkTimeMin)} a pé</Text>
                   </View>
-                </View>
-              ) : null}
-              {summary?.leaveHomeAt ? (
-                <View style={styles.summaryDetailItem}>
-                  <Text style={styles.summaryDetailLabel}>Saída</Text>
-                  <Text style={styles.summaryDetailValue}>{summary.leaveHomeAt}</Text>
-                </View>
-              ) : null}
-              {summary?.arrivalAtDestination ? (
-                <View style={styles.summaryDetailItem}>
-                  <Text style={styles.summaryDetailLabel}>Chegada</Text>
-                  <Text style={styles.summaryDetailValue}>{summary.arrivalAtDestination}</Text>
-                </View>
-              ) : null}
+                  <View style={styles.chip}>
+                    <MaterialCommunityIcons name="bus" size={18} color="#34D399" />
+                    <Text style={styles.chipText}>{transitSteps.length} {transitSteps.length === 1 ? 'ônibus' : 'ônibus'}</Text>
+                  </View>
+                </>
+              )}
             </View>
+
+            {/* Linha divisória e detalhes */}
+            {!isWalkingOnly && (
+              <>
+                <View style={styles.summaryDivider} />
+                <View style={styles.summaryDetailsGrid}>
+                  {busLine ? (
+                    <View style={styles.summaryDetailItem}>
+                      <Text style={styles.summaryDetailLabel}>Primeiro ônibus</Text>
+                      <View style={styles.busLineHighlight}>
+                        <MaterialCommunityIcons name="bus" size={16} color="#FFF" />
+                        <Text style={styles.busLineNumber}>{busLine}</Text>
+                      </View>
+                    </View>
+                  ) : null}
+                  {summary?.leaveHomeAt ? (
+                    <View style={styles.summaryDetailItem}>
+                      <Text style={styles.summaryDetailLabel}>Saída</Text>
+                      <Text style={styles.summaryDetailValue}>{summary.leaveHomeAt}</Text>
+                    </View>
+                  ) : null}
+                  {summary?.arrivalAtDestination ? (
+                    <View style={styles.summaryDetailItem}>
+                      <Text style={styles.summaryDetailLabel}>Chegada</Text>
+                      <Text style={styles.summaryDetailValue}>{summary.arrivalAtDestination}</Text>
+                    </View>
+                  ) : null}
+                </View>
+              </>
+            )}
           </View>
 
           {/* 3. PASSO A PASSO */}
@@ -289,7 +313,15 @@ export default function BestRouteScreen() {
                 description={leaveHomeText || "Comece agora."}
               />
 
-              {transitSteps.map((step, index) => (
+              {isWalkingOnly && (
+                <RouteStep
+                  type="walk"
+                  title={`Caminhe ${formatMinutesToFriendlyText(totalDurationMin)}`}
+                  description={`${summary?.totalDistanceMeters || summary?.initialWalkDistanceMeters || 0} metros até o destino`}
+                />
+              )}
+
+              {!isWalkingOnly && transitSteps.map((step, index) => (
                 <RouteStep 
                   key={`step-${index}`}
                   type="bus"
@@ -322,7 +354,7 @@ export default function BestRouteScreen() {
         ]}
       >
         <PrimaryButton
-          title="Iniciar navegação"
+          title={isWalkingOnly ? "Iniciar caminhada" : "Iniciar navegação"}
           onPress={handleStartNavigation}
           disabled={isLoadingCommand}
           isLoading={isLoadingCommand}
