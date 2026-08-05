@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View, ScrollView } from "react-native";
+import { Alert, StyleSheet, Text, View, ScrollView } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { BackButton } from "../src/components/BackButton";
@@ -9,40 +9,37 @@ import { PrimaryButton } from "../src/components/PrimaryButton";
 import { ScreenContainer } from "../src/components/ScreenContainer";
 import { TextField } from "../src/components/TextField";
 import { authService } from "../src/services/auth.service";
-import { sessionService } from "../src/services/session.service";
 import { useThemeColors } from "../src/theme/colors";
 
-export default function LoginScreen() {
+export default function ForgotPasswordScreen() {
   const theme = useThemeColors();
   const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  async function handleLogin() {
-    if (!email.trim() || !senha.trim()) {
-      Alert.alert("Atenção", "Digite seu e-mail e sua senha.");
+  async function handleReset() {
+    if (!email.trim()) {
+      Alert.alert("Atenção", "Digite o e-mail cadastrado na sua conta.");
       return;
     }
 
     try {
       setIsLoading(true);
 
-      const response = await authService.login({
-        email: email.trim(),
-        password: senha,
-      });
+      const response = await authService.forgotPassword(email.trim());
 
-      await sessionService.saveAuthSession(response);
-
-      router.replace("/permissoes");
-    } catch (error) {
-      console.log("Erro completo no login:", error);
-
+      setIsSuccess(true);
       Alert.alert(
-        "Erro no login",
+        "Verifique seu e-mail",
+        response.message || "Enviamos instruções para recuperar a sua senha.",
+        [{ text: "OK", onPress: () => router.back() }]
+      );
+    } catch (error) {
+      Alert.alert(
+        "Erro",
         error instanceof Error
           ? error.message
-          : "Não foi possível fazer login.",
+          : "Não foi possível solicitar a recuperação de senha."
       );
     } finally {
       setIsLoading(false);
@@ -58,8 +55,10 @@ export default function LoginScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <Animated.View entering={FadeInDown.duration(600)} style={styles.container}>
           <View style={styles.textHeader}>
-            <Text style={styles.title}>Bem-vindo!</Text>
-            <Text style={styles.subtitle}>Faça login para continuar sua viagem</Text>
+            <Text style={styles.title}>Recuperar Senha</Text>
+            <Text style={styles.subtitle}>
+              Digite seu e-mail e nós lhe enviaremos um link para você poder criar uma nova senha.
+            </Text>
           </View>
 
           <View style={styles.card}>
@@ -73,37 +72,18 @@ export default function LoginScreen() {
               style={styles.input}
             />
 
-            <TextField
-              placeholder="Senha"
-              value={senha}
-              onChangeText={setSenha}
-              secureTextEntry
-              style={styles.input}
-            />
-
             <PrimaryButton
-              title="Entrar"
-              onPress={handleLogin}
+              title="Recuperar senha"
+              onPress={handleReset}
               isLoading={isLoading}
+              disabled={isSuccess}
               style={styles.button}
             />
-
-            <Pressable onPress={() => router.push("/esqueci-senha")} style={{ alignItems: "center", marginTop: 8 }}>
-              <Text style={{ fontSize: 16, color: theme.primary, fontWeight: "600" }}>
-                Esqueci minha senha
-              </Text>
-            </Pressable>
           </View>
 
           <View style={styles.footer}>
-            <Pressable onPress={() => router.push("/criar-conta")}>
-              <Text style={styles.createAccount}>
-                Não tem conta? <Text style={{ color: theme.primary, fontWeight: "800" }}>Criar conta</Text>
-              </Text>
-            </Pressable>
-
             <View style={styles.ttsWrapper}>
-              <ListenOptionsButton textToSpeak="Você está na tela de login. Digite seu e-mail e sua senha. Depois toque no botão entrar. Se ainda não tiver conta, toque em criar conta." />
+              <ListenOptionsButton textToSpeak="Você está na tela de recuperação de senha. Digite o seu e-mail e toque no botão recuperar senha para receber as instruções." />
             </View>
           </View>
         </Animated.View>
@@ -142,6 +122,7 @@ const styles = StyleSheet.create({
     color: "#666",
     textAlign: "center",
     fontWeight: "500",
+    paddingHorizontal: 10,
   },
   card: {
     backgroundColor: "white",
@@ -167,11 +148,6 @@ const styles = StyleSheet.create({
   footer: {
     alignItems: "center",
     gap: 24,
-  },
-  createAccount: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#444",
   },
   ttsWrapper: {
     opacity: 0.8,

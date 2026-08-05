@@ -20,7 +20,12 @@ router.post(
   journeysController.planJourney,
 );
 router.get("/reverse-geocode", authMiddleware, journeysController.reverseGeocode);
-router.post("/transcribe", authMiddleware, journeysController.transcribeAudio);
+router.post(
+  "/transcribe",
+  express.json({ limit: "50mb" }),
+  authMiddleware,
+  journeysController.transcribeAudio,
+);
 router.post(
   "/resolve-destination",
   authMiddleware,

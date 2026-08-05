@@ -86,7 +86,7 @@ async function forgotPasswordService(data) {
 
   const resetToken = generateResetToken();
   const tokenHash = hashToken(resetToken);
-  const expiresAt = addMinutes(new Date(), 30);
+  const expiresAt = addMinutes(new Date(), 10);
 
   await createPasswordResetToken({
     userId: user.id,

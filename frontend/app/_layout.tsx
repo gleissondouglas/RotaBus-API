@@ -37,7 +37,7 @@ function RootLayout() {
         screenOptions={{
           headerShown: false, // Esconde o cabeçalho padrão para usarmos um customizado nas telas
           animation: "slide_from_right", // Transição lateral suave entre telas
-          animationDuration: 300,
+          animationDuration: 260,
         }}
       />
 

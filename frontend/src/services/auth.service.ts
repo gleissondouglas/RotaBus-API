@@ -37,7 +37,18 @@ async function createAccount(data: CreateAccountRequest): Promise<AuthResponse> 
   return login({ email: data.email, password: data.password });
 }
 
+async function forgotPassword(email: string): Promise<{ message: string }> {
+  return request<{ message: string }>(`${API_BASE_URL}/auth/forgot-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+}
+
 export const authService = {
   login,
   createAccount,
+  forgotPassword,
 };
