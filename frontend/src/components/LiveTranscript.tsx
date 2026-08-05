@@ -40,6 +40,7 @@ export function LiveTranscript({
         accessible
         accessibilityLiveRegion="polite"
         accessibilityLabel={isFinal ? `Você disse: ${transcript}` : `Ouvindo: ${transcript}`}
+        testID={isFinal ? "live-transcript-final" : "live-transcript-partial"}
       >
         {isFinal ? `Você disse: ${transcript}` : transcript}
       </Animated.Text>
@@ -57,6 +58,7 @@ export function LiveTranscript({
       accessible
       accessibilityLiveRegion="polite"
       accessibilityLabel={isFinal ? `Você disse: ${transcript}` : `Ouvindo: ${transcript}`}
+      testID={isFinal ? "live-transcript-final" : "live-transcript-partial"}
     >
       <View
         style={[
