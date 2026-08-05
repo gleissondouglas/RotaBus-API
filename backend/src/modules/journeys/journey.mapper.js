@@ -23,6 +23,8 @@ const {
   buildScreenBlock,
   buildFirstStopGuideBlock,
   buildAlerts,
+  buildWalkingOnlyVoiceBlock,
+  buildWalkingOnlyScreenBlock,
 } = require("./utils/instruction-builder");
 
 const MAX_INITIAL_WALK_MINUTES = 25;
@@ -500,6 +502,84 @@ function mapGoogleRouteToJourney(googleResponse, origin, timePreference = null) 
   };
 }
 
+function mapWalkingOnlyRouteToJourney(walkingResponse, origin, destination) {
+  const route = walkingResponse.routes[0];
+  const steps = route.legs[0].steps || [];
+  
+  const mappedSteps = steps.map(mapGoogleStepToJourneyStep);
+  
+  const totalDurationMin = getMinutesFromDuration(route.duration);
+  const totalDistanceMeters = route.distanceMeters || 0;
+  
+  const summary = {
+    isWalkingOnly: true,
+    totalDurationMin,
+    totalDistanceMeters,
+    totalWalkTimeMin: totalDurationMin,
+    initialWalkTimeMin: totalDurationMin,
+    initialWalkDistanceMeters: totalDistanceMeters,
+    finalWalkTimeMin: 0,
+    busTimeMin: 0,
+    transfers: 0,
+    busLines: [],
+    leaveHomeAt: '',
+    beAtStopAt: '',
+    arrivalAtDestination: '',
+    leaveHomeDateTime: '',
+    beAtStopDateTime: '',
+    arrivalAtDestinationDateTime: '',
+    leaveHomeText: '',
+    beAtStopText: '',
+    arrivalAtDestinationText: '',
+    overviewPolyline: route.polyline?.encodedPolyline || '',
+  };
+  
+  const markers = [
+    {
+      id: "route-origin",
+      type: "origin",
+      title: "Ponto de partida",
+      lat: origin.lat,
+      lng: origin.lng,
+    },
+    {
+      id: "destination",
+      type: "destination",
+      title: "Destino final",
+      lat: destination.lat || mappedSteps[mappedSteps.length - 1]?.endLocation?.lat,
+      lng: destination.lng || mappedSteps[mappedSteps.length - 1]?.endLocation?.lng,
+    }
+  ];
+  
+  const polylines = mappedSteps
+    .filter(step => step.polyline)
+    .map((step, index) => ({
+      id: `polyline-${index}`,
+      type: "walk",
+      encodedPolyline: step.polyline,
+      line: step.line,
+    }));
+    
+  const mapData = {
+    userLocation: origin,
+    markers,
+    polylines,
+  };
+  
+  return {
+    summary,
+    voice: buildWalkingOnlyVoiceBlock(mappedSteps, summary),
+    screen: buildWalkingOnlyScreenBlock(summary),
+    firstStopGuide: { available: false },
+    alerts: ["Os tempos de caminhada podem variar."],
+    steps: mappedSteps,
+    map: mapData,
+    alternatives: [],
+    metadata: { selectedRouteIndex: 0, alternativesFound: 0 },
+  };
+}
+
 module.exports = {
   mapGoogleRouteToJourney,
+  mapWalkingOnlyRouteToJourney,
 };
