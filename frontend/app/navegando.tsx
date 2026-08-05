@@ -43,8 +43,10 @@ interface Coords {
  */
 type NavigationStage =
   | "walking_to_stop"
+  | "walking_to_destination"
   | "waiting_bus"
-  | "boarded_success";
+  | "boarded_success"
+  | "arrived";
 
 export default function NavigatingScreen() {
   const params = useLocalSearchParams();
@@ -56,6 +58,7 @@ export default function NavigatingScreen() {
   const direction = String(params.direction || "--");
   const stopName = String(params.stopName || "ponto indicado");
   const walkTimeMinutes = String(params.walkTimeMinutes || "--");
+  const isWalkingOnly = String(params.isWalkingOnly || "") === "true";
 
   const walkTimeNum = useMemo(() => Number(walkTimeMinutes) || 0, [walkTimeMinutes]);
 
@@ -71,7 +74,9 @@ export default function NavigatingScreen() {
   }, [transitStep, direction]);
 
   // Estados de controle da tela
-  const [stage, setStage] = useState<NavigationStage>("walking_to_stop");
+  const [stage, setStage] = useState<NavigationStage>(
+    isWalkingOnly ? "walking_to_destination" : "walking_to_stop"
+  );
   const [userLocation, setUserLocation] = useState<Coords | null>(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(0); // Qual "passo" da caminhada o usuário está executando
   const [busCountdown, setBusCountdown] = useState<string>(""); // Tempo para o ônibus chegar
@@ -129,6 +134,11 @@ export default function NavigatingScreen() {
     return mapData.markers.find(m => m.type === 'boarding_stop');
   }, [mapData]);
 
+  const destinationMarker = useMemo(() => {
+    if (!mapData || !mapData.markers) return undefined;
+    return mapData.markers.find(m => m.type === 'destination');
+  }, [mapData]);
+
   const hasValidWalkRoute = useMemo(() => {
     return walkSteps.length > 0 && walkSteps.some(s => !!s.polyline);
   }, [walkSteps]);
@@ -138,7 +148,7 @@ export default function NavigatingScreen() {
    * Ele monitora a localização do usuário e dispara avisos de voz.
    */
   useEffect(() => {
-    if (!userLocation || walkSteps.length === 0 || stage !== "walking_to_stop") return;
+    if (!userLocation || walkSteps.length === 0 || (stage !== "walking_to_stop" && stage !== "walking_to_destination")) return;
     
     const currentStep = walkSteps[currentStepIndex];
     if (!currentStep) return;
@@ -206,11 +216,25 @@ export default function NavigatingScreen() {
         speakControlled(`Você chegou ao ponto. Agora aguarde o ônibus ${busLine}.`);
       }
     }
-  }, [userLocation, currentStepIndex, walkSteps, stage, boardingMarker, busLine, speakControlled]);
 
-  // Animations trigger
+    // Detecção de chegada ao destino (modo a pé)
+    if (isWalkingOnly && destinationMarker) {
+      const distToDest = calculateDistance(currentLat, currentLng, destinationMarker.lat, destinationMarker.lng);
+      
+      if (distToDest < 40 && !warnedNearStopRef.current) {
+        speakControlled("Seu destino está logo à frente.");
+        warnedNearStopRef.current = true;
+      }
+      
+      if (distToDest < 25) {
+        setStage("arrived");
+        speakControlled(`Você chegou ao seu destino.`);
+      }
+    }
+  }, [userLocation, currentStepIndex, walkSteps, stage, boardingMarker, destinationMarker, isWalkingOnly, busLine, speakControlled]);
+
   useEffect(() => {
-    if (stage === "waiting_bus" || stage === "boarded_success") {
+    if (stage === "waiting_bus" || stage === "boarded_success" || stage === "arrived") {
       fadeAnim.setValue(0);
       slideAnim.setValue(16);
       scaleAnim.setValue(0.85);
@@ -237,6 +261,14 @@ export default function NavigatingScreen() {
 
   // Navigation Instruction Formatting
   const formattedInstruction = useMemo(() => {
+    if (stage === "arrived") {
+      return {
+        displayTitle: "Você chegou!",
+        displaySubtitle: `Destino: ${stopName}`,
+        speechText: `Você chegou ao seu destino. ${stopName}.`,
+      };
+    }
+
     if (stage === "waiting_bus") {
       const subtitleText = lineDetails ? `Aguarde o ônibus ${busLine} - ${lineDetails}.` : `Aguarde o ônibus ${busLine}.`;
       const speechText = lineDetails 
@@ -361,10 +393,13 @@ export default function NavigatingScreen() {
     if (stage === "walking_to_stop") {
       setStage("waiting_bus");
       speakControlled("Você chegou ao ponto. Aguarde o embarque.", true);
+    } else if (stage === "walking_to_destination") {
+      setStage("arrived");
+      speakControlled("Você chegou ao seu destino.", true);
     } else if (stage === "waiting_bus") {
       setStage("boarded_success");
       speakControlled(`Tudo certo! Você embarcou no ônibus. Boa viagem. Eu aviso quando estiver perto de descer.`, true);
-    } else if (stage === "boarded_success") {
+    } else if (stage === "boarded_success" || stage === "arrived") {
       router.replace({
         pathname: "/inicio",
         params: {
@@ -378,8 +413,10 @@ export default function NavigatingScreen() {
   const getPrimaryButtonTitle = () => {
     switch (stage) {
       case "walking_to_stop": return "Cheguei ao ponto";
+      case "walking_to_destination": return "Cheguei ao destino";
       case "waiting_bus": return "Embarquei no ônibus";
       case "boarded_success": return "Ir para início";
+      case "arrived": return "Ir para início";
       default: return "Continuar";
     }
   };
@@ -387,8 +424,10 @@ export default function NavigatingScreen() {
   const getStageTitle = () => {
     switch (stage) {
       case "walking_to_stop": return "Caminho até o ponto";
+      case "walking_to_destination": return "Caminho até o destino";
       case "waiting_bus": return "Você chegou ao ponto";
       case "boarded_success": return "Tudo certo!";
+      case "arrived": return "Você chegou!";
       default: return "Navegando";
     }
   };
@@ -411,7 +450,7 @@ export default function NavigatingScreen() {
   return (
     <View style={styles.container}>
       {/* MAP BACKGROUND */}
-      {stage === "walking_to_stop" && (
+      {(stage === "walking_to_stop" || stage === "walking_to_destination") && (
         <View style={StyleSheet.absoluteFill}>
           <Map 
             mapData={mapData} 
@@ -428,14 +467,14 @@ export default function NavigatingScreen() {
       )}
 
       {/* SOLID BACKGROUND (For status stages) */}
-      {(stage === "waiting_bus" || stage === "boarded_success") && (
+      {(stage === "waiting_bus" || stage === "boarded_success" || stage === "arrived") && (
         <View style={[StyleSheet.absoluteFill, { backgroundColor: "#F6F8FA" }]} />
       )}
 
       {/* Top Bar (Always Fixed) */}
       <View style={[styles.topBar, { top: insets.top + 12 }]} pointerEvents="box-none">
         <View style={styles.backButtonMini}>
-          {stage !== "boarded_success" && (
+          {(stage !== "boarded_success" && stage !== "arrived") && (
             <BackButton 
               label="Sair" 
               onPress={handleSair} 
@@ -444,7 +483,7 @@ export default function NavigatingScreen() {
           )}
         </View>
 
-        {stage !== "boarded_success" && (
+        {(stage !== "boarded_success" && stage !== "arrived") && (
           <View style={[styles.miniBadge, { backgroundColor: "white" }]}>
             {stage === "waiting_bus" && <View style={[styles.badgeDot, { backgroundColor: theme.primary }]} />}
             <Text style={styles.miniBadgeText}>
@@ -455,7 +494,7 @@ export default function NavigatingScreen() {
       </View>
 
       {/* Instruction Card (Fixed during walking) */}
-      {stage === "walking_to_stop" && (
+      {(stage === "walking_to_stop" || stage === "walking_to_destination") && (
         <View style={[styles.instructionCardContainer, { top: insets.top + 65 }]} pointerEvents="box-none">
           {!!formattedInstruction.warning && (
             <View style={styles.warningPill}>
@@ -468,7 +507,7 @@ export default function NavigatingScreen() {
             <View style={[styles.iconCircle, { backgroundColor: theme.primaryLight }]}>
               <FontAwesome6 
                 name={formattedInstruction.maneuver?.includes("LEFT") ? "arrow-left" : formattedInstruction.maneuver?.includes("RIGHT") ? "arrow-right" : "arrow-up"} 
-                size={22} 
+                size={18} 
                 color={theme.primary} 
               />
             </View>
@@ -482,24 +521,24 @@ export default function NavigatingScreen() {
 
       <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
         {/* Status Content (Scrollable) */}
-        {(stage === "waiting_bus" || stage === "boarded_success") && (
+        {(stage === "waiting_bus" || stage === "boarded_success" || stage === "arrived") && (
           <ScrollView 
             contentContainerStyle={[
               styles.statusContentContainer, 
               { 
-                paddingTop: insets.top + (stage === "boarded_success" ? 120 : 80),
+                paddingTop: insets.top + ((stage === "boarded_success" || stage === "arrived") ? 120 : 80),
                 paddingBottom: insets.bottom + 220
               }
             ]}
             showsVerticalScrollIndicator={false}
           >
             <Animated.View style={[styles.largeStatusCard, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-              <View style={[styles.largeStatusIconBox, { backgroundColor: stage === "boarded_success" ? "#DCFCE7" : "#F0F7FF" }]}>
+              <View style={[styles.largeStatusIconBox, { backgroundColor: (stage === "boarded_success" || stage === "arrived") ? "#DCFCE7" : "#F0F7FF" }]}>
                  {stage === "waiting_bus" ? (
                    <FontAwesome6 name="bus-simple" size={40} color={theme.primary} />
                  ) : (
                    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-                     <Ionicons name="checkmark-circle" size={stage === "boarded_success" ? 64 : 56} color="#10B981" />
+                     <Ionicons name="checkmark-circle" size={(stage === "boarded_success" || stage === "arrived") ? 64 : 56} color="#10B981" />
                    </Animated.View>
                  )}
               </View>
@@ -512,6 +551,8 @@ export default function NavigatingScreen() {
               <Text style={styles.largeStatusSubtitle}>
                 {stage === "waiting_bus" 
                   ? formattedInstruction.displaySubtitle 
+                  : stage === "arrived"
+                  ? `Destino: ${stopName}`
                   : "Boa viagem. Eu aviso quando estiver perto de descer."}
               </Text>
               
@@ -543,8 +584,8 @@ export default function NavigatingScreen() {
         )}
 
         {/* Fixed Actions for Status Stages */}
-        {(stage === "waiting_bus" || stage === "boarded_success") && (
-          <Animated.View style={[styles.fixedStatusActions, { paddingBottom: insets.bottom + 16, opacity: stage === "boarded_success" ? buttonFadeAnim : fadeAnim }]}>
+        {(stage === "waiting_bus" || stage === "boarded_success" || stage === "arrived") && (
+          <Animated.View style={[styles.fixedStatusActions, { paddingBottom: insets.bottom + 16, opacity: (stage === "boarded_success" || stage === "arrived") ? buttonFadeAnim : fadeAnim }]}>
             <PrimaryButton title={getPrimaryButtonTitle()} onPress={handleStageTransition} style={styles.mainButton} />
             <Pressable 
               style={styles.secondaryActionBtn} 
@@ -556,7 +597,7 @@ export default function NavigatingScreen() {
               <Text style={[styles.secondaryActionText, { color: theme.primary }]}>Ouvir instrução</Text>
             </Pressable>
             
-            {stage === "boarded_success" && (
+            {(stage === "boarded_success" || stage === "arrived") && (
               <Pressable 
                 style={styles.tertiaryActionBtn} 
                 onPress={() => router.replace("/inicio")}
@@ -570,7 +611,7 @@ export default function NavigatingScreen() {
         )}
 
         {/* Bottom Card for Walking Stage */}
-        {stage === "walking_to_stop" && (
+        {(stage === "walking_to_stop" || stage === "walking_to_destination") && (
           <View 
             onLayout={(e) => setBottomCardHeight(e.nativeEvent.layout.height)}
             style={[styles.bottomCard, { bottom: 0, paddingBottom: insets.bottom + 16, backgroundColor: "white" }]}
@@ -578,38 +619,44 @@ export default function NavigatingScreen() {
             <View style={[styles.dragHandle, { backgroundColor: "#EEE" }]} />
 
             <View style={styles.bottomSheetHeader}>
-              <Text style={styles.bottomSheetLabel}>Caminho até o ponto</Text>
+              <Text style={styles.bottomSheetLabel}>
+                {isWalkingOnly ? "Caminho até o destino" : "Caminho até o ponto"}
+              </Text>
               {!!stopName && stopName !== "ponto indicado" && (
-                <Text style={styles.stopNameText} numberOfLines={1}>Ponto: {stopName}</Text>
+                <Text style={styles.stopNameText} numberOfLines={1}>
+                  {isWalkingOnly ? `Destino: ${stopName}` : `Ponto: ${stopName}`}
+                </Text>
               )}
             </View>
 
             {showBusArrivalWarning && (
               <View style={styles.arrivalWarningBox}>
-                <Ionicons name="alert-circle" size={18} color="#B45309" />
+                <Ionicons name="alert-circle" size={18} color="#bd2a09" />
                 <Text style={styles.arrivalWarningText}>O ônibus pode chegar antes de você.</Text>
               </View>
             )}
 
-            <View style={styles.summaryRow}>
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryLabel}>Linha</Text>
-                <Text style={styles.summaryValue}>{busLine}</Text>
-                {!!lineDetails && lineDetails !== "--" && (
-                  <Text style={styles.infoCardSubValue} numberOfLines={2}>{lineDetails}</Text>
-                )}
+            {!isWalkingOnly && (
+              <View style={styles.summaryRow}>
+                <View style={styles.summaryItem}>
+                  <Text style={styles.summaryLabel}>Linha</Text>
+                  <Text style={styles.summaryValue}>{busLine}</Text>
+                  {!!lineDetails && lineDetails !== "--" && (
+                    <Text style={styles.infoCardSubValue} numberOfLines={2}>{lineDetails}</Text>
+                  )}
+                </View>
+                <View style={styles.summaryItem}>
+                  <Text style={styles.summaryLabel}>Chega</Text>
+                  <Text style={[styles.summaryValue, { color: theme.primary }]}>{busCountdown || "..."}</Text>
+                </View>
               </View>
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryLabel}>Chega</Text>
-                <Text style={[styles.summaryValue, { color: theme.primary }]}>{busCountdown || "..."}</Text>
-              </View>
-            </View>
+            )}
             <View style={styles.actionArea}>
               <PrimaryButton 
                 title={getPrimaryButtonTitle()} 
                 onPress={handleStageTransition} 
                 style={styles.mainButton} 
-                accessibilityLabel="Cheguei ao ponto"
+                accessibilityLabel={isWalkingOnly ? "Cheguei ao destino" : "Cheguei ao ponto"}
               />
               <View style={styles.ttsWrapper}>
                 <ListenOptionsButton 
@@ -648,26 +695,26 @@ const styles = StyleSheet.create({
   miniBadgeText: { fontWeight: "800", fontSize: 14, color: "#011030" },
   badgeDot: { width: 8, height: 8, borderRadius: 4, marginRight: 8 },
   instructionCardContainer: { position: "absolute", left: 16, right: 16, zIndex: 90, gap: 8 },
-  instructionCard: { flexDirection: "row", paddingHorizontal: 16, paddingVertical: 12, borderRadius: 20, alignItems: "center", elevation: 10, shadowColor: "#000", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.15, shadowRadius: 12 },
-  iconCircle: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center", marginRight: 12 },
+  instructionCard: { flexDirection: "row", paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, alignItems: "center", elevation: 10, shadowColor: "#000", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.15, shadowRadius: 12 },
+  iconCircle: { width: 38, height: 38, borderRadius: 12, alignItems: "center", justifyContent: "center", marginRight: 12 },
   instructionTextContent: { flex: 1 },
-  instructionTitle: { fontSize: 18, fontWeight: "900", letterSpacing: -0.3, color: "#011030", lineHeight: 22 },
+  instructionTitle: { fontSize: 16, fontWeight: "900", letterSpacing: -0.3, color: "#011030", lineHeight: 22 },
   instructionSubtitle: { fontSize: 15, fontWeight: "700", color: "#64748B", marginTop: 1 },
   warningPill: { flexDirection: "row", alignSelf: "flex-start", backgroundColor: "#FEF3C7", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, gap: 6, alignItems: "center", borderWidth: 1, borderColor: "#FDE68A" },
   warningPillText: { fontSize: 13, fontWeight: "800", color: "#B45309" },
-  bottomCard: { position: "absolute", left: 0, right: 0, borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingHorizontal: 24, paddingTop: 16, elevation: 20, shadowColor: "#000", shadowOffset: { width: 0, height: -10 }, shadowOpacity: 0.1, shadowRadius: 20 },
-  dragHandle: { width: 40, height: 4, borderRadius: 2, alignSelf: "center", marginBottom: 12 },
-  bottomSheetHeader: { marginBottom: 16, alignItems: 'center' },
+  bottomCard: { position: "absolute", left: 0, right: 0, borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingHorizontal: 24, paddingTop: 12, elevation: 20, shadowColor: "#000", shadowOffset: { width: 0, height: -10 }, shadowOpacity: 0.1, shadowRadius: 20 },
+  dragHandle: { width: 40, height: 4, borderRadius: 2, alignSelf: "center", marginBottom: 8 },
+  bottomSheetHeader: { marginBottom: 12, alignItems: 'center' },
   bottomSheetLabel: { fontSize: 13, fontWeight: "800", color: "#94A3B8", textTransform: "uppercase", letterSpacing: 0.5 },
   stopNameText: { fontSize: 16, fontWeight: "700", color: "#011030", marginTop: 2 },
-  summaryRow: { flexDirection: "row", gap: 10, marginBottom: 20 },
-  summaryItem: { flex: 1, paddingVertical: 10, borderRadius: 16, alignItems: "center", borderWidth: 1, borderColor: "#F1F5F9", backgroundColor: "#F8FAFC" },
+  summaryRow: { flexDirection: "row", gap: 10, marginBottom: 12 },
+  summaryItem: { flex: 1, paddingVertical: 8, borderRadius: 16, alignItems: "center", borderWidth: 1, borderColor: "#F1F5F9", backgroundColor: "#F8FAFC" },
   summaryLabel: { fontSize: 11, fontWeight: "800", textTransform: "uppercase", color: "#94A3B8", marginBottom: 2 },
   summaryValue: { fontSize: 18, fontWeight: "900", color: "#011030" },
   arrivalWarningBox: { flexDirection: "row", backgroundColor: "#FFFBEB", padding: 10, borderRadius: 12, alignItems: "center", gap: 8, marginBottom: 16, borderWidth: 1, borderColor: "#FEF3C7" },
   arrivalWarningText: { fontSize: 14, fontWeight: "700", color: "#B45309", flex: 1 },
-  actionArea: { gap: 12, alignItems: "center", width: "100%" },
-  mainButton: { height: 64, borderRadius: 32 },
+  actionArea: { gap: 8, alignItems: "center", width: "100%" },
+  mainButton: { height: 56, borderRadius: 32 },
   ttsWrapper: { opacity: 0.9 },
   statusContentContainer: { flexGrow: 1, paddingHorizontal: 20 },
   largeStatusCard: { backgroundColor: "white", width: "100%", borderRadius: 32, padding: 24, alignItems: "center", elevation: 2, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10 },
@@ -679,7 +726,7 @@ const styles = StyleSheet.create({
   helperText: { fontSize: 16, fontWeight: "500", textAlign: "center", marginTop: 8, color: "#64748B", lineHeight: 22 },
   infoCardsGrid: { flexDirection: "row", gap: 10, marginTop: 24, width: "100%" },
   infoCard: { flex: 1, backgroundColor: "#F8FAFC", borderRadius: 20, padding: 14, alignItems: "center", borderWidth: 1, borderColor: "#F1F5F9" },
-  infoCardLabel: { fontSize: 11, fontWeight: "800", color: "#94A3B8", textTransform: "uppercase", marginBottom: 4, textAlign: "center" },
+  infoCardLabel: { fontSize: 11, fontWeight: "800", color: "#6a97d7", textTransform: "uppercase", marginBottom: 4, textAlign: "center" },
   infoCardValue: { fontSize: 18, fontWeight: "900", color: "#011030" },
   infoCardSubValue: { fontSize: 12, fontWeight: "600", color: "#64748B", marginTop: 4, textAlign: "center", lineHeight: 15 },
   fixedStatusActions: { position: "absolute", bottom: 0, left: 0, right: 0, backgroundColor: "white", paddingHorizontal: 24, paddingTop: 16, borderTopLeftRadius: 32, borderTopRightRadius: 32, shadowColor: "#000", shadowOffset: { width: 0, height: -8 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 10, gap: 12 },
@@ -691,6 +738,6 @@ const styles = StyleSheet.create({
   modalContent: { backgroundColor: "white", borderRadius: 32, padding: 32, width: "100%", alignItems: "center" },
   modalTitle: { fontSize: 24, fontWeight: "900", marginBottom: 24, color: "#011030", textAlign: "center" },
   modalActions: { width: "100%" },
-  confirmExitBtn: { marginTop: 16, paddingVertical: 8, alignSelf: "center" },
-  confirmExitText: { color: "#EF4444", fontWeight: "800", fontSize: 16 },
+  confirmExitBtn: { marginTop: 20, paddingVertical: 8, alignSelf: "center" },
+  confirmExitText: { color: "#f21515", fontWeight: "800", fontSize: 20 },
 });
