@@ -589,6 +589,7 @@ export default function HomeScreen() {
                 <Animated.View
                   entering={FadeInDown.duration(300)}
                   style={styles.userMessageInCard}
+                  testID={isTranscriptFinal ? "live-transcript-final" : "live-transcript-partial"}
                 >
                   <Text style={styles.userTranscriptText}>
                     {transcript}
