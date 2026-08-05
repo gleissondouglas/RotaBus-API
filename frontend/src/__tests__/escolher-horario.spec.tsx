@@ -307,7 +307,6 @@ describe("ChooseTimeScreen", () => {
 
   it("atualiza a UI de cards corretamente quando um intent de voz é recebido", async () => {
     const screen = render(<ChooseTimeScreen />);
-    fireEvent.press(screen.getByText("Outro horário"));
     
     await act(async () => {
       if (mockVoiceLoopCallbacks.onIntent) {
@@ -319,9 +318,8 @@ describe("ChooseTimeScreen", () => {
       }
     });
 
-    const card2000 = screen.getByLabelText("Horário 20:00");
-    expect(card2000.props.accessibilityState.selected).toBe(true);
-
+    // Após o intent de voz, o componente chama validateAndNavigate diretamente,
+    // navegando para /processando com o horário interpretado pela IA.
     expect(router.push).toHaveBeenCalledWith(
       expect.objectContaining({
         pathname: "/processando",

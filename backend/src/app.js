@@ -39,11 +39,12 @@ app.use(cors(corsOptions));
 
 /**
  * Parsers de JSON:
- * Configuramos um limite alto (50mb) porque recebemos transcrições e áudios
- * grandes via Base64 do aplicativo.
+ * Limite global conservador (1mb) para segurança.
+ * O endpoint /journeys/transcribe recebe seu próprio limite de 50mb
+ * (configurado nas rotas) para acomodar áudios em Base64.
  */
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ limit: "50mb", extended: true }));
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ limit: "1mb", extended: true }));
 
 /**
  * Sanitização Global:
@@ -58,6 +59,21 @@ app.get("/", (req, res) => {
     status: "ok",
     message: "Tá rodando baby!",
   });
+});
+
+/**
+ * Página Web de Recuperação de Senha:
+ * Serve a interface HTML para o usuário digitar a nova senha no navegador.
+ */
+const { getResetPasswordHtml } = require("./modules/auth/views/reset-password.view");
+
+app.get("/reset-password", (req, res) => {
+  const token = req.query.token;
+  if (!token) {
+    return res.status(400).send("Token não fornecido ou inválido.");
+  }
+  // Retorna o HTML injetando o token criptográfico
+  res.send(getResetPasswordHtml(token));
 });
 
 /**

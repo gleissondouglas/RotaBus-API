@@ -8,4 +8,6 @@ module.exports = {
   appUrl: process.env.APP_URL || "http://localhost:3000",
   nodeEnv: process.env.NODE_ENV || "development",
   persistenceDriver: process.env.PERSISTENCE_DRIVER || "memory",
+  resendApiKey: process.env.RESEND_API_KEY || "",
+  resendFromEmail: process.env.RESEND_FROM_EMAIL || "",
 };
