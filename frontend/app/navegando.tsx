@@ -96,6 +96,7 @@ export default function NavigatingScreen() {
   const warnedApproachingTurnRef = useRef<number | null>(null);
   const warnedTurnNowRef = useRef<number | null>(null);
   const warnedNearStopRef = useRef(false);
+  const warnedDropoffRef = useRef(false);
   const lastSpokenAtRef = useRef(0);
   const lastSpokenStepIndexRef = useRef(-1);
   const lastSpokenStageRef = useRef<NavigationStage | null>(null);
@@ -139,6 +140,11 @@ export default function NavigatingScreen() {
     return mapData.markers.find(m => m.type === 'destination');
   }, [mapData]);
 
+  const dropoffMarker = useMemo(() => {
+    if (!mapData || !mapData.markers) return undefined;
+    return mapData.markers.find(m => m.type === 'dropoff_stop');
+  }, [mapData]);
+
   const hasValidWalkRoute = useMemo(() => {
     return walkSteps.length > 0 && walkSteps.some(s => !!s.polyline);
   }, [walkSteps]);
@@ -148,13 +154,27 @@ export default function NavigatingScreen() {
    * Ele monitora a localização do usuário e dispara avisos de voz.
    */
   useEffect(() => {
-    if (!userLocation || walkSteps.length === 0 || (stage !== "walking_to_stop" && stage !== "walking_to_destination")) return;
+    if (!userLocation) return;
+    
+    const currentLat = userLocation.latitude;
+    const currentLng = userLocation.longitude;
+
+    // Lógica de alerta de descida do ônibus
+    if (stage === "boarded_success" && dropoffMarker) {
+      const distToDropoff = calculateDistance(currentLat, currentLng, dropoffMarker.lat, dropoffMarker.lng);
+      
+      // Alerta quando estiver a menos de 400 metros (aprox 1 a 2 pontos antes) do ponto de descida
+      if (distToDropoff < 400 && !warnedDropoffRef.current) {
+        speakControlled("Atenção! Você está se aproximando do seu ponto de descida. Prepare-se para descer.");
+        warnedDropoffRef.current = true;
+      }
+      return; // Interrompe a execução aqui pois não há navegação passo-a-passo dentro do ônibus
+    }
+
+    if (walkSteps.length === 0 || (stage !== "walking_to_stop" && stage !== "walking_to_destination")) return;
     
     const currentStep = walkSteps[currentStepIndex];
     if (!currentStep) return;
-
-    const currentLat = userLocation.latitude;
-    const currentLng = userLocation.longitude;
 
     // Calcula a distância do usuário até o final da instrução atual
     let distToEnd = 9999;
@@ -231,7 +251,7 @@ export default function NavigatingScreen() {
         speakControlled(`Você chegou ao seu destino.`);
       }
     }
-  }, [userLocation, currentStepIndex, walkSteps, stage, boardingMarker, destinationMarker, isWalkingOnly, busLine, speakControlled]);
+  }, [userLocation, currentStepIndex, walkSteps, stage, boardingMarker, destinationMarker, dropoffMarker, isWalkingOnly, busLine, speakControlled]);
 
   useEffect(() => {
     if (stage === "waiting_bus" || stage === "boarded_success" || stage === "arrived") {
