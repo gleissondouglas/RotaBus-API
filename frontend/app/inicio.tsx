@@ -540,7 +540,8 @@ export default function HomeScreen() {
   return (
     <ScreenContainer withPadding={false} style={{ backgroundColor: "#F6F8FA" }}>
       {/* ─── ZONA 1: TOPO ─── */}
-      <View
+      <Animated.View
+        entering={FadeInDown.duration(400).delay(100)}
         style={[styles.topHeader, { paddingTop: Math.max(insets.top, 16) }]}
       >
         <Pressable
@@ -560,7 +561,7 @@ export default function HomeScreen() {
         >
           <Ionicons name="settings" size={30} color="#000" />
         </Pressable>
-      </View>
+      </Animated.View>
 
       {/* ─── ZONA 2: CENTRO ─── */}
       <View style={styles.centerZone} pointerEvents="none">
@@ -691,26 +692,28 @@ const styles = StyleSheet.create({
   },
   assistantBubble: {
     backgroundColor: "white",
-    borderRadius: 26,
-    borderTopLeftRadius: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 18,
-    minHeight: 180,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.05,
-    shadowRadius: 16,
-    elevation: 3,
+    borderRadius: 30,
+    borderTopLeftRadius: 10,
+    paddingHorizontal: 24,
+    paddingVertical: 22,
+    minHeight: 190,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.02)",
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.06,
+    shadowRadius: 32,
+    elevation: 5,
   },
   promptTextWrapper: {
     paddingHorizontal: 0,
   },
   assistantPromptText: {
-    color: "#011030",
-    fontSize: 24,
-    lineHeight: 32,
+    color: "#0F172A",
+    fontSize: 26,
+    lineHeight: 34,
     fontWeight: "800",
-    letterSpacing: -0.2,
+    letterSpacing: -0.4,
     ...APPLE_FONT,
   },
   userMessageInCard: {

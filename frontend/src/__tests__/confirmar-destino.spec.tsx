@@ -127,7 +127,7 @@ jest.mock("../services/speech.service", () => ({
 }));
 
 jest.mock("../hooks/useAutoSpeakOnce", () => ({
-  useAutoSpeakOnce: jest.fn(),
+  useAutoSpeakOnce: jest.fn(() => ({ isSpeaking: false })),
 }));
 
 jest.mock("../services/journey.service", () => ({

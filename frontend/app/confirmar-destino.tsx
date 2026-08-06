@@ -167,7 +167,7 @@ export default function ConfirmDestinationScreen() {
     }
     return "";
   })();
-  useAutoSpeakOnce(
+  const { isSpeaking: autoSpeaking } = useAutoSpeakOnce(
     showSuggestions
       ? `confirm-dest-suggestions-${options.length}`
       : `confirm-dest-${activeDestinationName}`,
@@ -422,7 +422,7 @@ export default function ConfirmDestinationScreen() {
           {/* VoiceVisualizer — apenas em modo voz */}
           {isVoiceMode && (
             <Animated.View entering={FadeIn.duration(300)} style={styles.visualizerWrapper}>
-              <VoiceVisualizer state={toVisualizerState(voiceStatus)} size="compact" />
+              <VoiceVisualizer state={autoSpeaking ? "speaking" : toVisualizerState(voiceStatus)} size="compact" />
             </Animated.View>
           )}
 

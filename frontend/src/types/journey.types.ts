@@ -114,6 +114,8 @@ export type JourneySummary = {
   finalWalkTimeMin: number;
   totalWalkTimeMin: number;
   busTimeMin: number;
+  totalDistanceMeters?: number;
+  initialWalkDistanceMeters?: number;
 };
 
 export type MapMarker = {
