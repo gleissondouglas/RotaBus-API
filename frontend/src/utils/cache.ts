@@ -3,46 +3,60 @@
  * Ajuda a economizar dados e melhorar a performance em buscas repetidas.
  */
 
+import { appStorage } from "../services/storage.service";
+
 interface CacheItem<T> {
   data: T;
   timestamp: number;
 }
 
-const memoryCache = new Map<string, CacheItem<any>>();
+const OFFLINE_CACHE_PREFIX = "offline_cache_";
 
 export const cache = {
   /**
-   * Salva um item no cache com um tempo de vida (TTL) em milissegundos.
+   * Salva um item no cache local (disco) com um timestamp.
    */
-  set<T>(key: string, data: T): void {
-    memoryCache.set(key, {
-      data,
-      timestamp: Date.now(),
-    });
+  async set<T>(key: string, data: T): Promise<void> {
+    try {
+      const item: CacheItem<T> = {
+        data,
+        timestamp: Date.now(),
+      };
+      await appStorage.setItem(`${OFFLINE_CACHE_PREFIX}${key}`, JSON.stringify(item));
+    } catch (e) {
+      console.warn("Falha ao salvar no cache offline", e);
+    }
   },
 
   /**
-   * Recupera um item do cache. Se expirado ou não encontrado, retorna null.
+   * Recupera um item do cache (disco). Se expirado ou não encontrado, retorna null.
    */
-  get<T>(key: string, ttlMs: number): T | null {
-    const item = memoryCache.get(key);
-    
-    if (!item) return null;
+  async get<T>(key: string, ttlMs: number): Promise<T | null> {
+    try {
+      const stored = await appStorage.getItem(`${OFFLINE_CACHE_PREFIX}${key}`);
+      if (!stored) return null;
 
-    const isExpired = Date.now() - item.timestamp > ttlMs;
+      const item: CacheItem<T> = JSON.parse(stored);
+      const isExpired = Date.now() - item.timestamp > ttlMs;
 
-    if (isExpired) {
-      memoryCache.delete(key);
+      if (isExpired) {
+        await appStorage.deleteItem(`${OFFLINE_CACHE_PREFIX}${key}`);
+        return null;
+      }
+
+      return item.data as T;
+    } catch (e) {
+      console.warn("Falha ao ler cache offline", e);
       return null;
     }
-
-    return item.data as T;
   },
 
   /**
-   * Limpa todo o cache do app.
+   * Limpa todo o cache de itens específicos.
+   * (Neste caso, não implementaremos o clear global facilmente pois o SecureStore
+   * não tem método getAllKeys, mas se necessário pode ser implementado no futuro)
    */
-  clear(): void {
-    memoryCache.clear();
+  async clear(): Promise<void> {
+    // Para simplificar, sem getAllKeys. O cache expirará naturalmente pelo TTL no get.
   }
 };
