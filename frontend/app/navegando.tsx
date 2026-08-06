@@ -37,15 +37,14 @@ interface Coords {
 
 /**
  * Estágios da Navegação:
- * - 'walking_to_stop': Usuário está caminhando até o ponto de ônibus.
+ * - 'walking': Usuário está caminhando até o ponto de ônibus.
  * - 'waiting_bus': Usuário chegou ao ponto e está aguardando o ônibus chegar.
- * - 'boarded_success': Usuário confirmou que embarcou no ônibus.
+ * - 'on_bus': Usuário confirmou que embarcou no ônibus.
  */
 type NavigationStage =
-  | "walking_to_stop"
-  | "walking_to_destination"
+  | "walking"
   | "waiting_bus"
-  | "boarded_success"
+  | "on_bus"
   | "arrived";
 
 export default function NavigatingScreen() {
@@ -54,9 +53,6 @@ export default function NavigatingScreen() {
   const theme = useThemeColors();
 
   // Dados da rota passados pela tela anterior
-  const busLine = String(params.busLine || "--");
-  const direction = String(params.direction || "--");
-  const stopName = String(params.stopName || "ponto indicado");
   const walkTimeMinutes = String(params.walkTimeMinutes || "--");
   const isWalkingOnly = String(params.isWalkingOnly || "") === "true";
 
@@ -66,6 +62,16 @@ export default function NavigatingScreen() {
   const mapData = useMemo(() => parseJsonParam<MapData | undefined>(params.map, undefined), [params.map]);
   const summary = useMemo(() => parseJsonParam<any>(params.summary, null), [params.summary]);
   const allSteps = useMemo(() => parseJsonParam<any[]>(params.steps, []), [params.steps]);
+
+  const [globalStepIndex, setGlobalStepIndex] = useState(0);
+
+  const activeTransitStep = allSteps[globalStepIndex]?.type === "transit" 
+    ? allSteps[globalStepIndex] 
+    : allSteps.slice(globalStepIndex).find(s => s.type === "transit");
+
+  const busLine = String(activeTransitStep?.lineName || activeTransitStep?.line || params.busLine || "--");
+  const direction = String(activeTransitStep?.headsign || params.direction || "--");
+  const stopName = String(activeTransitStep?.from || activeTransitStep?.departureStop?.name || params.stopName || "ponto indicado");
   
   const transitStep = useMemo(() => allSteps.find(s => s.type === "transit"), [allSteps]);
   const lineDetails = useMemo(() => {
@@ -74,11 +80,8 @@ export default function NavigatingScreen() {
   }, [transitStep, direction]);
 
   // Estados de controle da tela
-  const [stage, setStage] = useState<NavigationStage>(
-    isWalkingOnly ? "walking_to_destination" : "walking_to_stop"
-  );
+  const [stage, setStage] = useState<NavigationStage>("walking");
   const [userLocation, setUserLocation] = useState<Coords | null>(null);
-  const [currentStepIndex, setCurrentStepIndex] = useState(0); // Qual "passo" da caminhada o usuário está executando
   const [busCountdown, setBusCountdown] = useState<string>(""); // Tempo para o ônibus chegar
   const [busCountdownDiff, setBusCountdownDiff] = useState<number | null>(null);
   const [showExitModal, setShowExitModal] = useState(false);
@@ -103,10 +106,10 @@ export default function NavigatingScreen() {
 
   const speakControlled = useCallback((text: string, force = false) => {
     const now = Date.now();
-    if (force || stage !== lastSpokenStageRef.current || (stage === "walking_to_stop" && currentStepIndex !== lastSpokenStepIndexRef.current)) {
+    if (force || stage !== lastSpokenStageRef.current || (stage === "walking" && globalStepIndex !== lastSpokenStepIndexRef.current)) {
       speak(text);
       lastSpokenAtRef.current = now;
-      lastSpokenStepIndexRef.current = currentStepIndex;
+      lastSpokenStepIndexRef.current = globalStepIndex;
       lastSpokenStageRef.current = stage;
       return;
     }
@@ -114,20 +117,9 @@ export default function NavigatingScreen() {
       speak(text);
       lastSpokenAtRef.current = now;
     }
-  }, [currentStepIndex, stage]);
+  }, [globalStepIndex, stage]);
 
-  // Filtra apenas os passos de caminhada até o primeiro ponto de ônibus
-  const walkSteps = useMemo(() => {
-    const items = [];
-    for (const step of allSteps) {
-      if (step.type === 'walk') {
-        items.push(step);
-      } else if (step.type === 'transit') {
-        break; // Para no primeiro transporte público
-      }
-    }
-    return items;
-  }, [allSteps]);
+
 
   const targetStopDateTime = summary?.beAtStopDateTime;
   const boardingMarker = useMemo(() => {
@@ -146,8 +138,8 @@ export default function NavigatingScreen() {
   }, [mapData]);
 
   const hasValidWalkRoute = useMemo(() => {
-    return walkSteps.length > 0 && walkSteps.some(s => !!s.polyline);
-  }, [walkSteps]);
+    return allSteps.length > 0 && allSteps.some(s => !!s.polyline);
+  }, [allSteps]);
 
   /**
    * Este useEffect é o "cérebro" da navegação em tempo real.
@@ -160,7 +152,7 @@ export default function NavigatingScreen() {
     const currentLng = userLocation.longitude;
 
     // Lógica de alerta de descida do ônibus
-    if (stage === "boarded_success" && dropoffMarker) {
+    if (stage === "on_bus" && dropoffMarker) {
       const distToDropoff = calculateDistance(currentLat, currentLng, dropoffMarker.lat, dropoffMarker.lng);
       
       // Alerta quando estiver a menos de 400 metros (aprox 1 a 2 pontos antes) do ponto de descida
@@ -171,9 +163,9 @@ export default function NavigatingScreen() {
       return; // Interrompe a execução aqui pois não há navegação passo-a-passo dentro do ônibus
     }
 
-    if (walkSteps.length === 0 || (stage !== "walking_to_stop" && stage !== "walking_to_destination")) return;
+    if (allSteps.length === 0 || stage !== "walking") return;
     
-    const currentStep = walkSteps[currentStepIndex];
+    const currentStep = allSteps[globalStepIndex];
     if (!currentStep) return;
 
     // Calcula a distância do usuário até o final da instrução atual
@@ -192,19 +184,19 @@ export default function NavigatingScreen() {
      * - A 60 metros da curva: Avisa "Em 60 metros, vire à esquerda..."
      * - A 15 metros da curva: Avisa "Vire à esquerda agora."
      */
-    if (distToEnd < 60 && distToEnd > 20 && warnedApproachingTurnRef.current !== currentStepIndex) {
-      const nextStep = walkSteps[currentStepIndex + 1];
+    if (distToEnd < 60 && distToEnd > 20 && warnedApproachingTurnRef.current !== globalStepIndex) {
+      const nextStep = allSteps[globalStepIndex + 1];
       if (nextStep) {
         speakControlled(`Em ${Math.round(distToEnd)} metros, ${nextStep.humanInstruction || nextStep.instruction}`);
-        warnedApproachingTurnRef.current = currentStepIndex;
+        warnedApproachingTurnRef.current = globalStepIndex;
       }
     }
 
-    if (distToEnd < 15 && warnedTurnNowRef.current !== currentStepIndex) {
-      const nextStep = walkSteps[currentStepIndex + 1];
+    if (distToEnd < 15 && warnedTurnNowRef.current !== globalStepIndex) {
+      const nextStep = allSteps[globalStepIndex + 1];
       if (nextStep) {
         speakControlled(`${nextStep.humanInstruction || nextStep.instruction} agora.`);
-        warnedTurnNowRef.current = currentStepIndex;
+        warnedTurnNowRef.current = globalStepIndex;
       }
     }
 
@@ -212,8 +204,8 @@ export default function NavigatingScreen() {
      * Transição de Passo:
      * Se estiver a menos de 12 metros do fim do passo, pula para o próximo.
      */
-    if (distToEnd < 12 && currentStepIndex < walkSteps.length - 1) {
-      setCurrentStepIndex(prev => prev + 1);
+    if (distToEnd < 12 && globalStepIndex < allSteps.length - 1) {
+      setGlobalStepIndex(prev => prev + 1);
       return; 
     }
 
@@ -251,10 +243,10 @@ export default function NavigatingScreen() {
         speakControlled(`Você chegou ao seu destino.`);
       }
     }
-  }, [userLocation, currentStepIndex, walkSteps, stage, boardingMarker, destinationMarker, dropoffMarker, isWalkingOnly, busLine, speakControlled]);
+  }, [userLocation, globalStepIndex, allSteps, stage, boardingMarker, destinationMarker, dropoffMarker, isWalkingOnly, busLine, speakControlled]);
 
   useEffect(() => {
-    if (stage === "waiting_bus" || stage === "boarded_success" || stage === "arrived") {
+    if (stage === "waiting_bus" || stage === "on_bus" || stage === "arrived") {
       fadeAnim.setValue(0);
       slideAnim.setValue(16);
       scaleAnim.setValue(0.85);
@@ -268,7 +260,7 @@ export default function NavigatingScreen() {
         ]),
         Animated.parallel([
           Animated.timing(buttonFadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
-          stage === "boarded_success" 
+          stage === "on_bus" 
             ? Animated.sequence([
                 Animated.timing(scaleAnim, { toValue: 1.1, duration: 150, useNativeDriver: true }),
                 Animated.timing(scaleAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
@@ -302,7 +294,7 @@ export default function NavigatingScreen() {
       };
     }
 
-    if (stage === "boarded_success") {
+    if (stage === "on_bus") {
       return { 
         displayTitle: "Você embarcou no ônibus", 
         displaySubtitle: "Boa viagem.", 
@@ -318,7 +310,7 @@ export default function NavigatingScreen() {
       };
     }
 
-    const currentStep = walkSteps[currentStepIndex];
+    const currentStep = allSteps[globalStepIndex];
     const rawText = currentStep?.humanInstruction || currentStep?.instruction || `Siga para ${stopName}`;
     
     let distToNext = 0;
@@ -333,18 +325,18 @@ export default function NavigatingScreen() {
       distanceMeters: distToNext, 
       maneuver: currentStep?.maneuver 
     });
-  }, [stage, hasValidWalkRoute, walkSteps, currentStepIndex, stopName, userLocation, busLine, lineDetails]);
+  }, [stage, hasValidWalkRoute, allSteps, globalStepIndex, stopName, userLocation, busLine, lineDetails]);
 
   // Initial announcement
   useEffect(() => {
-    if (!didAnnounceStart.current && walkSteps.length > 0) {
+    if (!didAnnounceStart.current && allSteps.length > 0) {
       const timer = setTimeout(() => {
         speakControlled(formattedInstruction.speechText);
         didAnnounceStart.current = true;
       }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [formattedInstruction, walkSteps, speakControlled]);
+  }, [formattedInstruction, allSteps, speakControlled]);
 
   // Countdown timer
   useEffect(() => {
@@ -364,7 +356,7 @@ export default function NavigatingScreen() {
 
   // Alerta se o ônibus chega antes do usuário chegar ao ponto
   const showBusArrivalWarning = useMemo(() => {
-    return stage === "walking_to_stop" && 
+    return stage === "walking" && 
            busCountdownDiff !== null && 
            busCountdownDiff <= walkTimeNum &&
            busCountdownDiff > -2;
@@ -410,16 +402,18 @@ export default function NavigatingScreen() {
   };
 
   const handleStageTransition = () => {
-    if (stage === "walking_to_stop") {
-      setStage("waiting_bus");
-      speakControlled("Você chegou ao ponto. Aguarde o embarque.", true);
-    } else if (stage === "walking_to_destination") {
-      setStage("arrived");
-      speakControlled("Você chegou ao seu destino.", true);
+    if (stage === "walking") {
+      if (isWalkingOnly) {
+        setStage("arrived");
+        speakControlled("Você chegou ao seu destino.", true);
+      } else {
+        setStage("waiting_bus");
+        speakControlled("Você chegou ao ponto. Aguarde o embarque.", true);
+      }
     } else if (stage === "waiting_bus") {
-      setStage("boarded_success");
+      setStage("on_bus");
       speakControlled(`Tudo certo! Você embarcou no ônibus. Boa viagem. Eu aviso quando estiver perto de descer.`, true);
-    } else if (stage === "boarded_success" || stage === "arrived") {
+    } else if (stage === "on_bus" || stage === "arrived") {
       router.replace({
         pathname: "/inicio",
         params: {
@@ -432,10 +426,9 @@ export default function NavigatingScreen() {
 
   const getPrimaryButtonTitle = () => {
     switch (stage) {
-      case "walking_to_stop": return "Cheguei ao ponto";
-      case "walking_to_destination": return "Cheguei ao destino";
+      case "walking": return isWalkingOnly ? "Cheguei ao destino" : "Cheguei ao ponto";
       case "waiting_bus": return "Embarquei no ônibus";
-      case "boarded_success": return "Ir para início";
+      case "on_bus": return "Ir para início";
       case "arrived": return "Ir para início";
       default: return "Continuar";
     }
@@ -443,10 +436,9 @@ export default function NavigatingScreen() {
 
   const getStageTitle = () => {
     switch (stage) {
-      case "walking_to_stop": return "Caminho até o ponto";
-      case "walking_to_destination": return "Caminho até o destino";
+      case "walking": return isWalkingOnly ? "Caminho até o destino" : "Caminho até o ponto";
       case "waiting_bus": return "Você chegou ao ponto";
-      case "boarded_success": return "Tudo certo!";
+      case "on_bus": return "Tudo certo!";
       case "arrived": return "Você chegou!";
       default: return "Navegando";
     }
@@ -470,31 +462,31 @@ export default function NavigatingScreen() {
   return (
     <View style={styles.container}>
       {/* MAP BACKGROUND */}
-      {(stage === "walking_to_stop" || stage === "walking_to_destination") && (
+      {(stage === "walking") && (
         <View style={StyleSheet.absoluteFill}>
           <Map 
             mapData={mapData} 
             userLocation={currentLocation} 
             initialRegion={initialRegion} 
             colors={theme} 
-            focusMode="walking_to_stop" 
+            focusMode={isWalkingOnly ? "walking_to_destination" : "walking_to_stop"} 
             controlsBottomOffset={bottomCardHeight}
-            walkSteps={walkSteps}
-            currentStepIndex={currentStepIndex}
+            walkSteps={allSteps}
+            currentStepIndex={globalStepIndex}
             isNavigating={true}
           />
         </View>
       )}
 
       {/* SOLID BACKGROUND (For status stages) */}
-      {(stage === "waiting_bus" || stage === "boarded_success" || stage === "arrived") && (
+      {(stage === "waiting_bus" || stage === "on_bus" || stage === "arrived") && (
         <View style={[StyleSheet.absoluteFill, { backgroundColor: "#F6F8FA" }]} />
       )}
 
       {/* Top Bar (Always Fixed) */}
       <View style={[styles.topBar, { top: insets.top + 12 }]} pointerEvents="box-none">
         <View style={styles.backButtonMini}>
-          {(stage !== "boarded_success" && stage !== "arrived") && (
+          {(stage !== "on_bus" && stage !== "arrived") && (
             <BackButton 
               label="Sair" 
               onPress={handleSair} 
@@ -503,7 +495,7 @@ export default function NavigatingScreen() {
           )}
         </View>
 
-        {(stage !== "boarded_success" && stage !== "arrived") && (
+        {(stage !== "on_bus" && stage !== "arrived") && (
           <View style={[styles.miniBadge, { backgroundColor: "white" }]}>
             {stage === "waiting_bus" && <View style={[styles.badgeDot, { backgroundColor: theme.primary }]} />}
             <Text style={styles.miniBadgeText}>
@@ -514,7 +506,7 @@ export default function NavigatingScreen() {
       </View>
 
       {/* Instruction Card (Fixed during walking) */}
-      {(stage === "walking_to_stop" || stage === "walking_to_destination") && (
+      {(stage === "walking") && (
         <View style={[styles.instructionCardContainer, { top: insets.top + 65 }]} pointerEvents="box-none">
           {!!formattedInstruction.warning && (
             <View style={styles.warningPill}>
@@ -541,30 +533,30 @@ export default function NavigatingScreen() {
 
       <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
         {/* Status Content (Scrollable) */}
-        {(stage === "waiting_bus" || stage === "boarded_success" || stage === "arrived") && (
+        {(stage === "waiting_bus" || stage === "on_bus" || stage === "arrived") && (
           <ScrollView 
             contentContainerStyle={[
               styles.statusContentContainer, 
               { 
-                paddingTop: insets.top + ((stage === "boarded_success" || stage === "arrived") ? 120 : 80),
+                paddingTop: insets.top + ((stage === "on_bus" || stage === "arrived") ? 120 : 80),
                 paddingBottom: insets.bottom + 220
               }
             ]}
             showsVerticalScrollIndicator={false}
           >
             <Animated.View style={[styles.largeStatusCard, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-              <View style={[styles.largeStatusIconBox, { backgroundColor: (stage === "boarded_success" || stage === "arrived") ? "#DCFCE7" : "#F0F7FF" }]}>
+              <View style={[styles.largeStatusIconBox, { backgroundColor: (stage === "on_bus" || stage === "arrived") ? "#DCFCE7" : "#F0F7FF" }]}>
                  {stage === "waiting_bus" ? (
                    <FontAwesome6 name="bus-simple" size={40} color={theme.primary} />
                  ) : (
                    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-                     <Ionicons name="checkmark-circle" size={(stage === "boarded_success" || stage === "arrived") ? 64 : 56} color="#10B981" />
+                     <Ionicons name="checkmark-circle" size={(stage === "on_bus" || stage === "arrived") ? 64 : 56} color="#10B981" />
                    </Animated.View>
                  )}
               </View>
               <Text style={styles.largeStatusTitle}>{getStageTitle()}</Text>
               
-              {stage === "boarded_success" && (
+              {stage === "on_bus" && (
                 <Text style={styles.boardedConfirmation}>Você embarcou no ônibus.</Text>
               )}
 
@@ -604,8 +596,8 @@ export default function NavigatingScreen() {
         )}
 
         {/* Fixed Actions for Status Stages */}
-        {(stage === "waiting_bus" || stage === "boarded_success" || stage === "arrived") && (
-          <Animated.View style={[styles.fixedStatusActions, { paddingBottom: insets.bottom + 16, opacity: (stage === "boarded_success" || stage === "arrived") ? buttonFadeAnim : fadeAnim }]}>
+        {(stage === "waiting_bus" || stage === "on_bus" || stage === "arrived") && (
+          <Animated.View style={[styles.fixedStatusActions, { paddingBottom: insets.bottom + 16, opacity: (stage === "on_bus" || stage === "arrived") ? buttonFadeAnim : fadeAnim }]}>
             <PrimaryButton title={getPrimaryButtonTitle()} onPress={handleStageTransition} style={styles.mainButton} />
             <Pressable 
               style={styles.secondaryActionBtn} 
@@ -617,7 +609,7 @@ export default function NavigatingScreen() {
               <Text style={[styles.secondaryActionText, { color: theme.primary }]}>Ouvir instrução</Text>
             </Pressable>
             
-            {(stage === "boarded_success" || stage === "arrived") && (
+            {(stage === "on_bus" || stage === "arrived") && (
               <Pressable 
                 style={styles.tertiaryActionBtn} 
                 onPress={() => router.replace("/inicio")}
@@ -631,7 +623,7 @@ export default function NavigatingScreen() {
         )}
 
         {/* Bottom Card for Walking Stage */}
-        {(stage === "walking_to_stop" || stage === "walking_to_destination") && (
+        {(stage === "walking") && (
           <View 
             onLayout={(e) => setBottomCardHeight(e.nativeEvent.layout.height)}
             style={[styles.bottomCard, { bottom: 0, paddingBottom: insets.bottom + 16, backgroundColor: "white" }]}
