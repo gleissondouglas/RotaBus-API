@@ -54,12 +54,13 @@ frontend/
 ├── app/                             # O Sistema de Navegação Nativa do Expo Router
 │   ├── _layout.tsx                  # Base de UI (Headers genéricos e Context Providers globais)
 │   ├── index.tsx                    # Ponto zero. Decide se redireciona pro onboarding ou pro mapa
-│   ├── inicio.tsx                   # A tela sagrada (Homescreen). Onde o botão central da assistente mora.
+│   ├── inicio.tsx                   # A tela sagrada (Homescreen). Agora possui Abas (Assistente / Favoritos)
 │   ├── confirmar-destino.tsx        # UI Genérica Server-driven (Exibe a sugestão enviada pela Voz do Backend)
 │   └── melhor-rota.tsx              # Tela robusta que exibe o polyline do Google Maps no dispositivo
 │
 ├── src/                             # Lógicas Isoladas da View do Router
 │   ├── components/                  # (UI) Peças Reutilizáveis (Cards, Botões Grandes)
+│   │   ├── FavoritesAndHistoryView.tsx # Painel unificado que exibe locais salvos e histórico em nuvem
 │   │   ├── LiveTranscript.tsx       # Visor em tempo real do STT pro Usuário
 │   │   ├── RouteStep.tsx            # Peça da UI que renderiza passo-a-passo da jornada
 │   │   └── VoiceOrb.tsx             # Elemento dinâmico de pulsar do microfone
@@ -70,13 +71,15 @@ frontend/
 │   ├── hooks/                       # Engrenagens Lógicas Assíncronas (React Hooks custom)
 │   │   └── useVoiceConversationLoop.ts # O Maestro do Áudio: Coordena TTS -> Pausa -> Mic
 │   │
-│   ├── services/                    # Wrappers que emulam a camada de "API Client"
+│   ├── services/                    # Wrappers que emulam a camada de "API Client" e "Nativos"
 │   │   ├── api.ts                   # Instância global do Axios anexando o Token
 │   │   ├── journey.service.ts       # Dispara os requests conversacionais pro Backend Node
+│   │   ├── notification.service.ts  # Gerencia Expo Push Notifications nativas (iOS/Android)
 │   │   └── speech.service.ts        # Gerenciador de Áudio com a promessa essencial de Pausa-Escuta
 │   │
 │   ├── theme/                       # Design System, Tokens de cor de acessibilidade
 │   └── utils/                       # Helpers (Parser de Intenção, formatadores geográficos)
+│       ├── cache.ts                 # Interceptador Offline-First que usa SecureStore
 │       └── voiceIntentParser.ts     # Filtro local anti-LLM para limpar "Sim/Não/1/2" determinístico.
 │
 ├── app.config.js                    # Manifesto de Setup do Aplicativo (Versões, Pacotes Nativos)

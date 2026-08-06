@@ -22,8 +22,9 @@ O módulo de Journeys invoca o arquivo base `route-cache.js`.
 - **Resposta Direta (Cache Hit):** Tempo alvo < 50ms (sendo majoritariamente overhead do próprio framework HTTP Express/Networking).
 - **Resposta Indireta (Google Hit):** Tempo alvo < 800ms. O fator rede afeta bastante as integrações geolocalizadas. O uso contido de campos (FieldMask) reduz pacotes brutos transportados.
 
-## 3. Cache do Dispositivo (Frontend Storage)
+## 3. Cache do Dispositivo (Frontend Storage e Offline-First)
 
-O Frontend (React Native/Expo) tem seu próprio cache em SQLite ou AsyncStorage:
-- Preferências de usuário, Auth Tokens (JWT) e flags (ex: `hasSeenOnboarding`) residem no cliente. Isso diminui a dependência de requisições redundantes de configuração de perfil a cada reload.
+O Frontend (React Native/Expo) tem seu próprio cache local:
+- **Offline-First (Rotas):** Foi implementado na Fase 6 um mecanismo robusto (`utils/cache.ts`) que intercepta requisições de rotas e geocoding e grava a resposta no disco via `SecureStore` (`appStorage`). Isso permite que, se o passageiro buscar uma rota que faz todos os dias (ex: "Ida pro Centro"), a aplicação vai re-exibir a rota quase instantaneamente mesmo em áreas sem conexão 4G/WiFi.
+- **Preferências e Auth:** Preferências de usuário, Auth Tokens (JWT) e flags (ex: `hasSeenOnboarding`) residem no cliente. Isso diminui a dependência de requisições redundantes de configuração de perfil a cada reload.
 - **Invalidação Local:** Se a API lança 401 Unauthorized, os serviços interceptadores (Axios) destroem as flags ativas e purgam o cache do usuário voltando para tela de Login de modo suave (Graceful).
