@@ -82,6 +82,9 @@ export default function NavigatingScreen() {
   // Estados de controle da tela
   const [stage, setStage] = useState<NavigationStage>("walking");
   const [userLocation, setUserLocation] = useState<Coords | null>(null);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0); // Qual "sub-passo" da caminhada o usuário está executando
+  const currentGlobalStep = allSteps[globalStepIndex];
+  
   const [busCountdown, setBusCountdown] = useState<string>(""); // Tempo para o ônibus chegar
   const [busCountdownDiff, setBusCountdownDiff] = useState<number | null>(null);
   const [showExitModal, setShowExitModal] = useState(false);
@@ -143,107 +146,111 @@ export default function NavigatingScreen() {
 
   /**
    * Este useEffect é o "cérebro" da navegação em tempo real.
-   * Ele monitora a localização do usuário e dispara avisos de voz.
+   * Ele monitora a localização do usuário e dispara avisos de voz dependendo do macro-passo atual.
    */
   useEffect(() => {
-    if (!userLocation) return;
+    if (!userLocation || !currentGlobalStep) return;
     
     const currentLat = userLocation.latitude;
     const currentLng = userLocation.longitude;
 
-    // Lógica de alerta de descida do ônibus
-    if (stage === "on_bus" && dropoffMarker) {
-      const distToDropoff = calculateDistance(currentLat, currentLng, dropoffMarker.lat, dropoffMarker.lng);
+    if (stage === "walking" && currentGlobalStep.type === "walk") {
+      const subSteps = currentGlobalStep.walkSteps || [];
+      const subStep = subSteps[currentStepIndex];
+
+      // Navegação curva a curva (Sub-passos)
+      if (subStep && subStep.endLocation) {
+        const distToEnd = calculateDistance(currentLat, currentLng, subStep.endLocation.lat, subStep.endLocation.lng);
+        
+        if (distToEnd < 60 && distToEnd > 20 && warnedApproachingTurnRef.current !== currentStepIndex) {
+          const nextSubStep = subSteps[currentStepIndex + 1];
+          if (nextSubStep) {
+            speakControlled(`Em ${Math.round(distToEnd)} metros, ${nextSubStep.instruction}`);
+            warnedApproachingTurnRef.current = currentStepIndex;
+          }
+        }
+        
+        if (distToEnd < 15 && warnedTurnNowRef.current !== currentStepIndex) {
+          const nextSubStep = subSteps[currentStepIndex + 1];
+          if (nextSubStep) {
+            speakControlled(`${nextSubStep.instruction} agora.`);
+            warnedTurnNowRef.current = currentStepIndex;
+          }
+        }
+
+        if (distToEnd < 12 && currentStepIndex < subSteps.length - 1) {
+          setCurrentStepIndex(prev => prev + 1);
+          return;
+        }
+      }
+
+      // Verificação de Chegada ao fim do Macro-passo de Caminhada
+      const nextMacroStep = allSteps[globalStepIndex + 1];
       
-      // Alerta quando estiver a menos de 400 metros (aprox 1 a 2 pontos antes) do ponto de descida
-      if (distToDropoff < 400 && !warnedDropoffRef.current) {
-        speakControlled("Atenção! Você está se aproximando do seu ponto de descida. Prepare-se para descer.");
-        warnedDropoffRef.current = true;
-      }
-      return; // Interrompe a execução aqui pois não há navegação passo-a-passo dentro do ônibus
-    }
-
-    if (allSteps.length === 0 || stage !== "walking") return;
-    
-    const currentStep = allSteps[globalStepIndex];
-    if (!currentStep) return;
-
-    // Calcula a distância do usuário até o final da instrução atual
-    let distToEnd = 9999;
-    if (currentStep.endLocation) {
-      distToEnd = calculateDistance(
-        currentLat, 
-        currentLng, 
-        currentStep.endLocation.lat, 
-        currentStep.endLocation.lng
-      );
-    }
-
-    /**
-     * Lógica de Voz - Avisos Antecipados:
-     * - A 60 metros da curva: Avisa "Em 60 metros, vire à esquerda..."
-     * - A 15 metros da curva: Avisa "Vire à esquerda agora."
-     */
-    if (distToEnd < 60 && distToEnd > 20 && warnedApproachingTurnRef.current !== globalStepIndex) {
-      const nextStep = allSteps[globalStepIndex + 1];
-      if (nextStep) {
-        speakControlled(`Em ${Math.round(distToEnd)} metros, ${nextStep.humanInstruction || nextStep.instruction}`);
-        warnedApproachingTurnRef.current = globalStepIndex;
+      if (nextMacroStep && nextMacroStep.type === "transit") {
+        // Estamos caminhando para um ponto de ônibus ou baldeação
+        const stopLat = nextMacroStep.departureLocation?.lat;
+        const stopLng = nextMacroStep.departureLocation?.lng;
+        
+        if (stopLat && stopLng) {
+          const distToStop = calculateDistance(currentLat, currentLng, stopLat, stopLng);
+          
+          if (distToStop < 40 && !warnedNearStopRef.current) {
+            speakControlled("O ponto de embarque está logo à frente.");
+            warnedNearStopRef.current = true;
+          }
+          if (distToStop < 15) {
+            setStage("waiting_bus");
+            speakControlled(`Você chegou ao ponto. Agora aguarde o ônibus ${nextMacroStep.line}.`);
+            setCurrentStepIndex(0); // Reseta o sub-passo para a próxima caminhada
+            warnedNearStopRef.current = false;
+          }
+        }
+      } else if (!nextMacroStep || (nextMacroStep.type === "walk" && isWalkingOnly)) {
+        // Estamos caminhando para o destino final
+        if (destinationMarker) {
+          const distToDest = calculateDistance(currentLat, currentLng, destinationMarker.lat, destinationMarker.lng);
+          if (distToDest < 40 && !warnedNearStopRef.current) {
+            speakControlled("Seu destino está logo à frente.");
+            warnedNearStopRef.current = true;
+          }
+          if (distToDest < 25) {
+            setStage("arrived");
+            speakControlled(`Você chegou ao seu destino.`);
+          }
+        }
       }
     }
 
-    if (distToEnd < 15 && warnedTurnNowRef.current !== globalStepIndex) {
-      const nextStep = allSteps[globalStepIndex + 1];
-      if (nextStep) {
-        speakControlled(`${nextStep.humanInstruction || nextStep.instruction} agora.`);
-        warnedTurnNowRef.current = globalStepIndex;
-      }
-    }
-
-    /**
-     * Transição de Passo:
-     * Se estiver a menos de 12 metros do fim do passo, pula para o próximo.
-     */
-    if (distToEnd < 12 && globalStepIndex < allSteps.length - 1) {
-      setGlobalStepIndex(prev => prev + 1);
-      return; 
-    }
-
-    /**
-     * Detecção de Chegada ao Ponto:
-     * Verifica se o usuário está perto do marcador de 'boarding_stop'.
-     */
-    if (boardingMarker) {
-      const distToStop = calculateDistance(currentLat, currentLng, boardingMarker.lat, boardingMarker.lng);
+    if (stage === "on_bus" && currentGlobalStep.type === "transit") {
+      const dropoffLat = currentGlobalStep.arrivalLocation?.lat;
+      const dropoffLng = currentGlobalStep.arrivalLocation?.lng;
       
-      // Alerta de proximidade (40 metros)
-      if (distToStop < 40 && !warnedNearStopRef.current) {
-        speakControlled("O ponto de ônibus está logo à frente.");
-        warnedNearStopRef.current = true;
-      }
+      if (dropoffLat && dropoffLng) {
+        const distToDropoff = calculateDistance(currentLat, currentLng, dropoffLat, dropoffLng);
+        
+        if (distToDropoff < 400 && !warnedDropoffRef.current) {
+          speakControlled("Atenção! Você está se aproximando do seu ponto de descida. Prepare-se para descer.");
+          warnedDropoffRef.current = true;
+        }
 
-      // Alerta de chegada (15 metros) - Muda o estágio automaticamente
-      if (distToStop < 15) {
-        setStage("waiting_bus");
-        speakControlled(`Você chegou ao ponto. Agora aguarde o ônibus ${busLine}.`);
+        // Descida Automática (se o GPS detectar que ele chegou muito perto do ponto de descida)
+        if (distToDropoff < 40) {
+          const nextMacroStep = allSteps[globalStepIndex + 1];
+          if (nextMacroStep) {
+            setStage("walking");
+            setGlobalStepIndex(prev => prev + 1);
+            setCurrentStepIndex(0);
+            speakControlled("Você chegou ao ponto de descida. Continue a rota no mapa.");
+            warnedDropoffRef.current = false;
+          } else {
+            setStage("arrived");
+            speakControlled("Você chegou ao seu destino final.");
+          }
+        }
       }
     }
-
-    // Detecção de chegada ao destino (modo a pé)
-    if (isWalkingOnly && destinationMarker) {
-      const distToDest = calculateDistance(currentLat, currentLng, destinationMarker.lat, destinationMarker.lng);
-      
-      if (distToDest < 40 && !warnedNearStopRef.current) {
-        speakControlled("Seu destino está logo à frente.");
-        warnedNearStopRef.current = true;
-      }
-      
-      if (distToDest < 25) {
-        setStage("arrived");
-        speakControlled(`Você chegou ao seu destino.`);
-      }
-    }
-  }, [userLocation, globalStepIndex, allSteps, stage, boardingMarker, destinationMarker, dropoffMarker, isWalkingOnly, busLine, speakControlled]);
+  }, [userLocation, stage, globalStepIndex, currentStepIndex, currentGlobalStep, allSteps, destinationMarker, isWalkingOnly, speakControlled]);
 
   useEffect(() => {
     if (stage === "waiting_bus" || stage === "on_bus" || stage === "arrived") {
@@ -403,17 +410,30 @@ export default function NavigatingScreen() {
 
   const handleStageTransition = () => {
     if (stage === "walking") {
-      if (isWalkingOnly) {
-        setStage("arrived");
-        speakControlled("Você chegou ao seu destino.", true);
-      } else {
+      const nextMacroStep = allSteps[globalStepIndex + 1];
+      if (nextMacroStep && nextMacroStep.type === "transit") {
         setStage("waiting_bus");
         speakControlled("Você chegou ao ponto. Aguarde o embarque.", true);
+      } else {
+        setStage("arrived");
+        speakControlled("Você chegou ao seu destino.", true);
       }
     } else if (stage === "waiting_bus") {
       setStage("on_bus");
+      setGlobalStepIndex(prev => prev + 1); // Avança para o passo de trânsito
       speakControlled(`Tudo certo! Você embarcou no ônibus. Boa viagem. Eu aviso quando estiver perto de descer.`, true);
-    } else if (stage === "on_bus" || stage === "arrived") {
+    } else if (stage === "on_bus") {
+      const nextMacroStep = allSteps[globalStepIndex + 1];
+      if (nextMacroStep) {
+        setStage("walking");
+        setGlobalStepIndex(prev => prev + 1);
+        setCurrentStepIndex(0);
+        speakControlled("Você chegou ao ponto de descida. Continue a rota no mapa.", true);
+      } else {
+        setStage("arrived");
+        speakControlled("Você chegou ao seu destino final.", true);
+      }
+    } else if (stage === "arrived") {
       router.replace({
         pathname: "/inicio",
         params: {
@@ -426,9 +446,11 @@ export default function NavigatingScreen() {
 
   const getPrimaryButtonTitle = () => {
     switch (stage) {
-      case "walking": return isWalkingOnly ? "Cheguei ao destino" : "Cheguei ao ponto";
+      case "walking": 
+        const nextMacroStep = allSteps[globalStepIndex + 1];
+        return (nextMacroStep && nextMacroStep.type === "transit") ? "Cheguei ao ponto" : "Cheguei ao destino";
       case "waiting_bus": return "Embarquei no ônibus";
-      case "on_bus": return "Ir para início";
+      case "on_bus": return "Desci do ônibus";
       case "arrived": return "Ir para início";
       default: return "Continuar";
     }
@@ -436,7 +458,9 @@ export default function NavigatingScreen() {
 
   const getStageTitle = () => {
     switch (stage) {
-      case "walking": return isWalkingOnly ? "Caminho até o destino" : "Caminho até o ponto";
+      case "walking": 
+        const nextMacroStep = allSteps[globalStepIndex + 1];
+        return (nextMacroStep && nextMacroStep.type === "transit") ? "Caminho até o ponto" : "Caminho até o destino";
       case "waiting_bus": return "Você chegou ao ponto";
       case "on_bus": return "Tudo certo!";
       case "arrived": return "Você chegou!";
