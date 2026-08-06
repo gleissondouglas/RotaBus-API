@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as Sentry from "@sentry/react-native";
@@ -6,6 +7,7 @@ import "fast-text-encoding";
 import { AccessibilityProvider } from "../src/contexts/AccessibilityContext";
 import { initSentry } from "../src/config/sentry.config";
 import { useConnectivity } from "../src/hooks/useConnectivity";
+import { registerForPushNotificationsAsync } from "../src/services/notification.service";
 
 // Polyfill para DOMException (necessário para algumas libs no Hermes)
 if (typeof global.DOMException === "undefined") {
@@ -28,6 +30,13 @@ initSentry();
 function RootLayout() {
   // Monitora a conectividade com a internet globalmente
   useConnectivity();
+
+  // Registra para notificações push ao abrir o app
+  useEffect(() => {
+    registerForPushNotificationsAsync().then(token => {
+      if (token) console.log("Push Token Ativo:", token);
+    });
+  }, []);
 
   return (
     // O AccessibilityProvider gerencia estados de acessibilidade (ex: alto contraste) para todo o app

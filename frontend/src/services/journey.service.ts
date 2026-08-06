@@ -38,7 +38,7 @@ async function planJourney(data: PlanJourneyRequest): Promise<JourneyResponse> {
 
   // Tenta recuperar do cache para evitar cobranças duplicadas na API do Google
   const cacheKey = `plan:${JSON.stringify(data.origin)}-${JSON.stringify(data.destination)}-${sessionId || ""}`;
-  const cached = cache.get<JourneyResponse>(cacheKey, ROUTE_CACHE_TTL);
+  const cached = await cache.get<JourneyResponse>(cacheKey, ROUTE_CACHE_TTL);
   
   if (cached) {
     console.log("[JourneyService] Retornando rota do cache.");
@@ -64,7 +64,7 @@ async function planJourney(data: PlanJourneyRequest): Promise<JourneyResponse> {
     }
 
     // Salva no cache se a requisição for bem-sucedida
-    cache.set(cacheKey, result);
+    await cache.set(cacheKey, result);
     return result;
   } catch (error: any) {
     if (error?.message && (
@@ -93,7 +93,7 @@ async function resolveDestination(data: ResolveDestinationRequest): Promise<Reso
   };
 
   const cacheKey = `resolve:${data.text}:${data.origin.lat},${data.origin.lng}-${sessionId || ""}`;
-  const cached = cache.get<ResolveDestinationResponse>(cacheKey, DESTINATION_CACHE_TTL);
+  const cached = await cache.get<ResolveDestinationResponse>(cacheKey, DESTINATION_CACHE_TTL);
 
   if (cached) {
     console.log("[JourneyService] Retornando destino do cache.");
@@ -118,7 +118,7 @@ async function resolveDestination(data: ResolveDestinationRequest): Promise<Reso
       sessionService.setSessionId(result.metadata.sessionId);
     }
 
-    cache.set(cacheKey, result);
+    await cache.set(cacheKey, result);
     return result;
   } catch (error: any) {
     if (error?.message && (
