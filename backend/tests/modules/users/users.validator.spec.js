@@ -35,4 +35,31 @@ describe('Users Validator (Baseline)', () => {
       expect(result.newPassword).toBe('NewPassword2');
     });
   });
+
+  describe('New Schemas', () => {
+    const { pushTokenSchema, createFavoriteSchema, createSearchHistorySchema } = require('../../../src/modules/users/users.validator');
+
+    test('pushTokenSchema', () => {
+      const valid = { pushToken: 'token123' };
+      expect(pushTokenSchema.safeParse(valid).success).toBe(true);
+      const invalid = { pushToken: '' };
+      expect(pushTokenSchema.safeParse(invalid).success).toBe(false);
+    });
+
+    test('createFavoriteSchema', () => {
+      const valid = { name: 'Casa', address: 'Rua 1', lat: -23.5, lng: -46.6 };
+      expect(createFavoriteSchema.safeParse(valid).success).toBe(true);
+      const invalid = { name: 'Casa' }; // missing fields
+      expect(createFavoriteSchema.safeParse(invalid).success).toBe(false);
+    });
+
+    test('createSearchHistorySchema', () => {
+      const valid = { query: 'Paulista' };
+      expect(createSearchHistorySchema.safeParse(valid).success).toBe(true);
+      const valid2 = { query: 'Paulista', address: 'Av Paulista', lat: 1, lng: 1 };
+      expect(createSearchHistorySchema.safeParse(valid2).success).toBe(true);
+      const invalid = { query: '' };
+      expect(createSearchHistorySchema.safeParse(invalid).success).toBe(false);
+    });
+  });
 });

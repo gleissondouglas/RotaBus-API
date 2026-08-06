@@ -12,6 +12,7 @@ model User {
   name                String
   email               String               @unique
   passwordHash        String
+  pushToken           String?
   role                String               @default("USER")
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
@@ -19,6 +20,8 @@ model User {
   passwordResetTokens PasswordResetToken[]
   apiUsages           ApiUsage[]
   conversationSessions ConversationSession[]
+  favorites           UserFavorite[]
+  searchHistory       SearchHistory[]
 }
 
 model ConversationSession {
@@ -76,4 +79,33 @@ model ApiUsage {
   @@index([userId, createdAt])
   @@index([ipAddress, createdAt])
   @@index([createdAt])
+}
+
+model UserFavorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  name      String
+  address   String
+  lat       Float
+  lng       Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model SearchHistory {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  query       String
+  address     String?
+  lat         Float?
+  lng         Float?
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

@@ -8,6 +8,13 @@ const {
   deleteUser,
   deleteMe,
   changePassword,
+  updatePushToken,
+  listFavorites,
+  addFavorite,
+  removeFavorite,
+  listSearchHistory,
+  addSearchHistory,
+  clearSearchHistory,
 } = require("./users.controller");
 
 const { authMiddleware } = require("../auth/auth.middleware");
@@ -17,6 +24,9 @@ const {
   createUserSchema,
   updateProfileSchema,
   changePasswordSchema,
+  pushTokenSchema,
+  createFavoriteSchema,
+  createSearchHistorySchema,
 } = require("./users.validator");
 
 const router = express.Router();
@@ -35,5 +45,15 @@ router.delete("/me", authMiddleware, deleteMe);
 router.get("/", authMiddleware, adminMiddleware, listUsers);
 
 router.delete("/:id", authMiddleware, adminMiddleware, deleteUser);
+
+router.put("/push-token", authMiddleware, validate(pushTokenSchema), updatePushToken);
+
+router.get("/favorites", authMiddleware, listFavorites);
+router.post("/favorites", authMiddleware, validate(createFavoriteSchema), addFavorite);
+router.delete("/favorites/:id", authMiddleware, removeFavorite);
+
+router.get("/history", authMiddleware, listSearchHistory);
+router.post("/history", authMiddleware, validate(createSearchHistorySchema), addSearchHistory);
+router.delete("/history", authMiddleware, clearSearchHistory);
 
 module.exports = router;

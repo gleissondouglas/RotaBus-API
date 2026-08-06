@@ -125,6 +125,52 @@ async function updateUserPasswordHash({ id, passwordHash }) {
   });
 }
 
+async function updateUserPushToken(id, pushToken) {
+  return prisma.user.update({
+    where: { id },
+    data: { pushToken },
+    select: { id: true, pushToken: true },
+  });
+}
+
+async function getUserFavorites(userId) {
+  return prisma.userFavorite.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+async function createUserFavorite({ userId, name, address, lat, lng }) {
+  return prisma.userFavorite.create({
+    data: { userId, name, address, lat, lng },
+  });
+}
+
+async function deleteUserFavorite(id, userId) {
+  return prisma.userFavorite.deleteMany({
+    where: { id, userId },
+  });
+}
+
+async function getUserSearchHistory(userId) {
+  return prisma.searchHistory.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+async function createUserSearchHistory({ userId, query, address, lat, lng }) {
+  return prisma.searchHistory.create({
+    data: { userId, query, address, lat, lng },
+  });
+}
+
+async function clearUserSearchHistory(userId) {
+  return prisma.searchHistory.deleteMany({
+    where: { userId },
+  });
+}
+
 module.exports = {
   findUserByEmail,
   findUserById,
@@ -135,4 +181,11 @@ module.exports = {
   deleteUserById,
   updateUser,
   updateUserPasswordHash,
+  updateUserPushToken,
+  getUserFavorites,
+  createUserFavorite,
+  deleteUserFavorite,
+  getUserSearchHistory,
+  createUserSearchHistory,
+  clearUserSearchHistory,
 };
