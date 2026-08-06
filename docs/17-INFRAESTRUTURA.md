@@ -45,3 +45,15 @@ O Expo App é distribuído utilizando a ferramenta nativa EAS (Expo Application 
 ## 5. Escalabilidade e Persistência do Dialog Manager
 Um cuidado infraestrutural: Se adotássemos instâncias paralelas rodando (Auto-scale, Load Balancer) no `Render.com` e a FSM ficasse salva na RAM (`memory driver`), as chamadas subsequentes do celular dariam falha de sessão 404 (já que a instância A salvou e a instância B foi acionada).
 Por conta disso, optou-se pela migração da persistência conversacional pro PostgreSQL/Prisma (conforme estado de produção atual da FSM) antes do go-live massivo.
+
+## 6. Escalabilidade de Longo Prazo (Tráfego de Massa)
+Quando o aplicativo atingir um grande volume de usuários simultâneos (ex: >10.000 usuários), as tabelas focadas em dados voláteis (`ApiUsage`, `ConversationSession` e `RouteCache`) causarão sobrecarga de I/O de disco no PostgreSQL. Para resolver isso sem perder a estabilidade, a seguinte arquitetura deve ser adotada:
+
+1. **Memória de Acesso Ultrarrápido (Redis):**
+   - **Rate Limiter:** Mover a validação de IPs/uso da tabela `ApiUsage` para o Redis (`ioredis`), permitindo bloqueios e contagens em memória sem penalizar o banco.
+   - **Sessões e Caches (TTL):** Salvar as conversas ativas (`ConversationSession`) e os caches temporários do Google (`RouteCache`) no Redis configurando o Time-To-Live (TTL). Assim que a expiração ocorre, a memória é liberada automaticamente.
+
+2. **Agregação e Limpeza (CRON Jobs):**
+   - **Relatórios Diários:** Utilizar uma biblioteca de agendamento (ex: `node-cron`) para rodar processos todo dia às 03:00 da manhã.
+   - **Mecanismo:** O CRON fará consultas `GROUP BY` no PostgreSQL (ex: contando buscas para a "Praça da Sé") e salvará um resumo compactado (apenas estatísticas essenciais) numa tabela de `DailyReport`.
+   - **Garbage Collection (Lixo):** Após compilar o relatório, o script executa deleções pesadas (`DELETE FROM SearchHistory WHERE createdAt < 'yesterday'`), mantendo o banco de dados principal sempre enxuto e barato.
