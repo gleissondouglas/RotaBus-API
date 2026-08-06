@@ -36,6 +36,7 @@ import type {
 import { VoiceVisualizer, type VoiceVisualizerState } from "../src/components/VoiceVisualizer";
 import { VoicePromptText } from "../src/components/VoicePromptText";
 import { BottomActionBar } from "../src/components/BottomActionBar";
+import { FavoritesAndHistoryView } from "../src/components/FavoritesAndHistoryView";
 
 type ScreenStatus = "idle" | "listening" | "processing" | "error" | "success";
 type VoiceScreenStatus = ScreenStatus | "speaking";
@@ -111,6 +112,8 @@ export default function HomeScreen() {
   });
   const latitude = originCoords.latitude;
   const longitude = originCoords.longitude;
+
+  const [activeTab, setActiveTab] = useState<"voice" | "favorites">("voice");
 
   /**
    * Máquina de Estados da Assistente:
@@ -544,30 +547,55 @@ export default function HomeScreen() {
         entering={FadeInDown.duration(400).delay(100)}
         style={[styles.topHeader, { paddingTop: Math.max(insets.top, 16) }]}
       >
-        <Pressable
-          style={styles.headerIconButton}
-          onPress={handleHelp}
-          accessibilityLabel="Ajuda"
-          accessibilityRole="button"
-        >
-          <Ionicons name="help-circle" size={30} color="#000" />
-        </Pressable>
+        <View style={styles.tabsContainer}>
+          <Pressable 
+            style={[styles.tabButton, activeTab === "voice" && styles.tabButtonActive]}
+            onPress={() => setActiveTab("voice")}
+          >
+            <Text style={[styles.tabText, activeTab === "voice" && styles.tabTextActive]}>Assistente</Text>
+          </Pressable>
+          <Pressable 
+            style={[styles.tabButton, activeTab === "favorites" && styles.tabButtonActive]}
+            onPress={() => setActiveTab("favorites")}
+          >
+            <Text style={[styles.tabText, activeTab === "favorites" && styles.tabTextActive]}>Favoritos</Text>
+          </Pressable>
+        </View>
 
-        <Pressable
-          style={styles.headerIconButton}
-          onPress={handleSettings}
-          accessibilityLabel="Configurações"
-          accessibilityRole="button"
-        >
-          <Ionicons name="settings" size={30} color="#000" />
-        </Pressable>
+        <View style={styles.headerActions}>
+          <Pressable
+            style={styles.headerIconButton}
+            onPress={handleHelp}
+            accessibilityLabel="Ajuda"
+            accessibilityRole="button"
+          >
+            <Ionicons name="help-circle" size={30} color="#000" />
+          </Pressable>
+
+          <Pressable
+            style={styles.headerIconButton}
+            onPress={handleSettings}
+            accessibilityLabel="Configurações"
+            accessibilityRole="button"
+          >
+            <Ionicons name="settings" size={30} color="#000" />
+          </Pressable>
+        </View>
       </Animated.View>
 
       {/* ─── ZONA 2: CENTRO ─── */}
-      <View style={styles.centerZone} pointerEvents="none">
-
-        {/* Barrinhas de áudio animadas */}
-        <VoiceVisualizer state={toVisualizerState(status)} size="large" />
+      <View style={styles.centerZone} pointerEvents={activeTab === "favorites" ? "auto" : "none"}>
+        {activeTab === "favorites" ? (
+          <FavoritesAndHistoryView onSelectDestination={(text) => {
+            setActiveTab("voice");
+            setTranscript(text);
+            setIsTranscriptFinal(true);
+            void processTranscription(text);
+          }} />
+        ) : (
+          <>
+            {/* Barrinhas de áudio animadas */}
+            <VoiceVisualizer state={toVisualizerState(status)} size="large" />
 
         {/* Card unificado: assistente + destino do usuário */}
         {!!promptText && (
@@ -617,6 +645,8 @@ export default function HomeScreen() {
             <Text style={styles.errorText}>{errorMessage}</Text>
           </Animated.View>
         )}
+        </>
+        )}
       </View>
 
       {/* ─── ZONA 3: BARRA INFERIOR FIXA ─── */}
@@ -647,10 +677,42 @@ const styles = StyleSheet.create({
   topHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 20,
     paddingBottom: 10,
     backgroundColor: "#F6F8FA",
     zIndex: 10,
+  },
+  tabsContainer: {
+    flexDirection: "row",
+    backgroundColor: "#E2E8F0",
+    borderRadius: 20,
+    padding: 4,
+  },
+  tabButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+  },
+  tabButtonActive: {
+    backgroundColor: "white",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#64748B",
+  },
+  tabTextActive: {
+    color: "#0F172A",
+  },
+  headerActions: {
+    flexDirection: "row",
+    gap: 8,
   },
   headerIconButton: {
     width: 48,

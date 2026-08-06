@@ -136,6 +136,29 @@ function validateUpdateProfileInput(data) {
   return result.data;
 }
 
+const pushTokenSchema = z.object({
+  pushToken: z
+    .string({
+      required_error: "O pushToken é obrigatório.",
+    })
+    .trim()
+    .min(1, "O pushToken não pode estar vazio."),
+});
+
+const createFavoriteSchema = z.object({
+  name: z.string({ required_error: "O nome é obrigatório." }).trim().min(1, "O nome não pode estar vazio."),
+  address: z.string({ required_error: "O endereço é obrigatório." }).trim().min(1, "O endereço não pode estar vazio."),
+  lat: z.number({ required_error: "A latitude é obrigatória." }),
+  lng: z.number({ required_error: "A longitude é obrigatória." }),
+});
+
+const createSearchHistorySchema = z.object({
+  query: z.string({ required_error: "A query é obrigatória." }).trim().min(1, "A query não pode estar vazia."),
+  address: z.string().optional(),
+  lat: z.number().optional(),
+  lng: z.number().optional(),
+});
+
 module.exports = {
   ValidationError,
   validateCreateUserInput,
@@ -144,4 +167,7 @@ module.exports = {
   createUserSchema,
   changePasswordSchema,
   updateProfileSchema,
+  pushTokenSchema,
+  createFavoriteSchema,
+  createSearchHistorySchema,
 };

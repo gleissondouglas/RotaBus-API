@@ -16,6 +16,13 @@ const {
   deleteUserById,
   updateUser,
   updateUserPasswordHash,
+  updateUserPushToken,
+  getUserFavorites,
+  createUserFavorite,
+  deleteUserFavorite,
+  getUserSearchHistory,
+  createUserSearchHistory,
+  clearUserSearchHistory,
 } = require("./users.repository");
 
 async function createUserService(userData) {
@@ -203,6 +210,41 @@ async function updateProfileService({ userId, name }) {
   }
 }
 
+async function updatePushTokenService({ userId, pushToken }) {
+  const updatedUser = await updateUserPushToken(userId, pushToken);
+  return { message: "Push token atualizado com sucesso.", user: updatedUser };
+}
+
+async function listFavoritesService(userId) {
+  const favorites = await getUserFavorites(userId);
+  return { favorites };
+}
+
+async function addFavoriteService({ userId, name, address, lat, lng }) {
+  const favorite = await createUserFavorite({ userId, name, address, lat, lng });
+  return { message: "Favorito adicionado com sucesso.", favorite };
+}
+
+async function removeFavoriteService({ userId, favoriteId }) {
+  await deleteUserFavorite(favoriteId, userId);
+  return { message: "Favorito removido com sucesso." };
+}
+
+async function listSearchHistoryService(userId) {
+  const history = await getUserSearchHistory(userId);
+  return { history };
+}
+
+async function addSearchHistoryService({ userId, query, address, lat, lng }) {
+  const history = await createUserSearchHistory({ userId, query, address, lat, lng });
+  return { message: "Histórico adicionado com sucesso.", history };
+}
+
+async function clearSearchHistoryService(userId) {
+  await clearUserSearchHistory(userId);
+  return { message: "Histórico limpo com sucesso." };
+}
+
 module.exports = {
   createUserService,
   listUsersService,
@@ -211,4 +253,11 @@ module.exports = {
   deleteOwnUserService,
   changePasswordService,
   updateProfileService,
+  updatePushTokenService,
+  listFavoritesService,
+  addFavoriteService,
+  removeFavoriteService,
+  listSearchHistoryService,
+  addSearchHistoryService,
+  clearSearchHistoryService,
 };
