@@ -33,7 +33,7 @@ O Nuvem nasceu como um app de rotas reativo e segue sua trajetória acelerada pa
 * Criação de UI/UX dedicada para o modo "Apenas Caminhada".
 * Refinamento do ciclo de vida do GPS do dispositivo (ex: Alarme de proximidade de descida).
 
-## Fase 6: Sincronização e Proatividade (🔮 Planejado / Próximos Passos)
+## Fase 6: Sincronização e Proatividade (✅ Concluído)
 1. **Nuvem (Sync de Dados):** Migração do Histórico e Locais Favoritos do armazenamento local (AsyncStorage) para o banco de dados (Prisma/Postgres) atrelado à conta do usuário logado.
 2. **Push Notifications:** Integração com Expo Notifications para disparos proativos (ex: "Você está perto do ponto do ônibus 100, ele passa em 5 min.").
 3. **Cache Offline-First:** Salvar rotas muito frequentes ("Ida p/ Casa") no dispositivo para permitir navegação ininterrupta em áreas sem 4G.
