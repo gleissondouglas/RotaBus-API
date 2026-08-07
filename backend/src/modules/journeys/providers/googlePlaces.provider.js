@@ -1,5 +1,6 @@
 const axios = require("axios");
 const env = require("../../../config/env");
+const redisClient = require("../../../config/redis");
 
 /**
  * Busca lugares usando a Google Places API (New) - Text Search.
@@ -10,6 +11,22 @@ async function searchPlaces(query, origin) {
     const error = new Error("GOOGLE_MAPS_API_KEY não configurada no ambiente.");
     error.statusCode = 500;
     throw error;
+  }
+
+  // Cria uma chave única no Redis. O Cache ignora a origem para maximizar o reúso,
+  // exatamente como sugerido (o "Centro" é o mesmo independente de onde o usuário está).
+  const cacheKey = `places:${query.toLowerCase().trim()}`;
+
+  try {
+    const cachedData = await redisClient.get(cacheKey);
+    if (cachedData) {
+      if (process.env.NODE_ENV !== "production") {
+        console.log(`[GooglePlaces] Retornando do cache do Redis para a busca: "${query}"`);
+      }
+      return JSON.parse(cachedData);
+    }
+  } catch (cacheError) {
+    console.error("[GooglePlaces] Erro ao ler do Redis:", cacheError.message);
   }
 
   // Configuração de Uberaba como centro padrão para viés de localização
@@ -63,7 +80,7 @@ async function searchPlaces(query, origin) {
       }
     }
 
-    return places.map((place) => ({
+    const result = places.map((place) => ({
       id: place.id,
       name: place.displayName?.text || "Local sem nome",
       address: place.formattedAddress,
@@ -72,6 +89,15 @@ async function searchPlaces(query, origin) {
       confidence: 1.0,
       source: "GOOGLE_PLACES_NEW",
     }));
+
+    // Salva o resultado no Redis com TTL de 30 dias (30 * 24 * 60 * 60 segundos)
+    try {
+      await redisClient.setex(cacheKey, 30 * 24 * 60 * 60, JSON.stringify(result));
+    } catch (cacheError) {
+      console.error("[GooglePlaces] Erro ao salvar no Redis:", cacheError.message);
+    }
+
+    return result;
   } catch (error) {
     if (error.response) {
       const status = error.response.status;
