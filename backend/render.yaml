@@ -1,6 +1,7 @@
 services:
   - type: web
     name: rotabus-api
+    plan: free
     env: node
     region: ohio
     buildCommand: npm install && npx prisma generate && npm run prisma:migrate
