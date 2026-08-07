@@ -18,8 +18,9 @@ describe("sessionService", () => {
   describe("saveAuthSession", () => {
     it("deve salvar token e usuario no storage com sucesso", async () => {
       const mockAuth: AuthResponse = {
+        message: "ok",
         token: "jwt-123",
-        user: { id: "1", name: "Douglas", email: "test@test.com", createdAt: "2026", updatedAt: "2026" },
+        user: { id: "1", name: "Douglas", email: "test@test.com" },
       };
 
       await sessionService.saveAuthSession(mockAuth);

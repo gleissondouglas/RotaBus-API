@@ -112,7 +112,7 @@ export default function HomeScreen() {
   const latitude = originCoords.latitude;
   const longitude = originCoords.longitude;
 
-  const [activeTab, setActiveTab] = useState<"voice" | "favorites">("voice");
+  const [activeTab, setActiveTab] = useState<"voice" | "favorites" | "settings">("voice");
 
   /**
    * Máquina de Estados da Assistente:
@@ -559,32 +559,35 @@ export default function HomeScreen() {
           >
             <Text style={[styles.tabText, activeTab === "favorites" && styles.tabTextActive]}>Favoritos</Text>
           </Pressable>
-        </View>
-
-        <View style={styles.headerActions}>
-          <Pressable
-            style={styles.headerIconButton}
-            onPress={handleHelp}
-            accessibilityLabel="Ajuda"
-            accessibilityRole="button"
+          <Pressable 
+            style={[styles.tabButton, activeTab === "settings" && styles.tabButtonActive]}
+            onPress={() => setActiveTab("settings")}
           >
-            <Ionicons name="help-circle" size={30} color="#000" />
-          </Pressable>
-
-          <Pressable
-            style={styles.headerIconButton}
-            onPress={handleSettings}
-            accessibilityLabel="Configurações"
-            accessibilityRole="button"
-          >
-            <Ionicons name="settings" size={30} color="#000" />
+            <Text style={[styles.tabText, activeTab === "settings" && styles.tabTextActive]}>Ajustes</Text>
           </Pressable>
         </View>
       </Animated.View>
 
       {/* ─── ZONA 2: CENTRO ─── */}
-      <View style={styles.centerZone} pointerEvents={activeTab === "favorites" ? "auto" : "none"}>
-        {activeTab === "favorites" ? (
+      <View style={styles.centerZone} pointerEvents={(activeTab === "favorites" || activeTab === "settings") ? "auto" : "none"}>
+        {activeTab === "settings" ? (
+          <View style={{ width: "100%", maxWidth: 380, marginTop: 20, gap: 12 }}>
+            <Pressable style={styles.settingsCard} onPress={handleSettings}>
+              <Ionicons name="settings-outline" size={24} color="#0F172A" />
+              <View>
+                <Text style={styles.settingsCardText}>Minha Conta e App</Text>
+                <Text style={styles.settingsCardSub}>Sua senha, acessibilidade e perfil</Text>
+              </View>
+            </Pressable>
+            <Pressable style={styles.settingsCard} onPress={handleHelp}>
+              <Ionicons name="help-circle-outline" size={24} color="#0F172A" />
+              <View>
+                <Text style={styles.settingsCardText}>Central de Ajuda</Text>
+                <Text style={styles.settingsCardSub}>Aprenda a usar o Nuvem</Text>
+              </View>
+            </Pressable>
+          </View>
+        ) : activeTab === "favorites" ? (
           <FavoritesAndHistoryView onSelectDestination={(text) => {
             setActiveTab("voice");
             setTranscript(text);
@@ -675,7 +678,7 @@ const APPLE_FONT = Platform.select({
 const styles = StyleSheet.create({
   topHeader: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
     paddingBottom: 10,
@@ -829,5 +832,28 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: "center",
+  },
+  settingsCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "white",
+    padding: 18,
+    borderRadius: 16,
+    gap: 16,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  settingsCardText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#0F172A",
+  },
+  settingsCardSub: {
+    fontSize: 13,
+    color: "#64748B",
+    marginTop: 2,
   },
 });

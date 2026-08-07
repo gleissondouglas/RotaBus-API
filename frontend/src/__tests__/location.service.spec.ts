@@ -12,8 +12,21 @@ jest.mock("expo-location", () => ({
 }));
 
 describe("locationService", () => {
-  beforeEach(() => {
+  const originalDev = (global as any).__DEV__;
+  afterEach(() => {
+    (global as any).__DEV__ = originalDev;
     jest.clearAllMocks();
+  });
+
+  describe("Em ambiente de PRODUCAO sem permissao", () => {
+    it("deve lancar erro 'permissao_negada'", async () => {
+      (global as any).__DEV__ = false;
+      (Location.requestForegroundPermissionsAsync as jest.Mock).mockResolvedValueOnce({
+        status: "denied",
+      });
+
+      await expect(locationService.getCurrentLocation()).rejects.toThrow("permissao_negada");
+    });
   });
 
   describe("requestLocationPermission", () => {
@@ -64,8 +77,8 @@ describe("locationService", () => {
 
       // Em ambiente de teste do jest, __DEV__ costuma ser true por padrão no react-native.
       // Se for false, ele lançará erro. Como estamos mockando o comportamento, testamos o fallback.
-      const prevDev = global.__DEV__;
-      global.__DEV__ = true;
+      const prevDev = (global as any).__DEV__;
+      (global as any).__DEV__ = true;
 
       const result = await locationService.getCurrentLocation();
       expect(result).toEqual({
@@ -73,7 +86,7 @@ describe("locationService", () => {
         longitude: -47.9392,
       });
 
-      global.__DEV__ = prevDev;
+      (global as any).__DEV__ = prevDev;
     });
   });
 
