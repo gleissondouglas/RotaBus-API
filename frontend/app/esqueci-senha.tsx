@@ -12,7 +12,6 @@ import { authService } from "../src/services/auth.service";
 import { useThemeColors } from "../src/theme/colors";
 
 export default function ForgotPasswordScreen() {
-  const theme = useThemeColors();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);

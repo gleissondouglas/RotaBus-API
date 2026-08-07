@@ -128,19 +128,9 @@ export default function NavigatingScreen() {
 
 
   const targetStopDateTime = summary?.beAtStopDateTime;
-  const boardingMarker = useMemo(() => {
-    if (!mapData || !mapData.markers) return undefined;
-    return mapData.markers.find(m => m.type === 'boarding_stop');
-  }, [mapData]);
-
   const destinationMarker = useMemo(() => {
     if (!mapData || !mapData.markers) return undefined;
     return mapData.markers.find(m => m.type === 'destination');
-  }, [mapData]);
-
-  const dropoffMarker = useMemo(() => {
-    if (!mapData || !mapData.markers) return undefined;
-    return mapData.markers.find(m => m.type === 'dropoff_stop');
   }, [mapData]);
 
   const hasValidWalkRoute = useMemo(() => {
@@ -263,7 +253,7 @@ export default function NavigatingScreen() {
         }
       }
     }
-  }, [userLocation, stage, globalStepIndex, currentStepIndex, currentGlobalStep, allSteps, destinationMarker, isWalkingOnly, speakControlled]);
+  }, [userLocation, stage, globalStepIndex, currentStepIndex, currentGlobalStep, allSteps, destinationMarker, isWalkingOnly, speakControlled, busLine]);
 
   useEffect(() => {
     if (stage === "waiting_bus" || stage === "on_bus" || stage === "arrived") {

@@ -102,7 +102,6 @@ function toVisualizerState(status: VoiceScreenStatus): VoiceVisualizerState {
  */
 export default function HomeScreen() {
   const params = useLocalSearchParams();
-  const theme = useThemeColors();
   const insets = useSafeAreaInsets();
 
   // Coordenadas passadas por parâmetro ou obtidas do serviço de localização
