@@ -4,6 +4,7 @@ services:
     plan: free
     env: node
     region: ohio
+    rootDir: backend
     buildCommand: npm install && npx prisma generate && npm run prisma:migrate
     startCommand: npm run start
     envVars:
