@@ -8,6 +8,7 @@ import {
   Modal, 
   Animated, 
   ScrollView, 
+  Alert
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Location from "expo-location";
@@ -23,6 +24,7 @@ import { MapData } from "../src/types/journey.types";
 import { formatBusWaitingTimeToFriendlyTextShort } from "../src/utils/date-time";
 import { formatWalkingInstruction } from "../src/utils/navigationInstructionFormatter";
 import { parseJsonParam, calculateDistance } from "../src/utils/helpers";
+import { trackingService } from "../src/services/tracking.service";
 
 interface Coords { 
   latitude: number; 
@@ -106,6 +108,7 @@ export default function NavigatingScreen() {
   const lastSpokenAtRef = useRef(0);
   const lastSpokenStepIndexRef = useRef(-1);
   const lastSpokenStageRef = useRef<NavigationStage | null>(null);
+  const lastPingAtRef = useRef(0);
 
   const speakControlled = useCallback((text: string, force = false) => {
     const now = Date.now();
@@ -153,6 +156,16 @@ export default function NavigatingScreen() {
     
     const currentLat = userLocation.latitude;
     const currentLng = userLocation.longitude;
+
+    // Rastreamento Comunitário (Waze) - Manda a posição a cada 10s quando está no ônibus
+    if (stage === "on_bus" && busLine) {
+      const now = Date.now();
+      if (now - lastPingAtRef.current > 10000) {
+        lastPingAtRef.current = now;
+        trackingService.pingLocation(busLine, currentLat, currentLng, userLocation.heading)
+          .catch(e => console.log('Ping invisível falhou:', e));
+      }
+    }
 
     if (stage === "walking" && currentGlobalStep.type === "walk") {
       const subSteps = currentGlobalStep.walkSteps || [];
@@ -408,10 +421,58 @@ export default function NavigatingScreen() {
     });
   };
 
-  const handleStageTransition = () => {
+  const handleStageTransition = (forced = false) => {
+    // Validação de segurança de distância (Evitar cliques acidentais)
+    if (forced !== true && userLocation) {
+      if (stage === "walking") {
+        const nextTransitStep = allSteps.slice(globalStepIndex).find(s => s.type === "transit");
+        let targetLat, targetLng;
+        
+        if (nextTransitStep) {
+          targetLat = nextTransitStep.departureLocation?.lat;
+          targetLng = nextTransitStep.departureLocation?.lng;
+        } else if (destinationMarker) {
+          targetLat = destinationMarker.lat;
+          targetLng = destinationMarker.lng;
+        }
+
+        if (targetLat && targetLng) {
+          const dist = calculateDistance(userLocation.latitude, userLocation.longitude, targetLat, targetLng);
+          if (dist > 150) {
+            Alert.alert(
+              "Você parece distante",
+              `O GPS indica que você ainda está a ${Math.round(dist)} metros. Tem certeza que já chegou?`,
+              [
+                { text: "Não, cancelar", style: "cancel" },
+                { text: "Sim, cheguei", onPress: () => handleStageTransition(true) }
+              ]
+            );
+            return;
+          }
+        }
+      } else if (stage === "on_bus" && currentGlobalStep?.type === "transit") {
+        const dropoffLat = currentGlobalStep.arrivalLocation?.lat;
+        const dropoffLng = currentGlobalStep.arrivalLocation?.lng;
+        if (dropoffLat && dropoffLng) {
+          const dist = calculateDistance(userLocation.latitude, userLocation.longitude, dropoffLat, dropoffLng);
+          if (dist > 300) {
+            Alert.alert(
+              "Longe do ponto de descida",
+              `Faltam cerca de ${Math.round(dist)} metros para o ponto ideal. Certeza que quer descer aqui?`,
+              [
+                { text: "Continuar no ônibus", style: "cancel" },
+                { text: "Sim, já desci", onPress: () => handleStageTransition(true) }
+              ]
+            );
+            return;
+          }
+        }
+      }
+    }
+
     if (stage === "walking") {
-      const nextMacroStep = allSteps[globalStepIndex + 1];
-      if (nextMacroStep && nextMacroStep.type === "transit") {
+      const nextTransitStep = allSteps.slice(globalStepIndex).find(s => s.type === "transit");
+      if (nextTransitStep) {
         setStage("waiting_bus");
         speakControlled("Você chegou ao ponto. Aguarde o embarque.", true);
       } else {
@@ -423,12 +484,12 @@ export default function NavigatingScreen() {
       setGlobalStepIndex(prev => prev + 1); // Avança para o passo de trânsito
       speakControlled(`Tudo certo! Você embarcou no ônibus. Boa viagem. Eu aviso quando estiver perto de descer.`, true);
     } else if (stage === "on_bus") {
-      const nextMacroStep = allSteps[globalStepIndex + 1];
-      if (nextMacroStep) {
+      const hasTransitAhead = allSteps.slice(globalStepIndex + 1).some(s => s.type === "transit");
+      if (hasTransitAhead) {
         setStage("walking");
         setGlobalStepIndex(prev => prev + 1);
         setCurrentStepIndex(0);
-        speakControlled("Você chegou ao ponto de descida. Continue a rota no mapa.", true);
+        speakControlled("Você chegou ao ponto de descida. Siga pelo mapa até o próximo ponto de ônibus.", true);
       } else {
         setStage("arrived");
         speakControlled("Você chegou ao seu destino final.", true);
@@ -447,8 +508,8 @@ export default function NavigatingScreen() {
   const getPrimaryButtonTitle = () => {
     switch (stage) {
       case "walking": 
-        const nextMacroStep = allSteps[globalStepIndex + 1];
-        return (nextMacroStep && nextMacroStep.type === "transit") ? "Cheguei ao ponto" : "Cheguei ao destino";
+        const hasTransitAhead = allSteps.slice(globalStepIndex).some(s => s.type === "transit");
+        return hasTransitAhead ? "Cheguei ao ponto" : "Cheguei ao destino";
       case "waiting_bus": return "Embarquei no ônibus";
       case "on_bus": return "Desci do ônibus";
       case "arrived": return "Ir para início";
@@ -459,8 +520,8 @@ export default function NavigatingScreen() {
   const getStageTitle = () => {
     switch (stage) {
       case "walking": 
-        const nextMacroStep = allSteps[globalStepIndex + 1];
-        return (nextMacroStep && nextMacroStep.type === "transit") ? "Caminho até o ponto" : "Caminho até o destino";
+        const hasTransitAhead = allSteps.slice(globalStepIndex).some(s => s.type === "transit");
+        return hasTransitAhead ? "Caminho até o ponto" : "Caminho até o destino";
       case "waiting_bus": return "Você chegou ao ponto";
       case "on_bus": return "Tudo certo!";
       case "arrived": return "Você chegou!";

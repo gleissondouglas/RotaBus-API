@@ -31,3 +31,13 @@ Este documento registra as principais escolhas técnicas do projeto e os motivos
 - **Contexto:** Definição de framework mobile.
 - **Decisão:** Expo Application Services com file-based routing.
 - **Justificativa:** Velocidade de iteração imbatível; Permite OTA (Over the air updates) pulando as burocracias de loja; Maior disponibilidade de pacotes de acessibilidade nativos empacotados (`expo-speech`, `expo-haptics`).
+
+## ADR-007: Tempo Real via Crowdsourcing (Alternativa ao GTFS-R)
+- **Contexto:** A prefeitura/concessionária não libera os dados em tempo real dos ônibus (GTFS-Realtime), impossibilitando o rastreamento via API oficial.
+- **Decisão:** Rastreamento comunitário (efeito "Waze"), onde o celular do passageiro (no estágio "on_bus") transmite o GPS anônimo via Redis.
+- **Justificativa:** Tática criativa e barata para driblar a falta de dados governamentais. Além disso, traz o benefício de economizar chamadas a banco de dados relacionais pesados, usando Redis com TTL (Time-to-Live) de 2 minutos para evitar que ônibus "fantasmas" fiquem presos no mapa.
+
+## ADR-008: Mapas Preview vs Navegação Ativa
+- **Contexto:** Usuários acionavam a navegação acidentalmente apenas para ver onde o ponto ficava, ativando o consumo massivo de bateria pelo GPS real-time (`watchPositionAsync`). Além disso, clicavam em "Cheguei ao Ponto" da própria casa.
+- **Decisão:** Inserção de um mapa "Preview" estático na tela de Melhor Rota, e Adição de "Distance Validation" com alertas nativos nos botões de transição.
+- **Justificativa:** Previne anomalias lógicas (o usuário não consegue avançar etapas se estiver a mais de 150m do alvo) e protege a bateria do usuário final (o rastreio só inicia se ele realmente for viajar).

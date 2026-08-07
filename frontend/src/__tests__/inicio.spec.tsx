@@ -41,22 +41,21 @@ jest.mock("react-native-reanimated", () => {
     inOut: () => () => undefined,
     ease: undefined,
   };
-  Reanimated.FadeIn = {
-    duration: () => ({}),
-    delay: () => ({ duration: () => ({}) }),
+  const chainable = {
+    duration: function() { return this; },
+    delay: function() { return this; },
+    springify: function() { return this; },
+    damping: function() { return this; },
   };
-  Reanimated.FadeInDown = {
-    duration: () => ({}),
-    delay: () => ({ duration: () => ({}) }),
-  };
-  Reanimated.FadeInUp = {
-    delay: () => ({
-      duration: () => ({}),
-    }),
-  };
-  Reanimated.FadeOutUp = {
-    duration: () => ({}),
-  };
+
+  Reanimated.FadeIn = chainable;
+  Reanimated.FadeInDown = chainable;
+  Reanimated.FadeOut = chainable;
+  Reanimated.FadeOutDown = chainable;
+  Reanimated.FadeInUp = chainable;
+  Reanimated.FadeOutUp = chainable;
+  Reanimated.SlideInUp = chainable;
+  Reanimated.SlideOutDown = chainable;
 
   return Reanimated;
 });

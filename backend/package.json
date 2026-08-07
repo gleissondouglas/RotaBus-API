@@ -11,6 +11,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "sessions:cleanup": "node scripts/cleanup-expired-conversation-sessions.js",
+    "logs:cleanup": "node scripts/cleanup-old-logs.js",
     "sessions:smoke:postgres": "node scripts/smoke-test-conversation-session-postgres.js",
     "lint": "eslint \"src/**/*.js\"",
     "format": "prettier --write \"src/**/*.js\""
@@ -32,7 +33,9 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
     "groq-sdk": "^1.3.0",
+    "gtfs-realtime-bindings": "^2.2.0",
     "helmet": "^8.1.0",
+    "ioredis": "^6.0.0",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.20.0",
     "resend": "^6.18.1",

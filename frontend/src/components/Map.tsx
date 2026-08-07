@@ -13,6 +13,11 @@ interface MapProps {
     longitude: number;
     heading?: number | null;
   } | null;
+  liveBusPosition?: {
+    lat: number;
+    lng: number;
+    heading?: number | null;
+  } | null;
   initialRegion: {
     latitude: number;
     longitude: number;
@@ -66,6 +71,7 @@ const getMarkerColor = (type: MapMarker['type']) => {
 const Map: React.FC<MapProps> = ({
   mapData,
   userLocation,
+  liveBusPosition,
   initialRegion,
   colors: propColors,
   focusMode = 'walking_to_stop',
@@ -330,6 +336,21 @@ const Map: React.FC<MapProps> = ({
               </Callout>
             </Marker>
           ))}
+
+        {/* Marcador do Ônibus ao Vivo (Crowdsourcing) */}
+        {liveBusPosition && (
+          <Marker
+            coordinate={{ latitude: liveBusPosition.lat, longitude: liveBusPosition.lng }}
+            zIndex={30}
+            anchor={{ x: 0.5, y: 0.5 }}
+            flat={true}
+            rotation={liveBusPosition.heading || 0}
+          >
+            <View style={styles.liveBusMarker}>
+              <MaterialCommunityIcons name="bus-side" size={22} color="white" />
+            </View>
+          </Marker>
+        )}
       </MapView>
       <View style={[styles.controls, { bottom: controlsBottomOffset + 16 }]} pointerEvents="box-none">
         <View style={[styles.controlGroup, { backgroundColor: theme.card }]}>
@@ -420,6 +441,18 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 2,
+  },
+  liveBusMarker: {
+    backgroundColor: '#F59E0B',
+    padding: 6,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    elevation: 8,
   },
   markerLabelText: {
     fontSize: 10,

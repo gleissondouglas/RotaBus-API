@@ -38,6 +38,6 @@ O Nuvem nasceu como um app de rotas reativo e segue sua trajetória acelerada pa
 2. **Push Notifications:** Integração com Expo Notifications para disparos proativos (ex: "Você está perto do ponto do ônibus 100, ele passa em 5 min.").
 3. **Cache Offline-First:** Salvar rotas muito frequentes ("Ida p/ Casa") no dispositivo para permitir navegação ininterrupta em áreas sem 4G.
 
-## Fase 7: Gestão e Operações Especiais (🔮 Backlog Futuro)
-1. **Painel CMS de Inteligência Local:** Um Web-App de dashboard para administradores gerenciarem a base de apelidos (`LocalIntelligence`), permitindo adicionar novos termos sem necessidade de novos deploys.
-2. **Tempo Real (GTFS-R):** Conectar os dados de previsão estática ao sistema de rastreamento de GPS da frota local para atualizar os marcadores de ônibus com a posição real nas ruas.
+## Fase 7: Rastreamento em Tempo Real e Operações (🔄 Em Andamento)
+1. **Tempo Real (Crowdsourcing Waze-style):** (✅ Concluído) Utilização do aplicativo dos próprios passageiros como "Satélites" de GPS. Integrado com Redis no backend para desenhar os ônibus ao vivo na tela sem depender de APIs governamentais (GTFS-R).
+2. **Painel CMS de Inteligência Local:** (🔮 Backlog) Um Web-App de dashboard para administradores gerenciarem a base de apelidos (`LocalIntelligence`), permitindo adicionar novos termos sem necessidade de novos deploys.

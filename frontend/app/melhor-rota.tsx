@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons, MaterialCommunityIcons, FontAwesome6 } from "@expo/vector-icons";
 import Animated, { FadeInUp, FadeInDown } from "react-native-reanimated";
@@ -9,11 +9,13 @@ import { BackButton } from "../src/components/BackButton";
 import { ListenOptionsButton } from "../src/components/ListenOptionsButton";
 import { PrimaryButton } from "../src/components/PrimaryButton";
 import { RouteStep } from "../src/components/RouteStep";
+import Map from "../src/components/Map";
 import { useThemeColors } from "../src/theme/colors";
 import { journeyService } from "../src/services/journey.service";
 import { sessionService } from "../src/services/session.service";
 import { vibrationService } from "../src/services/vibration.service";
 import { speak } from "../src/services/speech.service";
+import { trackingService } from "../src/services/tracking.service";
 import { isConnected } from "../src/utils/network";
 import { JourneyStep, JourneySummary } from "../src/types/journey.types";
 import { formatMinutesToFriendlyText } from "../src/utils/date-time";
@@ -93,8 +95,10 @@ export default function BestRouteScreen() {
   const summary = parseJsonParam<JourneySummary | null>(params.summary, null);
   const alerts = parseJsonParam<string[]>(params.alerts, []);
   const steps = parseJsonParam<JourneyStep[]>(params.steps, []);
+  const mapData = parseJsonParam<any>(params.map, undefined);
 
   const [isLoadingCommand, setIsLoadingCommand] = useState(false);
+  const [liveBusPosition, setLiveBusPosition] = useState<{lat: number, lng: number, heading?: number} | null>(null);
 
   const transitSteps = getTransitSteps(steps);
   const firstTransitStep = transitSteps[0];
@@ -109,6 +113,22 @@ export default function BestRouteScreen() {
     firstTransitStep?.type === "transit"
       ? firstTransitStep.line
       : summary?.busLines?.[0] || "";
+
+  // Busca a posição comunitária do ônibus a cada 5 segundos
+  useEffect(() => {
+    if (isWalkingOnly || !busLine) return;
+    
+    const fetchBus = async () => {
+      const data = await trackingService.getBusPosition(busLine);
+      if (data && data.lat && data.lng) {
+        setLiveBusPosition({ lat: data.lat, lng: data.lng, heading: data.bearing });
+      }
+    };
+    
+    fetchBus();
+    const interval = setInterval(fetchBus, 5000);
+    return () => clearInterval(interval);
+  }, [isWalkingOnly, busLine]);
 
   const leaveHomeText = summary?.leaveHomeText || "";
   const beAtStopText = summary?.beAtStopText || "";
@@ -136,6 +156,13 @@ export default function BestRouteScreen() {
     : baseVoiceSummary;
 
   const voiceText = speechTextParam || voiceSummary;
+
+  const initialRegion = {
+    latitude: Number(latitude) || -19.7472,
+    longitude: Number(longitude) || -47.9392,
+    latitudeDelta: 0.05,
+    longitudeDelta: 0.05,
+  };
 
   async function handleGoHome() {
     setIsLoadingCommand(true);
@@ -222,11 +249,24 @@ export default function BestRouteScreen() {
         ]}
       >
         <Animated.View entering={FadeInUp.duration(400)} style={styles.content}>
-          {/* 1. CABEÇALHO */}
+          {/* 1. CABEÇALHO E PREVIEW MAPA */}
           <View style={styles.header}>
             <Text style={styles.title} maxFontSizeMultiplier={1.2}>Sua melhor rota</Text>
             <Text style={styles.subtitle} maxFontSizeMultiplier={1.1}>Para {destination}</Text>
           </View>
+
+          {mapData && (
+            <View style={styles.previewMapContainer}>
+              <Map 
+                mapData={mapData} 
+                initialRegion={initialRegion} 
+                colors={theme} 
+                focusMode="full_route" 
+                isNavigating={false}
+                liveBusPosition={liveBusPosition}
+              />
+            </View>
+          )}
 
           {/* 2. CARD DE RESUMO PRINCIPAL */}
           <View style={[styles.summaryCard, { backgroundColor: theme.primaryDark || "#0F172A" }]}>
@@ -394,7 +434,7 @@ const styles = StyleSheet.create({
     gap: 28,
   },
 
-  /* ─── 1. Cabeçalho ─── */
+  /* ─── 1. Cabeçalho e Mapa ─── */
   header: {
     alignItems: "flex-start",
     marginBottom: 0,
@@ -410,6 +450,18 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#64748B",
     marginTop: 4,
+  },
+  previewMapContainer: {
+    height: 220,
+    width: "100%",
+    borderRadius: 24,
+    overflow: "hidden",
+    backgroundColor: "#E2E8F0",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 4,
   },
 
   /* ─── 2. Card de resumo ─── */
