@@ -1,5 +1,5 @@
 const { authMiddleware } = require("../auth/auth.middleware");
-const { dailyJourneyLimit } = require("../../shared/middlewares/dailyLimit.middleware");
+const { dailyJourneyLimit, dailyPlacesLimit, dailyGeocodeLimit, dailyTranscribeLimit, dailyParseTimeLimit } = require("../../shared/middlewares/dailyLimit.middleware");
 const { validate } = require("../../shared/middlewares/validate.middleware");
 const {
   planJourneySchema,
@@ -19,16 +19,18 @@ router.post(
   validate(planJourneySchema),
   journeysController.planJourney,
 );
-router.get("/reverse-geocode", authMiddleware, journeysController.reverseGeocode);
+router.get("/reverse-geocode", authMiddleware, dailyGeocodeLimit, journeysController.reverseGeocode);
 router.post(
   "/transcribe",
   express.json({ limit: "50mb" }),
   authMiddleware,
+  dailyTranscribeLimit,
   journeysController.transcribeAudio,
 );
 router.post(
   "/resolve-destination",
   authMiddleware,
+  dailyPlacesLimit,
   validate(resolveDestinationSchema),
   journeysController.resolveDestination,
 );
@@ -41,6 +43,7 @@ router.post(
 router.post(
   "/parse-time",
   authMiddleware,
+  dailyParseTimeLimit,
   validate(parseTimeSchema),
   journeysController.parseTimeIntent,
 );

@@ -6,11 +6,13 @@ const prisma = require("../../config/prisma");
  */
 
 async function countUsage({ ipAddress, userId, since, endpoint }) {
+  const userCondition = userId ? { userId } : { ipAddress };
+  
   return prisma.apiUsage.count({
     where: {
       endpoint,
       createdAt: { gte: since },
-      OR: [{ ipAddress }, ...(userId ? [{ userId }] : [])],
+      ...userCondition,
     },
   });
 }
