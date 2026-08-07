@@ -421,39 +421,42 @@ function chooseBestJourney(candidates, timePreference = null) {
     if (aHasTransit && !bHasTransit) return -1;
     if (!aHasTransit && bHasTransit) return 1;
 
-    // 2. Prioridade de Horário
-    if (timePreference?.dateTime) {
-      const targetTime = new Date(timePreference.dateTime).getTime();
+    // 2. Score de Conforto (Custo-Benefício) - Menor é melhor
+    const getComfortScore = (journey) => {
+      let waitTimeMin = 0;
+      const targetTimeMs = timePreference?.dateTime ? new Date(timePreference.dateTime).getTime() : Date.now();
 
       if (isArrival) {
-        // Se for ARRIVAL, prioriza quem chega mais perto do horário solicitado
-        const arrivalA = new Date(a.summary.arrivalAtDestinationDateTime).getTime();
-        const arrivalB = new Date(b.summary.arrivalAtDestinationDateTime).getTime();
-        const diffA = Math.abs(targetTime - arrivalA);
-        const diffB = Math.abs(targetTime - arrivalB);
-        if (diffA !== diffB) return diffA - diffB;
+        // Se quer chegar às 08:00 e chega 07:30, "espera" 30 min no destino
+        const arrMs = new Date(journey.summary.arrivalAtDestinationDateTime || targetTimeMs).getTime();
+        waitTimeMin = Math.max(0, (targetTimeMs - arrMs) / 60000);
       } else {
-        // Se for DEPARTURE, prioriza quem SAI mais perto do horário solicitado (a próxima a sair)
-        const departureA = new Date(a.summary.leaveHomeDateTime).getTime();
-        const departureB = new Date(b.summary.leaveHomeDateTime).getTime();
-
-        // Queremos a que sai mais cedo/próximo do solicitado
-        if (departureA !== departureB) return departureA - departureB;
+        // Se quer sair às 08:00 e só sai 08:20, "espera" 20 min no ponto
+        const depMs = new Date(journey.summary.leaveHomeDateTime || targetTimeMs).getTime();
+        waitTimeMin = Math.max(0, (depMs - targetTimeMs) / 60000);
       }
-    }
 
-    // 3. Critério de desempate: Menos caminhada inicial
-    if (a.summary.initialWalkTimeMin !== b.summary.initialWalkTimeMin) {
+      const duration = journey.summary.totalDurationMin || 0;
+      const walk = journey.summary.totalWalkTimeMin || 0;
+      const transfers = journey.summary.transfers || 0;
+
+      // Cálculo:
+      // - Duração da viagem (peso 1)
+      // - Tempo de espera (peso 1)
+      // - Cada minuto caminhando = penalidade dupla (cansaço)
+      // - Cada troca de ônibus (baldeação) = penalidade pesada (15 pontos)
+      return duration + waitTimeMin + (walk * 2) + (transfers * 15);
+    };
+
+    const scoreA = getComfortScore(a);
+    const scoreB = getComfortScore(b);
+    
+    // 3. Desempate final (apenas se o score de conforto empatar perfeitamente)
+    if (scoreA === scoreB) {
       return a.summary.initialWalkTimeMin - b.summary.initialWalkTimeMin;
     }
 
-    // 4. Menos trocas de ônibus
-    if (a.summary.transfers !== b.summary.transfers) {
-      return a.summary.transfers - b.summary.transfers;
-    }
-
-    // 5. Menor duração total
-    return a.summary.totalDurationMin - b.summary.totalDurationMin;
+    return scoreA - scoreB;
   })[0];
 }
 

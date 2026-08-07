@@ -147,17 +147,47 @@ async function resolveDestinationService({ text, origin }, session = null) {
   const isGeneric = bestOption.isGenericCityResult;
   const confidence = bestOption.confidence;
 
+  // Calcula distância (linha reta aprox) se houver origem
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    if (!lat1 || !lon1 || !lat2 || !lon2) return Infinity;
+    const p = 0.017453292519943295;
+    const c = Math.cos;
+    const a = 0.5 - c((lat2 - lat1) * p)/2 + c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p))/2;
+    return 12742 * Math.asin(Math.sqrt(a)) * 1000; // metros
+  };
+
+  candidates.forEach(c => {
+    if (c.lat && c.lng && validatedData.origin) {
+      c.distanceMeters = calculateDistance(validatedData.origin.lat, validatedData.origin.lng, c.lat, c.lng);
+    }
+  });
+
   // Decide o Mode
   const shouldAskForKnownTerm = localIntelligenceService.shouldShowOptionsForKnownTerm(
     interpretedDestination,
     candidates,
   );
 
-  const showSuggestions =
+  let showSuggestions =
     shouldAskForKnownTerm ||
     (isGeneric && candidates.length > 1) ||
     confidence === "low" ||
     queryType === "generic_category";
+
+  // IDEIA 2: Auto-seleção de destino óbvio (se o 1º for muito mais perto que o 2º)
+  if (showSuggestions && candidates.length >= 2 && candidates[0].distanceMeters < Infinity) {
+    const dist1 = candidates[0].distanceMeters;
+    const dist2 = candidates[1].distanceMeters;
+    
+    // Se o primeiro lugar está a menos de 5km e o segundo lugar está 3x mais longe, é muito óbvio!
+    if (dist1 < 5000 && dist2 > dist1 * 3) {
+      showSuggestions = false;
+      if (process.env.NODE_ENV !== "production") {
+        console.log(`[ResolveDestination] Auto-seleção aplicada. ${candidates[0].name} (${Math.round(dist1)}m) vs ${candidates[1].name} (${Math.round(dist2)}m)`);
+      }
+    }
+  }
+
   const mode = showSuggestions ? "suggestions" : "resolved";
 
   let message = "Destino encontrado.";
