@@ -1,8 +1,10 @@
-# Nuvem — Assistente de Mobilidade por Voz
+# Nuvem — App Padrão (Toque e Acessibilidade)
 
-O **Nuvem** é um aplicativo mobile de mobilidade urbana com foco em acessibilidade, simplicidade e orientação por voz.
+O **Nuvem** é um aplicativo mobile de mobilidade urbana com foco em acessibilidade, simplicidade e inclusão digital.
 
-A proposta do projeto é ajudar pessoas que têm dificuldade em usar aplicativos tradicionais de transporte público, oferecendo uma experiência mais simples, direta e guiada. O usuário informa para onde deseja ir, escolhe se quer sair agora, sair em outro horário ou chegar em determinado horário, e o app retorna uma rota de ônibus mais compreensível.
+A proposta deste repositório é ser o **App Padrão (Normal)**. Ele oferece uma interface limpa com navegação guiada por toque (Touch) e suporte a síntese de voz (TTS) para leitura de tela. O usuário pode buscar o destino por voz na tela inicial, mas todo o restante da navegação e escolha de opções é feito tocando na tela de forma simplificada e acessível.
+
+> **Nota de Arquitetura:** O projeto original foi dividido em dois. Este é o App Padrão (Toque). O App Assistente (100% Conversacional, estilo Alexa) será desenvolvido em um repositório/projeto separado consumindo a mesma API.
 
 ---
 
@@ -55,17 +57,15 @@ Em vez de mostrar apenas dados complexos ou mapas difíceis de interpretar.
 - Login com e-mail e senha;
 - Criação de conta;
 - Sessão salva no dispositivo;
-- Tela inicial com assistente por voz;
-- Busca de destino por digitação;
-- Fluxo preparado para busca por voz;
+- Tela inicial com busca por voz (microfone) ou digitação;
+- Telas de navegação 100% baseadas em toque (Touch) com botões grandes e acessíveis;
 - Tela para escolher horário da viagem:
   - sair agora;
   - sair em outro horário;
   - chegar em determinado horário;
+- Assistente que narra as opções (TTS) sem bloquear a interface de toque;
 - Envio da localização atual do usuário;
 - Integração com backend próprio;
-- Consulta de rotas de transporte público;
-- Exibição de rota encontrada;
 - Exibição de:
   - primeiro ponto;
   - ônibus da rota;
@@ -73,15 +73,9 @@ Em vez de mostrar apenas dados complexos ou mapas difíceis de interpretar.
   - tempo até o ponto;
   - tempo total;
   - chegada prevista;
-- Mensagens com data e período do dia:
-  - hoje às 10:30 da manhã;
-  - amanhã às 05:30 da manhã;
-  - terça-feira, 12/05 às 11:47 da manhã;
 - Tela de ajuda;
 - Tela de acessibilidade;
-- Tela de configurações;
-- Botão para ouvir opções por voz;
-- Controle para evitar repetição excessiva da voz ao voltar telas.
+- Tela de configurações.
 
 ---
 
