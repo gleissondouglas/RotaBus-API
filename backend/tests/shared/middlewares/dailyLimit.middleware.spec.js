@@ -31,7 +31,7 @@ describe("DailyLimitMiddleware", () => {
 
     expect(next).toHaveBeenCalledTimes(1);
     expect(apiUsageRepository.createUsage).not.toHaveBeenCalled();
-    expect(req.dailyJourneyUsage).toEqual({
+    expect(req['dailyUsage_/journeys']).toEqual({
       userId: 1,
       ipAddress: "127.0.0.1",
       endpoint: "/journeys",
@@ -41,7 +41,7 @@ describe("DailyLimitMiddleware", () => {
   test("registra o consumo somente quando solicitado após sucesso do provider", async () => {
     apiUsageRepository.createUsage.mockResolvedValue({ id: 1 });
     const req = {
-      dailyJourneyUsage: {
+      "dailyUsage_/journeys": {
         userId: 1,
         ipAddress: "127.0.0.1",
         endpoint: "/journeys",
@@ -49,7 +49,7 @@ describe("DailyLimitMiddleware", () => {
     };
 
     await expect(recordDailyJourneyUsage(req)).resolves.toBe(true);
-    expect(apiUsageRepository.createUsage).toHaveBeenCalledWith(req.dailyJourneyUsage);
+    expect(apiUsageRepository.createUsage).toHaveBeenCalledWith(req['dailyUsage_/journeys']);
   });
 
   test("não registra cache, falha ou usuário administrador sem contexto de uso", async () => {
@@ -62,7 +62,7 @@ describe("DailyLimitMiddleware", () => {
 
     expect(next).toHaveBeenCalledTimes(1);
     expect(apiUsageRepository.countUsage).not.toHaveBeenCalled();
-    expect(req.dailyJourneyUsage).toBeUndefined();
+    expect(req['dailyUsage_/journeys']).toBeUndefined();
   });
 
   test("bloqueia ao atingir dez chamadas externas no dia", async () => {

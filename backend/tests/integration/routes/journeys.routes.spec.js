@@ -11,6 +11,14 @@ jest.mock('../../../src/modules/auth/auth.middleware', () => ({
 jest.mock('../../../src/shared/middlewares/dailyLimit.middleware', () => ({
   dailyJourneyLimit: (req, res, next) => next(),
   recordDailyJourneyUsage: jest.fn().mockResolvedValue(true),
+  dailyPlacesLimit: (req, res, next) => next(),
+  recordDailyPlacesUsage: jest.fn().mockResolvedValue(true),
+  dailyGeocodeLimit: (req, res, next) => next(),
+  recordDailyGeocodeUsage: jest.fn().mockResolvedValue(true),
+  dailyTranscribeLimit: (req, res, next) => next(),
+  recordDailyTranscribeUsage: jest.fn().mockResolvedValue(true),
+  dailyParseTimeLimit: (req, res, next) => next(),
+  recordDailyParseTimeUsage: jest.fn().mockResolvedValue(true),
 }));
 
 jest.mock('../../../src/shared/middlewares/rateLimiter.middleware', () => ({
@@ -202,7 +210,7 @@ describe('Journeys Routes (Integration)', () => {
           text: 'Uniube',
           origin: validOrigin
         });
-
+      if (!firstResponse.body.metadata) console.log("ERROR BODY:", firstResponse.body);
       const generatedSessionId = firstResponse.body.metadata.sessionId;
       expect(generatedSessionId).toBeDefined();
 

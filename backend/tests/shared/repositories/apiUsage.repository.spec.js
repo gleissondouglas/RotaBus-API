@@ -31,10 +31,7 @@ describe("ApiUsageRepository", () => {
         where: {
           endpoint: params.endpoint,
           createdAt: { gte: params.since },
-          OR: [
-            { ipAddress: params.ipAddress },
-            { userId: params.userId },
-          ],
+          userId: params.userId,
         },
       });
     });
@@ -55,9 +52,7 @@ describe("ApiUsageRepository", () => {
         where: {
           endpoint: params.endpoint,
           createdAt: { gte: params.since },
-          OR: [
-            { ipAddress: params.ipAddress },
-          ],
+          ipAddress: params.ipAddress,
         },
       });
     });
