@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import {
-  Platform,
+
   Pressable,
   ScrollView,
   StyleSheet,
@@ -17,27 +17,15 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BackButton } from "../src/components/BackButton";
 import { PrimaryButton } from "../src/components/PrimaryButton";
 import { DestinationCategoryIcon } from "../src/components/DestinationCategoryIcon";
-import { BottomVoiceMicButton } from "../src/components/BottomVoiceMicButton";
-import { VoiceVisualizer } from "../src/components/VoiceVisualizer";
-import { useVoiceConversationLoop } from "../src/hooks/useVoiceConversationLoop";
+import { useAutoSpeakOnce } from "../src/hooks/useAutoSpeakOnce";
 import { useThemeColors } from "../src/theme/colors";
-import { journeyService } from "../src/services/journey.service";
-import { sessionService } from "../src/services/session.service";
 import { vibrationService } from "../src/services/vibration.service";
-import { isConnected } from "../src/utils/network";
 import { parseJsonParam } from "../src/utils/helpers";
 import { layout } from "../src/theme/layout";
-import { getInteractionMode } from "../src/types/interaction.types";
-import { useAutoSpeakOnce } from "../src/hooks/useAutoSpeakOnce";
 import {
   getDestinationCategoryLabel,
   resolveDestinationCategory,
 } from "../src/utils/destinationCategory.mapper";
-import type {
-  VoiceLoopStatus,
-  VoiceRecognitionIssue,
-} from "../src/hooks/useVoiceConversationLoop";
-import type { VoiceVisualizerState } from "../src/components/VoiceVisualizer";
 
 function getSingleParam(value: string | string[] | undefined, fallback = "") {
   return Array.isArray(value)
@@ -53,12 +41,7 @@ function parseRequiredCoordinate(value: string) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function toVisualizerState(status: VoiceLoopStatus): VoiceVisualizerState {
-  if (status === "speaking") return "speaking";
-  if (status === "listening") return "listening";
-  if (status === "processing") return "processing";
-  return "idle";
-}
+
 
 export default function ConfirmDestinationScreen() {
   const params = useLocalSearchParams();
@@ -73,13 +56,9 @@ export default function ConfirmDestinationScreen() {
   const carouselCardWidth = width - screenHorizontalPadding * 2; // 48 = paddingHorizontal 24*2
   const usableHeight = height - insets.top - insets.bottom;
 
-  const interactionMode = getInteractionMode(params.interactionMode);
-  const isVoiceMode = interactionMode === "voice";
-
-  // Em modo voz, temos o visualizer e os botões grandes ocupando muito espaço, então o card deve ser menor.
-  const maxPercent = isVoiceMode ? 0.55 : 0.60;
-  const maxHeight = isVoiceMode ? 500 : 540;
-  const minAbsolute = isVoiceMode ? 360 : 360;
+  const maxPercent = 0.60;
+  const maxHeight = 540;
+  const minAbsolute = 360;
   const cardMinHeight = Math.max(minAbsolute, Math.min(usableHeight * maxPercent, maxHeight));
 
   const latitude = getSingleParam(params.latitude);
@@ -95,7 +74,6 @@ export default function ConfirmDestinationScreen() {
   );
   const [conversationState] = useState(getSingleParam(params.conversationState));
   const [isLoadingCommand, setIsLoadingCommand] = useState(false);
-  const [voiceStatus, setVoiceStatus] = useState<VoiceLoopStatus>("idle");
   const [currentSuggestionIndex, setCurrentSuggestionIndex] = useState(0);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(null);
 
@@ -153,9 +131,7 @@ export default function ConfirmDestinationScreen() {
     parseRequiredCoordinate(String(activeDestination?.lat ?? "")) !== null &&
     parseRequiredCoordinate(String(activeDestination?.lng ?? "")) !== null;
 
-  const isVoiceSpeaking = isVoiceMode && voiceStatus === "speaking";
-  const isVoiceProcessing = isVoiceMode && voiceStatus === "processing";
-  const isActionDisabled = isLoadingCommand || isVoiceSpeaking || isVoiceProcessing;
+  const isActionDisabled = isLoadingCommand;
 
   // ─── TTS automático: anuncia o destino encontrado ─────────────────────
   const destinationSpeechText = (() => {
@@ -167,7 +143,7 @@ export default function ConfirmDestinationScreen() {
     }
     return "";
   })();
-  const { isSpeaking: autoSpeaking } = useAutoSpeakOnce(
+  useAutoSpeakOnce(
     showSuggestions
       ? `confirm-dest-suggestions-${options.length}`
       : `confirm-dest-${activeDestinationName}`,
@@ -211,11 +187,10 @@ export default function ConfirmDestinationScreen() {
           destinationLng: String(destLng),
           selectedDestination: JSON.stringify(selected),
           sessionId,
-          interactionMode,
         },
       });
     },
-    [displayDestination, interactionMode, latitude, longitude, sessionId],
+    [displayDestination, latitude, longitude, sessionId],
   );
 
   const handleSelectSuggestion = useCallback(
@@ -262,35 +237,6 @@ export default function ConfirmDestinationScreen() {
     [bestOption, navigateWithSelectedDestination, selectedSuggestion, showSuggestions],
   );
 
-  const handleRejectSelectedSuggestion = useCallback(() => {
-    vibrationService.light();
-    setSelectedOptionIndex(null);
-  }, []);
-
-  const handleChangeDestination = useCallback(async () => {
-    setIsLoadingCommand(true);
-    vibrationService.light();
-    try {
-      const connected = await isConnected();
-      const activeSessionId = sessionId || sessionService.getSessionId();
-      if (connected && activeSessionId) {
-        await journeyService.executeCommand({
-          sessionId: activeSessionId,
-          command: "CANCEL",
-        });
-      }
-    } catch (err) {
-      console.log("[ConfirmDestination] Erro ao cancelar no backend:", err);
-    } finally {
-      setIsLoadingCommand(false);
-      sessionService.clearSessionId();
-      router.replace({
-        pathname: "/inicio",
-        params: { latitude, longitude },
-      });
-    }
-  }, [latitude, longitude, sessionId]);
-
   const handlePrimaryAction = useCallback(async () => {
     if (isChoosingSuggestion) {
       const currentOption = options[currentSuggestionIndex];
@@ -301,77 +247,6 @@ export default function ConfirmDestinationScreen() {
     }
     await handleConfirmDestination();
   }, [currentSuggestionIndex, handleConfirmDestination, handleSelectSuggestion, isChoosingSuggestion, options]);
-
-  const { startLoop, stopAll, stopListeningAndSubmit } = useVoiceConversationLoop({
-    onIntent: async (intent) => {
-      switch (intent.type) {
-        case "CONFIRM":
-          await handlePrimaryAction();
-          break;
-        case "CANCEL_THEN_ASK_DESTINATION":
-          if (selectedSuggestion) {
-            handleRejectSelectedSuggestion();
-            break;
-          }
-          await handleChangeDestination();
-          break;
-        case "SELECT_OPTION":
-          if (options[intent.optionIndex]) {
-            handleSelectSuggestion(options[intent.optionIndex], intent.optionIndex);
-          } else {
-            vibrationService.light();
-          }
-          break;
-        case "CANCEL":
-          router.replace("/inicio");
-          break;
-        case "DESTINATION_TEXT":
-          void stopAll();
-          router.replace({
-            pathname: "/inicio",
-            params: {
-              latitude,
-              longitude,
-              searchText: intent.text,
-              interactionMode,
-            },
-          });
-          break;
-      }
-    },
-    onStatusChange: (nextStatus) => {
-      setVoiceStatus(nextStatus);
-      // O botão reflete o estado do loop; nenhuma captura é iniciada aqui.
-    },
-    onTranscript: () => {},
-    onRecognitionIssue: (_issue: VoiceRecognitionIssue) => {},
-    maxSilentRetries: 0,
-  });
-
-  function handleVoiceResponse() {
-    if (voiceStatus === "listening") {
-      void stopListeningAndSubmit();
-      return;
-    }
-
-    if (voiceStatus === "speaking" || voiceStatus === "processing") return;
-    vibrationService.light();
-    void startLoop();
-  }
-
-  function getVoiceActionLabel() {
-    if (voiceStatus === "listening") return "Parar e enviar";
-    if (voiceStatus === "processing") return "Processando...";
-    if (voiceStatus === "speaking") return "Aguarde a assistente";
-    if (voiceStatus === "error") return "Tentar novamente";
-    return "Responder por voz";
-  }
-
-  function getVoiceActionHelperText() {
-    if (voiceStatus === "listening") return "Toque novamente para enviar sua resposta.";
-    if (voiceStatus === "error") return "Não consegui ouvir. Toque para tentar novamente.";
-    return "Diga sim, não ou escolha uma opção.";
-  }
 
   const handleHelp = () => router.push("/ajuda");
 
@@ -397,8 +272,8 @@ export default function ConfirmDestinationScreen() {
         contentContainerStyle={[
           styles.scrollContent,
           {
-            paddingTop: insets.top + (isVoiceMode ? 60 : 80),
-            paddingBottom: insets.bottom + (isVoiceMode ? 220 : 112),
+            paddingTop: insets.top + 80,
+            paddingBottom: insets.bottom + 112,
           },
         ]}
       >
@@ -418,13 +293,6 @@ export default function ConfirmDestinationScreen() {
                 : `Para ${activeDestinationName}`}
             </Text>
           </View>
-
-          {/* VoiceVisualizer — apenas em modo voz */}
-          {isVoiceMode && (
-            <Animated.View entering={FadeIn.duration(300)} style={styles.visualizerWrapper}>
-              <VoiceVisualizer state={autoSpeaking ? "speaking" : toVisualizerState(voiceStatus)} size="compact" />
-            </Animated.View>
-          )}
 
           {isChoosingSuggestion ? (
             /* ── CARROSSEL ── */

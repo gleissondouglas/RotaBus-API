@@ -15,10 +15,7 @@ import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import Animated, { FadeInUp, FadeIn } from "react-native-reanimated";
 
 import { BackButton } from "../src/components/BackButton";
-import { BottomVoiceMicButton } from "../src/components/BottomVoiceMicButton";
 import { PrimaryButton } from "../src/components/PrimaryButton";
-import { useVoiceConversationLoop } from "../src/hooks/useVoiceConversationLoop";
-import type { VoiceLoopStatus, VoiceRecognitionIssue } from "../src/hooks/useVoiceConversationLoop";
 import { useThemeColors } from "../src/theme/colors";
 import { layout } from "../src/theme/layout";
 import { vibrationService } from "../src/services/vibration.service";
@@ -28,11 +25,9 @@ import {
   getCurrentTimeText,
   getTodayDateText,
   getNext7Days,
-  isOperationalTime,
 } from "../src/utils/date-time";
-import { parseVoiceIntent } from "../src/utils/voiceIntentParser";
-import { getInteractionMode } from "../src/types/interaction.types";
-import { journeyService } from "../src/services/journey.service";
+
+
 
 type TimeMode = "NOW" | "DEPARTURE" | "ARRIVAL";
 
@@ -59,17 +54,13 @@ export default function ChooseTimeScreen() {
   const destinationLng = String(params.destinationLng || "");
   const selectedDestination = String(params.selectedDestination || "");
   const sessionId = String(params.sessionId || "");
-  const interactionMode = getInteractionMode(params.interactionMode);
-  const isVoiceMode = interactionMode === "voice";
+
 
   const [mode, setMode] = useState<TimeMode>("NOW");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [dateText, setDateText] = useState(getTodayDateText());
   const [timeText, setTimeText] = useState(getCurrentTimeText());
-  const [voiceStatus, setVoiceStatus] = useState<VoiceLoopStatus>("idle");
-  const [voiceTranscript, setVoiceTranscript] = useState("");
-  const [voiceErrorMessage, setVoiceErrorMessage] = useState("");
-  const isActionDisabled = voiceStatus === "speaking" || voiceStatus === "processing";
+  const isActionDisabled = false;
 
   const dateOptions = getNext7Days();
   const startHour = mode === "ARRIVAL" ? 6 : 4;
@@ -80,7 +71,7 @@ export default function ChooseTimeScreen() {
     timeSlots.push(`${hr}:00`, `${hr}:15`, `${hr}:30`, `${hr}:45`);
   }
 
-  const screenMessage = "Você quer sair agora ou escolher outro horário?";
+
 
   function buildProcessingParams(type: "DEPARTURE" | "ARRIVAL", dateTime: string) {
     const originLat = parseRequiredCoordinate(latitude);
@@ -113,87 +104,12 @@ export default function ChooseTimeScreen() {
       destinationLng: String(destLng),
       selectedDestination,
       sessionId,
-      interactionMode,
       timeType: type,
       dateTime,
     };
   }
 
-  const { startLoop, stopListeningAndSubmit } = useVoiceConversationLoop({
-    onIntent: async (intent) => {
-      setVoiceErrorMessage("");
-      
-      const basicIntent = parseVoiceIntent(intent.transcript);
 
-      if (basicIntent.type === "REPEAT") {
-        void startLoop(screenMessage);
-        return;
-      }
-      
-      if (basicIntent.type === "CANCEL") {
-        vibrationService.light();
-        router.replace("/inicio");
-        return;
-      }
-
-      // Envia para a IA dedicada de horário (sem cache, contexto correto)
-      setVoiceStatus("processing");
-      try {
-        const result = await journeyService.parseTimeIntent({ text: intent.transcript });
-
-        if (result.time_mode === "UNKNOWN" || (!result.target_datetime && result.time_mode !== "NOW")) {
-          vibrationService.error();
-          void startLoop("Não entendi o horário. Você pode dizer, por exemplo: agora, amanhã às três da tarde, ou sexta às oito da manhã.");
-          return;
-        }
-
-        if (result.time_mode === "NOW") {
-          handleGoNow();
-          return;
-        }
-
-        // DEPART_AT ou ARRIVE_BY — converte o datetime da IA para data/hora local
-        const targetDate = new Date(result.target_datetime!);
-        const dateStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, "0")}-${String(targetDate.getDate()).padStart(2, "0")}`;
-        const timeStr = `${String(targetDate.getHours()).padStart(2, "0")}:${String(targetDate.getMinutes()).padStart(2, "0")}`;
-        
-        setDateText(dateStr);
-        setTimeText(timeStr);
-        
-        const typeMode = result.time_mode === "ARRIVE_BY" ? "ARRIVAL" : "DEPARTURE";
-        validateAndNavigate(typeMode, dateStr, timeStr, true);
-
-      } catch (err) {
-        console.error("Erro ao interpretar horário por voz:", err);
-        vibrationService.error();
-        void startLoop("Tive um problema ao entender. Pode tentar novamente?");
-      }
-    },
-    onStatusChange: (nextStatus) => {
-      setVoiceStatus(nextStatus);
-
-      if (nextStatus === "listening" || nextStatus === "processing") {
-        setVoiceErrorMessage("");
-      }
-    },
-    onTranscript: (text, isFinal) => {
-      if (text) {
-        setVoiceTranscript(text);
-      }
-
-      if (!isFinal) {
-        setVoiceErrorMessage("");
-      }
-    },
-    onRecognitionIssue: (issue: VoiceRecognitionIssue) => {
-      if ("transcript" in issue && issue.transcript) {
-        setVoiceTranscript(issue.transcript);
-      }
-
-      setVoiceErrorMessage(issue.message);
-    },
-    maxSilentRetries: 0,
-  });
 
   function handleGoNow() {
     vibrationService.selection();
@@ -217,7 +133,7 @@ export default function ChooseTimeScreen() {
     setIsModalOpen(true);
   }
 
-  function validateAndNavigate(type: "DEPARTURE" | "ARRIVAL", date: string, time: string, isFromVoice = false) {
+  function validateAndNavigate(type: "DEPARTURE" | "ARRIVAL", date: string, time: string) {
     try {
       vibrationService.selection();
       const dateTime = buildLocalDateTimeFromInputs(date, time);
@@ -226,7 +142,6 @@ export default function ChooseTimeScreen() {
       const selectedDate = new Date(dateTime);
 
       const hour = selectedDate.getHours();
-      const minute = selectedDate.getMinutes();
 
       const minOperationalHour = type === "ARRIVAL" ? 6 : 4;
 
@@ -236,11 +151,7 @@ export default function ChooseTimeScreen() {
           ? "Horário de chegada indisponível. Escolha um horário entre 06:00 e 23:59."
           : "Horário de saída indisponível. Escolha um horário entre 04:00 e 23:59.";
 
-        if (isFromVoice) {
-          void startLoop(alertMsg);
-        } else {
-          Alert.alert("Horário fora de operação", alertMsg);
-        }
+        Alert.alert("Horário fora de operação", alertMsg);
         return;
       }
       
@@ -282,56 +193,7 @@ export default function ChooseTimeScreen() {
     setIsModalOpen(false);
   }
 
-  function getMicLabel() {
-    if (voiceStatus === "speaking") {
-      return "Aguarde a assistente";
-    }
 
-    if (voiceStatus === "listening") {
-      return "Parar e enviar";
-    }
-
-    if (voiceStatus === "processing") {
-      return "Entendendo...";
-    }
-
-    if (voiceStatus === "error") {
-      return "Tocar para tentar novamente";
-    }
-
-    return "Responder por voz";
-  }
-
-  function getMicHelperText() {
-    if (voiceErrorMessage) {
-      return "Não consegui ouvir. Toque para tentar novamente.";
-    }
-
-    if (voiceStatus === "speaking") {
-      return "O microfone será liberado ao fim da fala.";
-    }
-
-    if (voiceStatus === "processing") {
-      return "Interpretando seu horário.";
-    }
-
-    return "Diga agora, hoje às oito ou amanhã às nove";
-  }
-
-  function handleMicPress() {
-    if (voiceStatus === "listening") {
-      void stopListeningAndSubmit();
-      return;
-    }
-
-    if (voiceStatus === "speaking" || voiceStatus === "processing") {
-      return;
-    }
-
-    vibrationService.light();
-    setVoiceErrorMessage("");
-    void startLoop();
-  }
 
   return (
     <View style={styles.screen}>
@@ -382,22 +244,6 @@ export default function ChooseTimeScreen() {
             </Text>
           </View>
 
-          {isVoiceMode && (!!voiceTranscript || !!voiceErrorMessage) && (
-            <View
-              style={styles.voiceFeedback}
-              accessible={true}
-              accessibilityLiveRegion="polite"
-            >
-              {!!voiceTranscript && (
-                <Text style={styles.voiceTranscriptText}>
-                  Entendi: {voiceTranscript}
-                </Text>
-              )}
-              {!!voiceErrorMessage && (
-                <Text style={styles.voiceErrorText}>{voiceErrorMessage}</Text>
-              )}
-            </View>
-          )}
 
           <View style={[styles.optionsContainer, { gap: isSmallHeight ? layout.cardGapSmall : layout.cardGap }]}>
             <Pressable
@@ -526,22 +372,6 @@ export default function ChooseTimeScreen() {
         </Animated.View>
       </ScrollView>
 
-      {isVoiceMode && (
-        <View
-          style={[
-            styles.bottomVoiceContainer,
-            { bottom: insets.bottom + 16 },
-          ]}
-        >
-          <BottomVoiceMicButton
-            status={voiceStatus}
-            label={getMicLabel()}
-            helperText={getMicHelperText()}
-            onPress={handleMicPress}
-            accessibilityLabel={getMicLabel()}
-          />
-        </View>
-      )}
 
       {/* TIME SELECTOR MODAL */}
       <Modal
@@ -575,7 +405,7 @@ export default function ChooseTimeScreen() {
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.dateChipsContainer}
                 >
-                  {dateOptions.map((opt) => {
+                  {dateOptions.map((opt: { dateText: string; label: string; dayNum: number }) => {
                     const isSelected = dateText === opt.dateText;
                     return (
                       <Pressable

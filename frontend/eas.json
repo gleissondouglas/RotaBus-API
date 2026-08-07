@@ -26,6 +26,12 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
+        "API_BASE_URL": "https://rotabus-api.onrender.com",
+        "GOOGLE_MAPS_ANDROID_API_KEY": "AIzaSyCNTlDIr1DWA_O2TOockJgGUDibM8Rf4ZE",
+        "GOOGLE_MAPS_IOS_API_KEY": "AIzaSyCNTlDIr1DWA_O2TOockJgGUDibM8Rf4ZE"
       }
     },
     "production": {

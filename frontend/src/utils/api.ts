@@ -30,7 +30,8 @@ export async function request<T>(url: string, options: RequestOptions = {}): Pro
     clearTimeout(id);
 
     // TRATAMENTO GLOBAL DE 401 (Não autorizado/Sessão expirada)
-    if (response.status === 401) {
+    // Ignoramos a rota de login para não dar alerta de "Sessão Expirada" quando o usuário apenas errou a senha.
+    if (response.status === 401 && !url.includes("/login")) {
       console.warn("[API] Sessão expirada ou não autorizada.");
       await sessionService.clearSession();
       

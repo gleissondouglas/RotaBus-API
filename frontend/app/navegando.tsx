@@ -481,7 +481,15 @@ export default function NavigatingScreen() {
       }
     } else if (stage === "waiting_bus") {
       setStage("on_bus");
-      setGlobalStepIndex(prev => prev + 1); // Avança para o passo de trânsito
+      
+      // Encontra o índice real do passo de ônibus (transit), pois pode haver múltiplos passos de caminhada antes
+      const transitIndex = allSteps.findIndex((s, i) => i >= globalStepIndex && s.type === "transit");
+      if (transitIndex !== -1) {
+        setGlobalStepIndex(transitIndex);
+      } else {
+        setGlobalStepIndex(prev => prev + 1);
+      }
+      
       speakControlled(`Tudo certo! Você embarcou no ônibus. Boa viagem. Eu aviso quando estiver perto de descer.`, true);
     } else if (stage === "on_bus") {
       const hasTransitAhead = allSteps.slice(globalStepIndex + 1).some(s => s.type === "transit");
@@ -717,11 +725,19 @@ export default function NavigatingScreen() {
 
             <View style={styles.bottomSheetHeader}>
               <Text style={styles.bottomSheetLabel}>
-                {isWalkingOnly ? "Caminho até o destino" : "Caminho até o ponto"}
+                {(() => {
+                  if (isWalkingOnly) return "Caminho até o destino";
+                  const hasTransitAhead = allSteps.slice(globalStepIndex).some(s => s.type === "transit");
+                  return hasTransitAhead ? "Caminho até o ponto" : "Caminho até o destino";
+                })()}
               </Text>
               {!!stopName && stopName !== "ponto indicado" && (
                 <Text style={styles.stopNameText} numberOfLines={1}>
-                  {isWalkingOnly ? `Destino: ${stopName}` : `Ponto: ${stopName}`}
+                  {(() => {
+                    if (isWalkingOnly) return `Destino: ${stopName}`;
+                    const hasTransitAhead = allSteps.slice(globalStepIndex).some(s => s.type === "transit");
+                    return hasTransitAhead ? `Ponto: ${stopName}` : `Destino Final`;
+                  })()}
                 </Text>
               )}
             </View>
@@ -733,27 +749,31 @@ export default function NavigatingScreen() {
               </View>
             )}
 
-            {!isWalkingOnly && (
-              <View style={styles.summaryRow}>
-                <View style={styles.summaryItem}>
-                  <Text style={styles.summaryLabel}>Linha</Text>
-                  <Text style={styles.summaryValue}>{busLine}</Text>
-                  {!!lineDetails && lineDetails !== "--" && (
-                    <Text style={styles.infoCardSubValue} numberOfLines={2}>{lineDetails}</Text>
-                  )}
+            {!isWalkingOnly && (() => {
+              const hasTransitAhead = allSteps.slice(globalStepIndex).some(s => s.type === "transit");
+              if (!hasTransitAhead) return null;
+              return (
+                <View style={styles.summaryRow}>
+                  <View style={styles.summaryItem}>
+                    <Text style={styles.summaryLabel}>Linha</Text>
+                    <Text style={styles.summaryValue}>{busLine}</Text>
+                    {!!lineDetails && lineDetails !== "--" && (
+                      <Text style={styles.infoCardSubValue} numberOfLines={2}>{lineDetails}</Text>
+                    )}
+                  </View>
+                  <View style={styles.summaryItem}>
+                    <Text style={styles.summaryLabel}>Chega</Text>
+                    <Text style={[styles.summaryValue, { color: theme.primary }]}>{busCountdown || "..."}</Text>
+                  </View>
                 </View>
-                <View style={styles.summaryItem}>
-                  <Text style={styles.summaryLabel}>Chega</Text>
-                  <Text style={[styles.summaryValue, { color: theme.primary }]}>{busCountdown || "..."}</Text>
-                </View>
-              </View>
-            )}
+              );
+            })()}
             <View style={styles.actionArea}>
               <PrimaryButton 
                 title={getPrimaryButtonTitle()} 
                 onPress={handleStageTransition} 
                 style={styles.mainButton} 
-                accessibilityLabel={isWalkingOnly ? "Cheguei ao destino" : "Cheguei ao ponto"}
+                accessibilityLabel={getPrimaryButtonTitle()}
               />
               <View style={styles.ttsWrapper}>
                 <ListenOptionsButton 

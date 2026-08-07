@@ -25,8 +25,8 @@ export function FavoritesAndHistoryView({ onSelectDestination }: Props) {
         userService.getFavorites(),
         userService.getHistory(),
       ]);
-      setFavorites(favs);
-      setHistory(hist);
+      setFavorites(Array.isArray(favs) ? favs : []);
+      setHistory(Array.isArray(hist) ? hist : []);
     } catch (err) {
       console.log("Erro ao carregar favoritos/histórico:", err);
     } finally {

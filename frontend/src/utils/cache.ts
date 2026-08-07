@@ -18,11 +18,12 @@ export const cache = {
    */
   async set<T>(key: string, data: T): Promise<void> {
     try {
+      const safeKey = key.replace(/[^a-zA-Z0-9.\-_]/g, "_");
       const item: CacheItem<T> = {
         data,
         timestamp: Date.now(),
       };
-      await appStorage.setItem(`${OFFLINE_CACHE_PREFIX}${key}`, JSON.stringify(item));
+      await appStorage.setItem(`${OFFLINE_CACHE_PREFIX}${safeKey}`, JSON.stringify(item));
     } catch (e) {
       console.warn("Falha ao salvar no cache offline", e);
     }
@@ -33,14 +34,15 @@ export const cache = {
    */
   async get<T>(key: string, ttlMs: number): Promise<T | null> {
     try {
-      const stored = await appStorage.getItem(`${OFFLINE_CACHE_PREFIX}${key}`);
+      const safeKey = key.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+      const stored = await appStorage.getItem(`${OFFLINE_CACHE_PREFIX}${safeKey}`);
       if (!stored) return null;
 
       const item: CacheItem<T> = JSON.parse(stored);
       const isExpired = Date.now() - item.timestamp > ttlMs;
 
       if (isExpired) {
-        await appStorage.deleteItem(`${OFFLINE_CACHE_PREFIX}${key}`);
+        await appStorage.deleteItem(`${OFFLINE_CACHE_PREFIX}${safeKey}`);
         return null;
       }
 

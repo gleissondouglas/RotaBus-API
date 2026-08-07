@@ -20,7 +20,7 @@ import { isConnected } from "../src/utils/network";
 import { JourneyStep, JourneySummary } from "../src/types/journey.types";
 import { formatMinutesToFriendlyText } from "../src/utils/date-time";
 import { parseJsonParam } from "../src/utils/helpers";
-import { getInteractionMode } from "../src/types/interaction.types";
+
 
 function getTransitSteps(steps: JourneyStep[]) {
   return steps.filter((step) => step.type === "transit");
@@ -90,7 +90,7 @@ export default function BestRouteScreen() {
   const destinationLng = String(params.destinationLng || "");
   const selectedDestination = String(params.selectedDestination || "");
   const fullBackendMessage = String(params.message || "");
-  const interactionMode = getInteractionMode(params.interactionMode);
+
 
   const summary = parseJsonParam<JourneySummary | null>(params.summary, null);
   const alerts = parseJsonParam<string[]>(params.alerts, []);
@@ -205,7 +205,7 @@ export default function BestRouteScreen() {
         destinationLat,
         destinationLng,
         selectedDestination,
-        interactionMode,
+
         message: fullBackendMessage,
         shortMessage,
         summary: JSON.stringify(summary),
