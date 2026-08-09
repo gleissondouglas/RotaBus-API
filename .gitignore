@@ -27,4 +27,10 @@ frontend/build-*.apk
 docs/liquid-glass-audit.md
 
 # Expo cache and generated files
-frontend/.expo/*.swp
+frontend/.expo/
+
+# Swap files
+*.swp
+
+# AI agents configuration and rules
+.agents/rules/
