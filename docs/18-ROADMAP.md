@@ -38,6 +38,17 @@ O Nuvem nasceu como um app de rotas reativo e segue sua trajetória acelerada pa
 2. **Push Notifications:** Integração com Expo Notifications para disparos proativos (ex: "Você está perto do ponto do ônibus 100, ele passa em 5 min.").
 3. **Cache Offline-First:** Salvar rotas muito frequentes ("Ida p/ Casa") no dispositivo para permitir navegação ininterrupta em áreas sem 4G.
 
-## Fase 7: Rastreamento em Tempo Real e Operações (🔄 Em Andamento)
+## Fase 7: Overhaul de UI / Design System "Nuvem Apple" (🔄 Em Andamento)
+Uma refatoração completa do visual do aplicativo para deixá-lo mais fluido, limpo e com sensação nativa (padrão Apple).
+1. **Fluxo de Autenticação e Onboarding:** (✅ Concluído)
+   - Substituição de "cards" opacos brancos por `LinearGradient` imersivo de ponta a ponta em todas as telas iniciais (`index`, `onboarding`, `login`, `criar-conta`, `esqueci-senha`, `permissoes`).
+   - Refatoração dos ícones para utilizar padronização fina do `Ionicons` (outline).
+   - Abandono de bordas retas (efeitos de caixa cortada pela SafeArea), utilizando `flex: 1` no background e absorvendo as margens apenas no conteúdo.
+2. **Fluxo de Configurações e Perfil:** (🔮 Pendente)
+   - Padronizar as telas de `acessibilidade`, `alterar-nome`, `alterar-senha` e menus com o mesmo efeito de UI imersiva.
+3. **Fluxo Principal (Core Buscador):** (🔮 Pendente)
+   - Refatoração imersiva das telas conversacionais e de navegação (`inicio`, `ouvindo`, `navegando`, `melhor-rota`, `confirmar-destino`).
+
+## Fase 8: Rastreamento em Tempo Real e Operações (🔄 Em Andamento)
 1. **Tempo Real (Crowdsourcing Waze-style):** (✅ Concluído) Utilização do aplicativo dos próprios passageiros como "Satélites" de GPS. Integrado com Redis no backend para desenhar os ônibus ao vivo na tela sem depender de APIs governamentais (GTFS-R).
 2. **Painel CMS de Inteligência Local:** (🔮 Backlog) Um Web-App de dashboard para administradores gerenciarem a base de apelidos (`LocalIntelligence`), permitindo adicionar novos termos sem necessidade de novos deploys.
