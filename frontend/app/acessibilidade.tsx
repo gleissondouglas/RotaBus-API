@@ -1,10 +1,13 @@
 import { ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import Animated, { FadeInUp } from "react-native-reanimated";
 
 import { BackButton } from "../src/components/BackButton";
 import { ListenOptionsButton } from "../src/components/ListenOptionsButton";
 import { ScreenContainer } from "../src/components/ScreenContainer";
 import { useAutoSpeakOnce } from "../src/hooks/useAutoSpeakOnce";
 import { useAccessibility } from "../src/contexts/AccessibilityContext";
+import { useThemeColors } from "../src/theme/colors";
 
 export default function AccessibilityScreen() {
   const {
@@ -16,13 +19,21 @@ export default function AccessibilityScreen() {
     updateSettings,
   } = useAccessibility();
 
+  const theme = useThemeColors();
+
   const screenMessage =
     "Você está na tela de acessibilidade. Aqui você pode configurar texto maior, voz mais lenta, alto contraste, leitura automática das telas e vibração.";
 
   useAutoSpeakOnce("acessibilidade", screenMessage);
 
   return (
-    <ScreenContainer withPadding={false} style={{ backgroundColor: "#F6F8FA" }}>
+    <View style={{ flex: 1 }}>
+      <LinearGradient 
+        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
+        locations={[0, 0.4, 1]}
+        style={StyleSheet.absoluteFillObject} 
+      />
+      <ScreenContainer withPadding={false} backgroundColor="transparent">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
@@ -31,7 +42,7 @@ export default function AccessibilityScreen() {
           <BackButton />
         </View>
 
-        <View style={styles.content}>
+        <Animated.View entering={FadeInUp.duration(600)} style={styles.content}>
           <View style={styles.textHeader}>
             <Text style={styles.title}>Acessibilidade</Text>
             <Text style={styles.subtitle}>
@@ -135,9 +146,10 @@ export default function AccessibilityScreen() {
               <ListenOptionsButton textToSpeak={screenMessage} />
             </View>
           </View>
-        </View>
+        </Animated.View>
       </ScrollView>
-    </ScreenContainer>
+      </ScreenContainer>
+    </View>
   );
 }
 
@@ -182,14 +194,9 @@ const styles = StyleSheet.create({
   card: {
     padding: 24,
     borderRadius: 32,
-    backgroundColor: "white",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.04,
-    shadowRadius: 20,
-    elevation: 3,
+    backgroundColor: "rgba(255, 255, 255, 0.4)",
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.02)",
+    borderColor: "rgba(255, 255, 255, 0.6)",
   },
 
   option: {

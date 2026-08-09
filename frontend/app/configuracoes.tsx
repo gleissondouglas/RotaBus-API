@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Animated, { FadeInUp } from "react-native-reanimated";
+import { LinearGradient } from "expo-linear-gradient";
 
 import { BackButton } from "../src/components/BackButton";
 import { ListenOptionsButton } from "../src/components/ListenOptionsButton";
@@ -119,8 +120,14 @@ export default function SettingsScreen() {
   }
 
   return (
-    <ScreenContainer withPadding={false} style={{ backgroundColor: theme.background }}>
-      <ScrollView
+    <View style={{ flex: 1 }}>
+      <LinearGradient 
+        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
+        locations={[0, 0.4, 1]}
+        style={StyleSheet.absoluteFillObject} 
+      />
+      <ScreenContainer withPadding={false} backgroundColor="transparent">
+        <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
@@ -141,7 +148,7 @@ export default function SettingsScreen() {
             </Text>
           </View>
 
-          <View style={[styles.section, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <View style={[styles.section, { backgroundColor: "rgba(255, 255, 255, 0.4)", borderColor: "rgba(255, 255, 255, 0.6)" }]}>
             <Text style={[styles.sectionTitle, { color: theme.primary }]} maxFontSizeMultiplier={1.2}>Conta</Text>
             <SettingOption 
               icon="person-outline" 
@@ -160,7 +167,7 @@ export default function SettingsScreen() {
             />
           </View>
 
-          <View style={[styles.section, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <View style={[styles.section, { backgroundColor: "rgba(255, 255, 255, 0.4)", borderColor: "rgba(255, 255, 255, 0.6)" }]}>
             <Text style={[styles.sectionTitle, { color: theme.primary }]} maxFontSizeMultiplier={1.2}>Preferências</Text>
             <SettingOption 
               icon="accessibility-outline" 
@@ -171,7 +178,7 @@ export default function SettingsScreen() {
             />
           </View>
 
-          <View style={[styles.section, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <View style={[styles.section, { backgroundColor: "rgba(255, 255, 255, 0.4)", borderColor: "rgba(255, 255, 255, 0.6)" }]}>
             <Text style={[styles.sectionTitle, { color: theme.primary }]} maxFontSizeMultiplier={1.2}>Privacidade</Text>
             <SettingOption 
               icon="shield-checkmark-outline" 
@@ -220,7 +227,8 @@ export default function SettingsScreen() {
           </View>
         </Animated.View>
       </ScrollView>
-    </ScreenContainer>
+      </ScreenContainer>
+    </View>
   );
 }
 
@@ -315,11 +323,6 @@ const styles = StyleSheet.create({
   section: {
     padding: 24,
     borderRadius: 32,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.04,
-    shadowRadius: 20,
-    elevation: 3,
     borderWidth: 1,
   },
 

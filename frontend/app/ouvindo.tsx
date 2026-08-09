@@ -21,6 +21,7 @@ import Animated, {
   interpolate,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 
 import { ScreenContainer } from "../src/components/ScreenContainer";
 import { speak, speakAndWait, startListening, stopListening, isSpeechRecognitionAvailable } from "../src/services/speech.service";
@@ -344,7 +345,13 @@ export default function ListeningScreen() {
   }
 
   return (
-    <ScreenContainer withPadding={false} style={{ backgroundColor: theme.background }}>
+    <View style={{ flex: 1 }}>
+      <LinearGradient 
+        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
+        locations={[0, 0.4, 1]}
+        style={StyleSheet.absoluteFillObject} 
+      />
+      <ScreenContainer withPadding={false} backgroundColor="transparent">
       <View style={[styles.topBar, { paddingTop: Math.max(insets.top, 16) }]}>
         <View style={{ flex: 1 }} />
       </View>
@@ -424,6 +431,7 @@ export default function ListeningScreen() {
         </Animated.View>
       </View>
     </ScreenContainer>
+    </View>
   );
 }
 

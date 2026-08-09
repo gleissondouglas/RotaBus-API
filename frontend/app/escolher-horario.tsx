@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
-import Animated, { FadeInUp, FadeIn } from "react-native-reanimated";
+import Animated, { FadeInUp, FadeIn, ZoomIn, withSpring, withTiming } from "react-native-reanimated";
 
 import { LiquidGlassView } from "../src/components/LiquidGlassView";
 import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
@@ -200,9 +200,14 @@ export default function ChooseTimeScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.background }]}>
-      <View style={[styles.fixedHeader, { top: insets.top + 8 }]}>
-        <BackButton accessibilityLabel="Voltar para a tela anterior" />
-      </View>
+      <LiquidGlassView
+        style={[styles.fixedHeaderBackground, { height: insets.top + 60 }]}
+        intensity={60}
+      >
+        <View style={[styles.fixedHeader, { top: insets.top + 8 }]}>
+          <BackButton accessibilityLabel="Voltar para a tela anterior" />
+        </View>
+      </LiquidGlassView>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -389,8 +394,10 @@ export default function ChooseTimeScreen() {
         animationType="fade"
         onRequestClose={() => setIsModalOpen(false)}
       >
-        <LiquidGlassView style={styles.modalOverlay} intensity={50} fallbackColor="rgba(0,0,0,0.6)">
-          <Animated.View entering={FadeIn.duration(300)} style={[styles.modalContent, { backgroundColor: theme.card }]}>
+        <LiquidGlassView style={StyleSheet.absoluteFill} intensity={50} fallbackColor="rgba(0,0,0,0.6)" />
+        <Pressable style={styles.modalOverlay} onPress={() => setIsModalOpen(false)}>
+          <Pressable onPress={() => { /* Impede fechamento ao clicar no conteúdo */ }}>
+            <Animated.View entering={PopMenuEntering} style={[styles.modalContent, { backgroundColor: theme.card }]}>
             <View style={styles.modalHeader}>
                <View style={[styles.modalIconBg, { backgroundColor: theme.primaryLight }]}>
                   <AdaptiveIcon 
@@ -494,7 +501,8 @@ export default function ChooseTimeScreen() {
                </Pressable>
             </View>
           </Animated.View>
-        </LiquidGlassView>
+        </Pressable>
+      </Pressable>
       </Modal>
     </View>
   );
@@ -504,10 +512,16 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
+  fixedHeaderBackground: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 50,
+  },
   fixedHeader: {
     position: "absolute",
     left: 16,
-    zIndex: 50,
   },
   scrollContent: {
     flexGrow: 1,
@@ -708,6 +722,22 @@ const styles = StyleSheet.create({
   modalCancelText: {
     fontSize: 16,
     fontWeight: "800",
-    textDecorationLine: "underline",
   },
 });
+
+const PopMenuEntering = () => {
+  'worklet';
+  return {
+    initialValues: {
+      opacity: 0,
+      transform: [{ scale: 0.9 }, { translateY: 30 }],
+    },
+    animations: {
+      opacity: withTiming(1, { duration: 200 }),
+      transform: [
+        { scale: withSpring(1, { damping: 22, stiffness: 220 }) },
+        { translateY: withSpring(0, { damping: 22, stiffness: 220 }) },
+      ],
+    },
+  };
+};

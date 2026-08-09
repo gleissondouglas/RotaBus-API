@@ -566,7 +566,11 @@ export default function NavigatingScreen() {
 
       {/* SOLID BACKGROUND (For status stages) */}
       {(stage === "waiting_bus" || stage === "on_bus" || stage === "arrived") && (
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: theme.background }]} />
+        <LinearGradient 
+          colors={['#E0F2FE', '#F0F9FF', theme.background]} 
+          locations={[0, 0.4, 1]}
+          style={StyleSheet.absoluteFillObject} 
+        />
       )}
 
       {/* Top Bar (Always Fixed) */}
@@ -688,11 +692,11 @@ export default function NavigatingScreen() {
 
                   return (
                     <View style={styles.infoCardsGrid}>
-                      <View style={[styles.infoCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                      <View style={[styles.infoCard, { backgroundColor: "rgba(255, 255, 255, 0.4)", borderColor: "rgba(255, 255, 255, 0.6)" }]}>
                         <Text style={[styles.infoCardLabel, { color: theme.textMuted }]}>LINHA {busLine}</Text>
                         <Text style={[styles.infoCardValue, { color: theme.text, fontSize: 18 }]} numberOfLines={2} adjustsFontSizeToFit>{lineDetails || busLine}</Text>
                       </View>
-                      <View style={[styles.infoCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                      <View style={[styles.infoCard, { backgroundColor: "rgba(255, 255, 255, 0.4)", borderColor: "rgba(255, 255, 255, 0.6)" }]}>
                         <Text style={[styles.infoCardLabel, { color: theme.textMuted }]}>{chegaLabel}</Text>
                         <Text style={[styles.infoCardValue, { color: theme.primary }]} numberOfLines={1} adjustsFontSizeToFit>{chegaValue}</Text>
                         {!!stopName && stopName !== "ponto indicado" && (
@@ -784,11 +788,11 @@ export default function NavigatingScreen() {
 
               return (
                 <View style={styles.infoCardsGrid}>
-                  <View style={[styles.infoCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                  <View style={[styles.infoCard, { backgroundColor: "rgba(255, 255, 255, 0.4)", borderColor: "rgba(255, 255, 255, 0.6)" }]}>
                     <Text style={[styles.infoCardLabel, { color: theme.textMuted }]}>LINHA {busLine}</Text>
                     <Text style={[styles.infoCardValue, { color: theme.text, fontSize: 18 }]} numberOfLines={2} adjustsFontSizeToFit>{lineDetails || busLine}</Text>
                   </View>
-                  <View style={[styles.infoCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                  <View style={[styles.infoCard, { backgroundColor: "rgba(255, 255, 255, 0.4)", borderColor: "rgba(255, 255, 255, 0.6)" }]}>
                     <Text style={[styles.infoCardLabel, { color: theme.textMuted }]}>{chegaLabel}</Text>
                     <Text style={[styles.infoCardValue, { color: theme.primary }]} numberOfLines={1} adjustsFontSizeToFit>{chegaValue}</Text>
                     {!!stopName && stopName !== "ponto indicado" && (

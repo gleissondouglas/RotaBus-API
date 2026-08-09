@@ -11,7 +11,7 @@ import {
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeIn, FadeInUp, useAnimatedScrollHandler, useSharedValue, useAnimatedStyle, interpolate, Extrapolation } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { BackButton } from "../src/components/BackButton";
@@ -44,7 +44,161 @@ function parseRequiredCoordinate(value: string) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+const getAddressDetails = (addr: string) => {
+  const parts = addr
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return {
+    main: parts.slice(0, 2).join(", ") || addr || "Endereço não informado",
+    area: parts.slice(2).join(", "),
+  };
+};
 
+
+
+const CarouselCardItem = ({
+  option,
+  index,
+  optionsLength,
+  currentSuggestionIndex,
+  handleSelectSuggestion,
+  isActionDisabled,
+  carouselCardWidth,
+  cardMinHeight,
+  city,
+  theme,
+  scrollX,
+}: any) => {
+  const isCurrent = index === currentSuggestionIndex;
+  const optionCategory = resolveDestinationCategory(option);
+  const addressDetails = getAddressDetails(option.address || "");
+  const hasCoordinates =
+    parseRequiredCoordinate(String(option.lat ?? "")) !== null &&
+    parseRequiredCoordinate(String(option.lng ?? "")) !== null;
+
+  const itemWidth = carouselCardWidth + 12;
+
+  const animatedStyle = useAnimatedStyle(() => {
+    const inputRange = [
+      (index - 1) * itemWidth,
+      index * itemWidth,
+      (index + 1) * itemWidth,
+    ];
+    const scale = interpolate(
+      scrollX.value,
+      inputRange,
+      [0.9, 1, 0.9],
+      Extrapolation.CLAMP
+    );
+    const opacity = interpolate(
+      scrollX.value,
+      inputRange,
+      [0.5, 1, 0.5],
+      Extrapolation.CLAMP
+    );
+    return {
+      transform: [{ scale }],
+      opacity,
+    };
+  });
+
+  return (
+    <Animated.View
+      entering={FadeInUp.delay(index * 80).duration(300)}
+      style={[{ width: carouselCardWidth }, animatedStyle]}
+    >
+      <Pressable
+        style={({ pressed }) => [
+          styles.destCard,
+          { minHeight: cardMinHeight },
+          isCurrent && styles.destCardActive,
+          (pressed || isActionDisabled) && { opacity: 0.7, transform: [{ scale: 0.99 }] },
+        ]}
+        disabled={isActionDisabled}
+        onPress={() => handleSelectSuggestion(option, index)}
+        accessibilityRole="button"
+        accessibilityLabel={`Selecionar ${index + 1}: ${option.name}, ${option.address}`}
+      >
+        <View style={styles.cardContent}>
+            {/* Contador */}
+            <View style={styles.cardTopRow}>
+              <View
+                style={[
+                  styles.numberBadge,
+                  { backgroundColor: isCurrent ? theme.primary : theme.primaryLight },
+                ]}
+              >
+                <Text style={[styles.numberBadgeText, { color: isCurrent ? "#fff" : theme.primary }]}>
+                  {index + 1}
+                </Text>
+              </View>
+              <Text style={styles.cardCountText}>
+                Opção {index + 1} de {optionsLength}
+              </Text>
+              {isCurrent && (
+                <Ionicons name="checkmark-circle" size={22} color={theme.primary} />
+              )}
+            </View>
+
+            {/* Centro do Card: Ícone + nome + detalhes */}
+            <View style={{ flex: 1, justifyContent: "center" }}>
+              <View style={styles.infoBox}>
+                <View style={styles.cardPlaceRow}>
+                  <DestinationCategoryIcon category={optionCategory} />
+                  <View style={styles.placeTextBox}>
+                    <Text style={styles.placeName} numberOfLines={2}>
+                      {option.name}
+                    </Text>
+                    <Text style={styles.placeType}>
+                      {getDestinationCategoryLabel(optionCategory)}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.cardDetails}>
+                  <View style={styles.cardDetailRow}>
+                    <Ionicons name="location-outline" size={16} color={theme.primary} />
+                    <Text style={styles.cardDetailText} numberOfLines={2}>
+                      {addressDetails.main}
+                    </Text>
+                  </View>
+                  {!!addressDetails.area && (
+                    <View style={styles.cardDetailRow}>
+                      <Ionicons name="business-outline" size={16} color={theme.primary} />
+                      <Text style={styles.cardDetailText} numberOfLines={1}>
+                        {addressDetails.area}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+            </View>
+
+          {/* Chips */}
+          <View style={styles.chipsContainer}>
+            <View style={styles.chipsRow}>
+              <View style={styles.chip}>
+                <Ionicons name="map-outline" size={13} color={theme.primary} />
+                <Text style={styles.chipText} numberOfLines={1}>{city}</Text>
+              </View>
+              <View style={styles.chip}>
+                <Ionicons
+                  name={hasCoordinates ? "navigate-circle-outline" : "alert-circle-outline"}
+                  size={13}
+                  color={theme.primary}
+                />
+                <Text style={styles.chipText} numberOfLines={1}>
+                  {hasCoordinates ? "Localização ok" : "Pendente"}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Pressable>
+    </Animated.View>
+  );
+};
 
 export default function ConfirmDestinationScreen() {
   const params = useLocalSearchParams();
@@ -108,16 +262,7 @@ export default function ConfirmDestinationScreen() {
   const displayDestination =
     bestOption.name || displayData?.title || destination || "Destino informado";
 
-  const getAddressDetails = (addr: string) => {
-    const parts = addr
-      .split(",")
-      .map((part) => part.trim())
-      .filter(Boolean);
-    return {
-      main: parts.slice(0, 2).join(", ") || addr || "Endereço não informado",
-      area: parts.slice(2).join(", "),
-    };
-  };
+
 
   const activeDestinationName =
     selectedSuggestion?.name || bestOption.name || displayDestination;
@@ -135,6 +280,13 @@ export default function ConfirmDestinationScreen() {
     parseRequiredCoordinate(String(activeDestination?.lng ?? "")) !== null;
 
   const isActionDisabled = isLoadingCommand;
+
+  const scrollX = useSharedValue(0);
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (e) => {
+      scrollX.value = e.contentOffset.x;
+    },
+  });
 
   // ─── TTS automático: anuncia o destino encontrado ─────────────────────
   const destinationSpeechText = (() => {
@@ -255,19 +407,29 @@ export default function ConfirmDestinationScreen() {
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
-    <View style={[styles.screen, { backgroundColor: theme.background }]}>
-      {/* TOP BAR — idêntico ao de melhor-rota */}
-      <View style={[styles.fixedHeader, { top: insets.top + 12 }]}>
-        <BackButton label="Voltar" accessibilityLabel="Voltar para a tela anterior" />
-        <Pressable
-          style={styles.helpButton}
-          onPress={handleHelp}
-          accessibilityLabel="Abrir ajuda"
-          accessibilityRole="button"
-        >
-          <AdaptiveIcon iosSymbol="questionmark.circle" fallbackFamily="Ionicons" fallbackName="help-circle-outline" size={28} color={theme.primary} />
-        </Pressable>
-      </View>
+    <View style={styles.screen}>
+      <LinearGradient 
+        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
+        locations={[0, 0.4, 1]}
+        style={StyleSheet.absoluteFillObject} 
+      />
+      {/* TOP BAR — com fundo blur para não embolar o scroll */}
+      <LiquidGlassView
+        style={[styles.fixedHeaderBackground, { height: insets.top + 72 }]}
+        intensity={60}
+      >
+        <View style={[styles.fixedHeader, { top: insets.top + 12 }]}>
+          <BackButton label="Voltar" accessibilityLabel="Voltar para a tela anterior" />
+          <Pressable
+            style={styles.helpButton}
+            onPress={handleHelp}
+            accessibilityLabel="Abrir ajuda"
+            accessibilityRole="button"
+          >
+            <AdaptiveIcon iosSymbol="questionmark.circle" fallbackFamily="Ionicons" fallbackName="help-circle-outline" size={28} color={theme.primary} />
+          </Pressable>
+        </View>
+      </LiquidGlassView>
 
       {/* SCROLL — idêntico ao de melhor-rota */}
       <ScrollView
@@ -300,12 +462,14 @@ export default function ConfirmDestinationScreen() {
           {isChoosingSuggestion ? (
             /* ── CARROSSEL ── */
             <View style={[styles.carouselWrapper, { flex: 1 }]}>
-              <ScrollView
+              <Animated.ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 snapToInterval={carouselCardWidth + 12}
                 decelerationRate="fast"
                 contentContainerStyle={styles.carouselContent}
+                onScroll={scrollHandler}
+                scrollEventThrottle={16}
                 onMomentumScrollEnd={(event) => {
                   const offsetX = event.nativeEvent.contentOffset.x;
                   const nextIndex = Math.round(offsetX / (carouselCardWidth + 12));
@@ -315,112 +479,23 @@ export default function ConfirmDestinationScreen() {
                 }}
                 accessibilityLabel="Destinos encontrados em carrossel"
               >
-                {options.map((option: any, index: number) => {
-                  const isCurrent = index === currentSuggestionIndex;
-                  const optionCategory = resolveDestinationCategory(option);
-                  const addressDetails = getAddressDetails(option.address || "");
-                  const hasCoordinates =
-                    parseRequiredCoordinate(String(option.lat ?? "")) !== null &&
-                    parseRequiredCoordinate(String(option.lng ?? "")) !== null;
-
-                  return (
-                    <Animated.View
-                      key={option.id || index}
-                      entering={FadeInUp.delay(index * 80).duration(300)}
-                      style={{ width: carouselCardWidth }}
-                    >
-                      <Pressable
-                        style={({ pressed }) => [
-                          styles.destCard,
-                          { minHeight: cardMinHeight },
-                          isCurrent && styles.destCardActive,
-                          (pressed || isActionDisabled) && { opacity: 0.7, transform: [{ scale: 0.99 }] },
-                        ]}
-                        disabled={isActionDisabled}
-                        onPress={() => handleSelectSuggestion(option, index)}
-                        accessibilityRole="button"
-                        accessibilityLabel={`Selecionar ${index + 1}: ${option.name}, ${option.address}`}
-                      >
-                        <View style={styles.cardContent}>
-                            {/* Contador */}
-                            <View style={styles.cardTopRow}>
-                              <View
-                                style={[
-                                  styles.numberBadge,
-                                  { backgroundColor: isCurrent ? theme.primary : theme.primaryLight },
-                                ]}
-                              >
-                                <Text style={[styles.numberBadgeText, { color: isCurrent ? "#fff" : theme.primary }]}>
-                                  {index + 1}
-                                </Text>
-                              </View>
-                              <Text style={styles.cardCountText}>
-                                Opção {index + 1} de {options.length}
-                              </Text>
-                              {isCurrent && (
-                                <Ionicons name="checkmark-circle" size={22} color={theme.primary} />
-                              )}
-                            </View>
-
-                            {/* Centro do Card: Ícone + nome + detalhes */}
-                            <View style={{ flex: 1, justifyContent: "center" }}>
-                              <View style={styles.infoBox}>
-                                <View style={styles.cardPlaceRow}>
-                                  <DestinationCategoryIcon category={optionCategory} />
-                                  <View style={styles.placeTextBox}>
-                                    <Text style={styles.placeName} numberOfLines={2}>
-                                      {option.name}
-                                    </Text>
-                                    <Text style={styles.placeType}>
-                                      {getDestinationCategoryLabel(optionCategory)}
-                                    </Text>
-                                  </View>
-                                </View>
-
-                                <View style={styles.cardDetails}>
-                                  <View style={styles.cardDetailRow}>
-                                    <Ionicons name="location-outline" size={16} color={theme.primary} />
-                                    <Text style={styles.cardDetailText} numberOfLines={2}>
-                                      {addressDetails.main}
-                                    </Text>
-                                  </View>
-                                  {!!addressDetails.area && (
-                                    <View style={styles.cardDetailRow}>
-                                      <Ionicons name="business-outline" size={16} color={theme.primary} />
-                                      <Text style={styles.cardDetailText} numberOfLines={1}>
-                                        {addressDetails.area}
-                                      </Text>
-                                    </View>
-                                  )}
-                                </View>
-                              </View>
-                            </View>
-
-                          {/* Chips */}
-                          <View style={styles.chipsContainer}>
-                            <View style={styles.chipsRow}>
-                              <View style={styles.chip}>
-                                <Ionicons name="map-outline" size={13} color={theme.primary} />
-                                <Text style={styles.chipText} numberOfLines={1}>{city}</Text>
-                              </View>
-                              <View style={styles.chip}>
-                                <Ionicons
-                                  name={hasCoordinates ? "navigate-circle-outline" : "alert-circle-outline"}
-                                  size={13}
-                                  color={theme.primary}
-                                />
-                                <Text style={styles.chipText} numberOfLines={1}>
-                                  {hasCoordinates ? "Localização ok" : "Pendente"}
-                                </Text>
-                              </View>
-                            </View>
-                          </View>
-                        </View>
-                      </Pressable>
-                    </Animated.View>
-                  );
-                })}
-              </ScrollView>
+                {options.map((option: any, index: number) => (
+                  <CarouselCardItem
+                    key={option.id || index}
+                    option={option}
+                    index={index}
+                    optionsLength={options.length}
+                    currentSuggestionIndex={currentSuggestionIndex}
+                    handleSelectSuggestion={handleSelectSuggestion}
+                    isActionDisabled={isActionDisabled}
+                    carouselCardWidth={carouselCardWidth}
+                    cardMinHeight={cardMinHeight}
+                    city={city}
+                    theme={theme}
+                    scrollX={scrollX}
+                  />
+                ))}
+              </Animated.ScrollView>
 
               {options.length > 1 && (
                 <View style={styles.carouselDots}>
@@ -550,6 +625,13 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
+  fixedHeaderBackground: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 50,
+  },
   fixedHeader: {
     position: "absolute",
     left: 16,
@@ -557,7 +639,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    zIndex: 50,
   },
   helpButton: {
     width: 48,
@@ -627,18 +708,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#CBD5E1",
   },
 
-  // ─── Card (igual compactSummary da melhor-rota) ─────────────────────
   destCard: {
-    backgroundColor: "white", // Mantendo opaque per HIG
+    backgroundColor: "rgba(255, 255, 255, 0.4)",
     borderRadius: 24,
     padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.03,
-    shadowRadius: 10,
-    elevation: 2,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.01)",
+    borderColor: "rgba(255, 255, 255, 0.6)",
     gap: 16,
   },
   destCardActive: {

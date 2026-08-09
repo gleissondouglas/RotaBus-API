@@ -9,8 +9,9 @@ import {
   LayoutChangeEvent,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import Animated, { FadeIn, FadeInDown, useAnimatedStyle, withSpring, withTiming } from "react-native-reanimated";
+import Animated, { FadeIn, FadeInDown, useAnimatedStyle, withSpring, withTiming, useSharedValue, withSequence } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 
 import { ScreenContainer } from "../src/components/ScreenContainer";
 import {
@@ -122,16 +123,38 @@ export default function HomeScreen() {
   const [tabMeasurements, setTabMeasurements] = useState<Record<string, { x: number; width: number }>>({});
   const activeMeasurement = tabMeasurements[activeTab];
 
+  const pillScale = useSharedValue(1);
+
+  useEffect(() => {
+    pillScale.value = withSequence(
+      withTiming(1.10, { duration: 120 }), // Aumentado para 1.10 para inchar mais
+      withSpring(1, { damping: 10, stiffness: 220 })
+    );
+  }, [activeTab]);
+
   const tabAnimatedStyle = useAnimatedStyle(() => {
     if (!activeMeasurement) {
       return { opacity: 0 };
     }
     return {
       opacity: withTiming(1, { duration: 150 }),
-      transform: [{ translateX: withSpring(activeMeasurement.x, { damping: 20, stiffness: 200 }) }],
-      width: withSpring(activeMeasurement.width, { damping: 20, stiffness: 200 }),
+      transform: [
+        { translateX: withSpring(activeMeasurement.x, { damping: 24, stiffness: 150 }) },
+        { scale: pillScale.value }
+      ],
+      width: withSpring(activeMeasurement.width, { damping: 24, stiffness: 150 }),
     };
   });
+
+  const voiceTextStyle = useAnimatedStyle(() => ({
+    color: withTiming(activeTab === "voice" ? theme.primary : "#64748B", { duration: 250 }),
+  }));
+  const favoritesTextStyle = useAnimatedStyle(() => ({
+    color: withTiming(activeTab === "favorites" ? theme.primary : "#64748B", { duration: 250 }),
+  }));
+  const settingsTextStyle = useAnimatedStyle(() => ({
+    color: withTiming(activeTab === "settings" ? theme.primary : "#64748B", { duration: 250 }),
+  }));
 
   const handleTabLayout = (tab: string, event: LayoutChangeEvent) => {
     const { x, width } = event.nativeEvent.layout;
@@ -564,11 +587,17 @@ export default function HomeScreen() {
   }
 
   return (
-    <ScreenContainer withPadding={false} style={{ backgroundColor: theme.background }}>
+    <View style={{ flex: 1 }}>
+      <LinearGradient 
+        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
+        locations={[0, 0.4, 1]}
+        style={StyleSheet.absoluteFillObject} 
+      />
+      <ScreenContainer withPadding={false} backgroundColor="transparent">
       {/* ─── ZONA 1: TOPO ─── */}
       <Animated.View
         entering={FadeInDown.duration(400).delay(100)}
-        style={[styles.topHeader, { paddingTop: Math.max(insets.top, 16), backgroundColor: theme.background }]}
+        style={[styles.topHeader, { paddingTop: Math.max(insets.top, 16), backgroundColor: "transparent" }]}
       >
         <LiquidGlassView style={styles.tabsContainer} intensity={40} fallbackColor={theme.border}>
           <Animated.View style={[styles.activeTabBackground, tabAnimatedStyle]} />
@@ -578,21 +607,21 @@ export default function HomeScreen() {
             style={styles.tabButton}
             onPress={() => setActiveTab("voice")}
           >
-            <Text style={[styles.tabText, activeTab === "voice" && styles.tabTextActive]}>Assistente</Text>
+            <Animated.Text style={[styles.tabText, voiceTextStyle]}>Assistente</Animated.Text>
           </Pressable>
           <Pressable 
             onLayout={(e) => handleTabLayout("favorites", e)}
             style={styles.tabButton}
             onPress={() => setActiveTab("favorites")}
           >
-            <Text style={[styles.tabText, activeTab === "favorites" && styles.tabTextActive]}>Favoritos</Text>
+            <Animated.Text style={[styles.tabText, favoritesTextStyle]}>Favoritos</Animated.Text>
           </Pressable>
           <Pressable 
             onLayout={(e) => handleTabLayout("settings", e)}
             style={styles.tabButton}
             onPress={() => setActiveTab("settings")}
           >
-            <Text style={[styles.tabText, activeTab === "settings" && styles.tabTextActive]}>Ajustes</Text>
+            <Animated.Text style={[styles.tabText, settingsTextStyle]}>Ajustes</Animated.Text>
           </Pressable>
         </LiquidGlassView>
       </Animated.View>
@@ -696,6 +725,7 @@ export default function HomeScreen() {
         />
       </View>
     </ScreenContainer>
+    </View>
   );
 }
 
@@ -724,15 +754,15 @@ const styles = StyleSheet.create({
   activeTabBackground: {
     position: "absolute",
     top: 4,
+    bottom: 4,
     left: 0,
-    height: "100%",
-    backgroundColor: "rgba(255,255,255,0.7)",
+    backgroundColor: "rgba(255,255,255,0.9)", // Mais opaco para realçar a pílula
     borderRadius: 16,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
   tabButton: {
     paddingVertical: 8,
@@ -749,7 +779,7 @@ const styles = StyleSheet.create({
     color: "#64748B",
   },
   tabTextActive: {
-    color: "#0F172A",
+    // Agora usando color: theme.primary inline.
   },
   headerActions: {
     flexDirection: "row",

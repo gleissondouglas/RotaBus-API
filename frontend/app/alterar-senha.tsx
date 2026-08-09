@@ -10,14 +10,17 @@ import {
   View,
 } from "react-native";
 
+import { LinearGradient } from "expo-linear-gradient";
+
 import { BackButton } from "../src/components/BackButton";
 import { PrimaryButton } from "../src/components/PrimaryButton";
 import { ScreenContainer } from "../src/components/ScreenContainer";
 import { TextField } from "../src/components/TextField";
 import { userService } from "../src/services/user.service";
-import { colors } from "../src/theme/colors";
+import { colors, useThemeColors } from "../src/theme/colors";
 
 export default function ChangePasswordScreen() {
+  const theme = useThemeColors();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -52,7 +55,13 @@ export default function ChangePasswordScreen() {
   }
 
   return (
-    <ScreenContainer>
+    <View style={{ flex: 1 }}>
+      <LinearGradient 
+        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
+        locations={[0, 0.4, 1]}
+        style={StyleSheet.absoluteFillObject} 
+      />
+      <ScreenContainer backgroundColor="transparent">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -105,7 +114,8 @@ export default function ChangePasswordScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </ScreenContainer>
+      </ScreenContainer>
+    </View>
   );
 }
 

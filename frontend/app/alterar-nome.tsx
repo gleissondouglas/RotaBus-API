@@ -11,15 +11,18 @@ import {
   View,
 } from "react-native";
 
+import { LinearGradient } from "expo-linear-gradient";
+
 import { BackButton } from "../src/components/BackButton";
 import { PrimaryButton } from "../src/components/PrimaryButton";
 import { ScreenContainer } from "../src/components/ScreenContainer";
 import { TextField } from "../src/components/TextField";
 import { userService } from "../src/services/user.service";
 import { sessionService } from "../src/services/session.service";
-import { colors } from "../src/theme/colors";
+import { colors, useThemeColors } from "../src/theme/colors";
 
 export default function EditNameScreen() {
+  const theme = useThemeColors();
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -55,16 +58,29 @@ export default function EditNameScreen() {
 
   if (initialLoading) {
     return (
-      <ScreenContainer>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      </ScreenContainer>
+      <View style={{ flex: 1 }}>
+        <LinearGradient 
+          colors={['#E0F2FE', '#F0F9FF', theme.background]} 
+          locations={[0, 0.4, 1]}
+          style={StyleSheet.absoluteFillObject} 
+        />
+        <ScreenContainer backgroundColor="transparent">
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={theme.primary} />
+          </View>
+        </ScreenContainer>
+      </View>
     );
   }
 
   return (
-    <ScreenContainer>
+    <View style={{ flex: 1 }}>
+      <LinearGradient 
+        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
+        locations={[0, 0.4, 1]}
+        style={StyleSheet.absoluteFillObject} 
+      />
+      <ScreenContainer backgroundColor="transparent">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -101,7 +117,8 @@ export default function EditNameScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </ScreenContainer>
+      </ScreenContainer>
+    </View>
   );
 }
 

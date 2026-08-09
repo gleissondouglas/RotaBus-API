@@ -12,6 +12,7 @@ import { locationService } from "../src/services/location.service";
 import { formatLocalDateTimeWithOffset } from "../src/utils/date-time";
 import { layout } from "../src/theme/layout";
 import { useThemeColors } from "../src/theme/colors";
+import { LinearGradient } from "expo-linear-gradient";
 
 
 export default function ProcessingScreen() {
@@ -188,7 +189,12 @@ export default function ProcessingScreen() {
   }
 
   return (
-    <View style={[styles.screen, { backgroundColor: theme.background }]}>
+    <View style={styles.screen}>
+      <LinearGradient 
+        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
+        locations={[0, 0.4, 1]}
+        style={StyleSheet.absoluteFillObject} 
+      />
       <Animated.View entering={FadeIn.duration(400)} style={styles.fullScreen}>
         <View style={[styles.content, { paddingHorizontal: isSmallHeight ? layout.screenHorizontalPaddingSmall : layout.screenHorizontalPadding }]}>
           <AssistantLoadingState
@@ -202,7 +208,7 @@ export default function ProcessingScreen() {
           <Pressable
             style={({ pressed }) => [
               styles.cancelButton,
-              { backgroundColor: theme.card, borderColor: theme.border },
+              { backgroundColor: "rgba(255, 255, 255, 0.4)", borderColor: "rgba(255, 255, 255, 0.6)" },
               { height: isSmallHeight ? layout.secondaryButtonHeight : 60 },
               pressed && { opacity: 0.7 }
             ]}

@@ -235,7 +235,12 @@ export default function BestRouteScreen() {
   const bottomBarHeight = 160;
 
   return (
-    <View style={[styles.screen, { backgroundColor: theme.background }]}>
+    <View style={styles.screen}>
+      <LinearGradient 
+        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
+        locations={[0, 0.4, 1]}
+        style={StyleSheet.absoluteFillObject} 
+      />
       {/* FIXED HEADER */}
       <View style={[styles.fixedHeader, { paddingTop: insets.top + 8 }]}>
         <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={40} fallbackColor={theme.background} />
@@ -273,7 +278,7 @@ export default function BestRouteScreen() {
           )}
 
           {/* 2. CARD DE RESUMO PRINCIPAL */}
-          <View style={[styles.summaryCard, { backgroundColor: theme.primaryDark || "#0F172A" }]}>
+          <View style={[styles.summaryCard, { backgroundColor: "rgba(15, 23, 42, 0.75)" }]}>
             {/* Badge */}
             <View style={[styles.summaryBadge, isWalkingOnly && { backgroundColor: "rgba(59,130,246,0.15)" }]}>
               {isWalkingOnly ? (
@@ -349,7 +354,7 @@ export default function BestRouteScreen() {
               <Text style={[styles.stepsSectionTitle, { color: theme.text }]}>Passo a passo</Text>
             </View>
 
-            <View style={[styles.stepsList, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <View style={[styles.stepsList, { backgroundColor: "rgba(255, 255, 255, 0.3)", borderColor: "rgba(255, 255, 255, 0.5)" }]}>
               <RouteStep 
                 type="start"
                 time={summary?.leaveHomeAt || "Agora"}
