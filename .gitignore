@@ -34,3 +34,4 @@ frontend/.expo/
 
 # AI agents configuration and rules
 .agents/rules/
+dump.rdb
