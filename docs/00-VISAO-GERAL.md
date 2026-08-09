@@ -39,5 +39,5 @@ O Nuvem proporciona autonomia para populações vulnerabilizadas. Com uma interf
 O Nuvem continuará a transição de um sistema "reativo a comandos" para um verdadeiro **Assistente Conversacional de Mobilidade**.
 A visão futura inclui:
 - **Proatividade:** O app aprende a rotina do usuário (ex: sugerir a rota de volta para casa no fim do dia).
-- **Adoção Híbrida de IA (LLMs):** Integrar Modelos de Linguagem de Larga Escala (LLM) apenas como providers opcionais (Adapter) para tratar intenções complexas sem acoplar o Core do negócio à IA, garantindo controle determinístico e baixos custos.
+- **Busca Híbrida Inteligente:** A busca funciona com a velocidade do determinismo local associada à robustez do Google Places para casos não mapeados, evitando IAs generativas lentas e focando na precisão de cliques (UI Touch) e velocidade.
 - **Expansão Regional Automática:** Evoluir o módulo de Inteligência Local para cobrir outras cidades de forma dinâmica.

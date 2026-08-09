@@ -31,7 +31,6 @@ O Expo App é distribuído utilizando a ferramenta nativa EAS (Expo Application 
 ### Backend `.env`
 - `PORT=3000`
 - `DATABASE_URL="postgres://..."`
-- `GROQ_API_KEY="gsk_..."` (Chave gratuita para LLaMA 3 - Inteligência Artificial de Voz)
 - `JWT_SECRET="chave_super_secreta"`
 - `JWT_EXPIRES_IN="10h"`
 - `GOOGLE_ROUTES_API_KEY="AIza..."`
