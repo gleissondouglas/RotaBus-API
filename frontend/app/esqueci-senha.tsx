@@ -10,8 +10,10 @@ import { ScreenContainer } from "../src/components/ScreenContainer";
 import { TextField } from "../src/components/TextField";
 import { authService } from "../src/services/auth.service";
 import { useThemeColors } from "../src/theme/colors";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function ForgotPasswordScreen() {
+  const theme = useThemeColors();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -46,7 +48,13 @@ export default function ForgotPasswordScreen() {
   }
 
   return (
-    <ScreenContainer withPadding={false} style={{ backgroundColor: "#F6F8FA" }}>
+    <View style={{ flex: 1 }}>
+      <LinearGradient 
+        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
+        locations={[0, 0.4, 1]}
+        style={StyleSheet.absoluteFillObject} 
+      />
+      <ScreenContainer withPadding={false} backgroundColor="transparent">
       <View style={styles.header}>
         <BackButton />
       </View>
@@ -54,13 +62,13 @@ export default function ForgotPasswordScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <Animated.View entering={FadeInDown.duration(600)} style={styles.container}>
           <View style={styles.textHeader}>
-            <Text style={styles.title}>Recuperar Senha</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.title, { color: theme.text }]}>Recuperar Senha</Text>
+            <Text style={[styles.subtitle, { color: theme.textMuted }]}>
               Digite seu e-mail e nós lhe enviaremos um link para você poder criar uma nova senha.
             </Text>
           </View>
 
-          <View style={styles.card}>
+          <View style={styles.cardContent}>
             <TextField
               placeholder="E-mail"
               value={email}
@@ -87,7 +95,8 @@ export default function ForgotPasswordScreen() {
           </View>
         </Animated.View>
       </ScrollView>
-    </ScreenContainer>
+      </ScreenContainer>
+    </View>
   );
 }
 
@@ -112,29 +121,18 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 34,
     fontWeight: "900",
-    color: "#000",
     textAlign: "center",
     letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 17,
-    color: "#666",
     textAlign: "center",
     fontWeight: "500",
     paddingHorizontal: 10,
   },
-  card: {
-    backgroundColor: "white",
-    padding: 24,
-    borderRadius: 32,
+  cardContent: {
     gap: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.04,
-    shadowRadius: 20,
-    elevation: 8,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.02)",
+    paddingTop: 8,
   },
   input: {
     marginBottom: 8,

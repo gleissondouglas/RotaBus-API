@@ -1,4 +1,4 @@
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet, Text, View } from "react-native";
 
 import { AssistantPresence } from "../components/AssistantPresence";
@@ -15,7 +15,7 @@ export function OnboardingVisual({ type, compact = false }: Props) {
 
   if (type === "assistant") {
     return (
-      <View style={[styles.visualSurface, compact && styles.visualSurfaceCompact, { backgroundColor: theme.primaryLight }]}>
+      <View style={[styles.visualSurface, compact && styles.visualSurfaceCompact, { backgroundColor: "rgba(255, 255, 255, 0.4)" }]}>
         <AssistantPresence compact={compact} />
       </View>
     );
@@ -23,13 +23,13 @@ export function OnboardingVisual({ type, compact = false }: Props) {
 
   if (type === "input") {
     return (
-      <View style={[styles.visualSurface, compact && styles.visualSurfaceCompact, styles.inputVisual, { backgroundColor: theme.primaryLight }]}>
+      <View style={[styles.visualSurface, compact && styles.visualSurfaceCompact, styles.inputVisual, { backgroundColor: "rgba(255, 255, 255, 0.4)" }]}>
         <View style={[styles.actionBubble, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <Ionicons name="mic" size={compact ? 25 : 31} color={theme.primary} />
+          <Ionicons name="mic-outline" size={compact ? 28 : 34} color={theme.primary} />
           <Text style={[styles.actionLabel, { color: theme.text }]}>Falar</Text>
         </View>
         <View style={[styles.actionBubble, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <MaterialCommunityIcons name="keyboard-outline" size={compact ? 25 : 31} color={theme.primary} />
+          <Ionicons name="create-outline" size={compact ? 28 : 34} color={theme.primary} />
           <Text style={[styles.actionLabel, { color: theme.text }]}>Digitar</Text>
         </View>
       </View>
@@ -37,17 +37,17 @@ export function OnboardingVisual({ type, compact = false }: Props) {
   }
 
   const steps = [
-    { label: "Destino", icon: "map-marker-check-outline" as const },
-    { label: "Horário", icon: "clock-outline" as const },
+    { label: "Destino", icon: "location-outline" as const },
+    { label: "Horário", icon: "time-outline" as const },
     { label: "Rota", icon: "map-outline" as const },
   ];
 
   return (
-    <View style={[styles.visualSurface, compact && styles.visualSurfaceCompact, styles.routeVisual, { backgroundColor: theme.primaryLight }]}>
+    <View style={[styles.visualSurface, compact && styles.visualSurfaceCompact, styles.routeVisual, { backgroundColor: "rgba(255, 255, 255, 0.4)" }]}>
       {steps.map((step, index) => (
         <View key={step.label} style={styles.routeItemRow}>
           <View style={[styles.routeStep, { backgroundColor: theme.card, borderColor: theme.border }]}>
-            <MaterialCommunityIcons name={step.icon} size={compact ? 21 : 25} color={theme.primary} />
+            <Ionicons name={step.icon} size={compact ? 24 : 28} color={theme.primary} />
             <Text style={[styles.routeLabel, { color: theme.text }]}>{step.label}</Text>
           </View>
           {index < steps.length - 1 && (
@@ -64,10 +64,13 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 360,
     minHeight: 188,
-    borderRadius: 32,
+    borderRadius: 40,
+    overflow: "hidden",
     alignItems: "center",
     justifyContent: "center",
     padding: 22,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.5)",
   },
   visualSurfaceCompact: {
     minHeight: 142,

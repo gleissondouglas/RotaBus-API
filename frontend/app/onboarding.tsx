@@ -11,6 +11,8 @@ import { completeOnboarding } from "../src/services/onboardingStorage";
 import { speak, stopSpeaking } from "../src/services/speech.service";
 import { layout } from "../src/theme/layout";
 import { useThemeColors } from "../src/theme/colors";
+import { LinearGradient } from "expo-linear-gradient";
+import { LiquidGlassView } from "../src/components/LiquidGlassView";
 
 export default function OnboardingScreen() {
   const theme = useThemeColors();
@@ -55,7 +57,14 @@ export default function OnboardingScreen() {
   }
 
   return (
-    <ScreenContainer backgroundColor={theme.background} withPadding={false}>
+    <View style={{ flex: 1 }}>
+      <LinearGradient 
+        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
+        locations={[0, 0.4, 1]}
+        style={StyleSheet.absoluteFillObject} 
+      />
+      <ScreenContainer backgroundColor="transparent" withPadding={false}>
+      
       <View style={[styles.screen, compact && styles.screenCompact]}>
         <View style={styles.topBar}>
           <View style={styles.topSpacer} />
@@ -82,31 +91,34 @@ export default function OnboardingScreen() {
 
         <OnboardingPagination currentIndex={currentIndex} total={onboardingSlides.length} />
 
-        <View style={styles.actions}>
-          {currentIndex > 0 && (
-            <Pressable
-              onPress={goBack}
-              style={({ pressed }) => [
-                styles.secondaryButton,
-                { backgroundColor: theme.card, borderColor: theme.border },
-                pressed && styles.pressed,
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel="Voltar para página anterior"
-            >
-              <Text style={[styles.secondaryText, { color: theme.primaryDark }]}>Voltar</Text>
-            </Pressable>
-          )}
-          <PrimaryButton
-            title={isLastSlide ? "Começar" : "Próximo"}
-            onPress={isLastSlide ? finishOnboarding : goNext}
-            isLoading={isCompleting}
-            accessibilityLabel={isLastSlide ? "Finalizar apresentação e começar" : "Ir para próxima página"}
-            style={styles.primaryButton}
-          />
+        <View style={styles.actionsContainer}>
+          <View style={styles.actionsContent}>
+            {currentIndex > 0 && (
+              <Pressable
+                onPress={goBack}
+                style={({ pressed }) => [
+                  styles.secondaryButton,
+                  { backgroundColor: theme.card, borderColor: theme.border },
+                  pressed && styles.pressed,
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel="Voltar para página anterior"
+              >
+                <Text style={[styles.secondaryText, { color: theme.primaryDark }]}>Voltar</Text>
+              </Pressable>
+            )}
+            <PrimaryButton
+              title={isLastSlide ? "Começar" : "Próximo"}
+              onPress={isLastSlide ? finishOnboarding : goNext}
+              isLoading={isCompleting}
+              accessibilityLabel={isLastSlide ? "Finalizar apresentação e começar" : "Ir para próxima página"}
+              style={styles.primaryButton}
+            />
+          </View>
         </View>
       </View>
     </ScreenContainer>
+    </View>
   );
 }
 
@@ -150,14 +162,17 @@ const styles = StyleSheet.create({
   scrollContentCompact: {
     justifyContent: "flex-start",
     paddingVertical: 8,
+    paddingBottom: 100, // extra space for bottom actions
   },
-  actions: {
-    width: "100%",
-    maxWidth: 420,
-    alignSelf: "center",
+  actionsContainer: {
+    paddingTop: 8,
+  },
+  actionsContent: {
     flexDirection: "row",
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 40, // safe area approximation
     gap: 12,
-    paddingTop: 4,
   },
   secondaryButton: {
     flex: 1,

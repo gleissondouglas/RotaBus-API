@@ -10,6 +10,8 @@ import { ScreenContainer } from "../src/components/ScreenContainer";
 import { locationService } from "../src/services/location.service";
 import { sessionService } from "../src/services/session.service";
 import { useThemeColors } from "../src/theme/colors";
+import { LinearGradient } from "expo-linear-gradient";
+import { LiquidGlassView } from "../src/components/LiquidGlassView";
 
 export default function PermissionsScreen() {
   const theme = useThemeColors();
@@ -57,7 +59,14 @@ export default function PermissionsScreen() {
   }
 
   return (
-    <ScreenContainer withPadding={false} style={{ backgroundColor: "#F6F8FA" }}>
+    <View style={{ flex: 1 }}>
+      <LinearGradient 
+        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
+        locations={[0, 0.4, 1]}
+        style={StyleSheet.absoluteFillObject} 
+      />
+      <ScreenContainer withPadding={false} backgroundColor="transparent">
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
@@ -74,44 +83,44 @@ export default function PermissionsScreen() {
             </Text>
           </View>
 
-          <View style={styles.card}>
+          <View style={styles.cardContent}>
             <View style={styles.permissionItem}>
               <View style={[styles.iconContainer, { backgroundColor: "rgba(59, 130, 246, 0.08)" }]}>
                 <MaterialCommunityIcons name="microphone" size={24} color={theme.primary} />
               </View>
               <View style={styles.permissionTextBox}>
-                <Text style={[styles.permissionTitle, { color: "#000" }]}>Microfone</Text>
-                <Text style={[styles.permissionDescription, { color: "#666" }]}>
+                <Text style={[styles.permissionTitle, { color: theme.text }]}>Microfone</Text>
+                <Text style={[styles.permissionDescription, { color: theme.textMuted }]}>
                   Para ouvir o destino que você falar.
                 </Text>
               </View>
               <Ionicons name="checkmark-circle" size={28} color="#10B981" />
             </View>
 
-            <View style={[styles.divider, { backgroundColor: "#F0F0F0" }]} />
+            <View style={[styles.divider, { backgroundColor: "rgba(0,0,0,0.05)" }]} />
 
             <View style={styles.permissionItem}>
               <View style={[styles.iconContainer, { backgroundColor: "rgba(59, 130, 246, 0.08)" }]}>
                 <MaterialCommunityIcons name="map-marker" size={24} color={theme.primary} />
               </View>
               <View style={styles.permissionTextBox}>
-                <Text style={[styles.permissionTitle, { color: "#000" }]}>Localização</Text>
-                <Text style={[styles.permissionDescription, { color: "#666" }]}>
+                <Text style={[styles.permissionTitle, { color: theme.text }]}>Localização</Text>
+                <Text style={[styles.permissionDescription, { color: theme.textMuted }]}>
                   Para encontrar o ponto mais próximo.
                 </Text>
               </View>
               <Ionicons name="checkmark-circle" size={28} color="#10B981" />
             </View>
 
-            <View style={[styles.divider, { backgroundColor: "#F0F0F0" }]} />
+            <View style={[styles.divider, { backgroundColor: "rgba(0,0,0,0.05)" }]} />
 
             <View style={styles.permissionItem}>
               <View style={[styles.iconContainer, { backgroundColor: "rgba(59, 130, 246, 0.08)" }]}>
                 <MaterialCommunityIcons name="bell" size={24} color={theme.primary} />
               </View>
               <View style={styles.permissionTextBox}>
-                <Text style={[styles.permissionTitle, { color: "#000" }]}>Notificações</Text>
-                <Text style={[styles.permissionDescription, { color: "#666" }]}>
+                <Text style={[styles.permissionTitle, { color: theme.text }]}>Notificações</Text>
+                <Text style={[styles.permissionDescription, { color: theme.textMuted }]}>
                   Para avisar quando o ônibus chegar.
                 </Text>
               </View>
@@ -137,7 +146,8 @@ export default function PermissionsScreen() {
           </View>
         </View>
       </ScrollView>
-    </ScreenContainer>
+      </ScreenContainer>
+    </View>
   );
 }
 
@@ -171,17 +181,9 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     fontWeight: "500",
   },
-  card: {
-    padding: 24,
-    borderRadius: 32,
-    backgroundColor: "white",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.04,
-    shadowRadius: 20,
-    elevation: 3,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.02)",
+  cardContent: {
+    paddingTop: 8,
+    gap: 8,
   },
   permissionItem: {
     flexDirection: "row",

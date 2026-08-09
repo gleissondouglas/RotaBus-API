@@ -44,19 +44,14 @@ export function LiquidGlassView({ intensity = 40, fallbackColor, style, children
   }
 
   return (
-    <BlurView 
-      intensity={intensity} 
-      tint={scheme === 'dark' ? 'dark' : 'light'} 
-      style={[styles.container, style]}
-      {...rest}
-    >
+    <View style={[style, { overflow: 'hidden' }]} {...rest}>
+      <BlurView 
+        intensity={intensity} 
+        tint={scheme === 'dark' ? 'dark' : 'light'} 
+        style={StyleSheet.absoluteFillObject}
+      />
       {children}
-    </BlurView>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    overflow: 'hidden',
-  },
-});

@@ -17,6 +17,7 @@ import { sessionService } from "../src/services/session.service";
 import { speak, stopSpeaking } from "../src/services/speech.service";
 import { useThemeColors } from "../src/theme/colors";
 import { layout } from "../src/theme/layout";
+import { LinearGradient } from "expo-linear-gradient";
 
 const welcomeMessage =
   "Bem-vindo ao Nuvem. Encontre sua rota de ônibus falando para onde deseja ir.";
@@ -180,14 +181,20 @@ export default function WelcomeScreen() {
   }
 
   return (
-    <ScreenContainer backgroundColor={theme.background} withPadding={false}>
+    <View style={{ flex: 1 }}>
+      <LinearGradient 
+        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
+        locations={[0, 0.4, 1]}
+        style={StyleSheet.absoluteFillObject} 
+      />
+      <ScreenContainer backgroundColor="transparent" withPadding={false}>
       <View style={[styles.content, isCompact && styles.contentCompact]}>
         <View style={[styles.visualRegion, isCompact && styles.visualRegionCompact]}>
           <Animated.View
             style={[
               styles.assistantVisual,
               isCompact && styles.assistantVisualCompact,
-              { backgroundColor: theme.primaryLight, opacity: visualOpacity, transform: [{ scale: visualScale }] },
+              { backgroundColor: "rgba(255, 255, 255, 0.4)", opacity: visualOpacity, transform: [{ scale: visualScale }] },
             ]}
           >
             <AssistantPresence compact={isCompact} />
@@ -214,7 +221,8 @@ export default function WelcomeScreen() {
           />
         </Animated.View>
       </View>
-    </ScreenContainer>
+      </ScreenContainer>
+    </View>
   );
 }
 

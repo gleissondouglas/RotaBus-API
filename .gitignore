@@ -25,3 +25,6 @@ frontend/build-*.apk
 
 # Audit files
 docs/liquid-glass-audit.md
+
+# Expo cache and generated files
+frontend/.expo/*.swp
