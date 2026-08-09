@@ -1,11 +1,10 @@
 const { authMiddleware } = require("../auth/auth.middleware");
-const { dailyJourneyLimit, dailyPlacesLimit, dailyGeocodeLimit, dailyTranscribeLimit, dailyParseTimeLimit } = require("../../shared/middlewares/dailyLimit.middleware");
+const { dailyJourneyLimit, dailyPlacesLimit, dailyGeocodeLimit, dailyTranscribeLimit } = require("../../shared/middlewares/dailyLimit.middleware");
 const { validate } = require("../../shared/middlewares/validate.middleware");
 const {
   planJourneySchema,
   resolveDestinationSchema,
   conversationCommandSchema,
-  parseTimeSchema,
 } = require("./journeys.validator");
 const express = require("express");
 const journeysController = require("./journeys.controller");
@@ -39,13 +38,6 @@ router.post(
   authMiddleware,
   validate(conversationCommandSchema),
   journeysController.handleConversationCommand,
-);
-router.post(
-  "/parse-time",
-  authMiddleware,
-  dailyParseTimeLimit,
-  validate(parseTimeSchema),
-  journeysController.parseTimeIntent,
 );
 
 module.exports = router;

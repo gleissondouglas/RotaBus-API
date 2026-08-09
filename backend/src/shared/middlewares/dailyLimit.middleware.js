@@ -74,9 +74,7 @@ const recordDailyPlacesUsage = createUsageRecorder("/places");
 const dailyGeocodeLimit = createDailyLimitMiddleware("/geocode", 20, "Limite diário de geolocalização atingido.", "DAILY_GEOCODE_LIMIT_EXCEEDED");
 const recordDailyGeocodeUsage = createUsageRecorder("/geocode");
 
-// Parse Time (IA) (20 requisições por dia)
-const dailyParseTimeLimit = createDailyLimitMiddleware("/parse-time", 20, "Limite diário de interpretação de IA atingido.", "DAILY_PARSE_TIME_LIMIT_EXCEEDED");
-const recordDailyParseTimeUsage = createUsageRecorder("/parse-time");
+
 
 // Transcrição de Áudio (20 requisições por dia)
 const dailyTranscribeLimit = createDailyLimitMiddleware("/transcribe", 20, "Limite diário de transcrição de áudio atingido.", "DAILY_TRANSCRIBE_LIMIT_EXCEEDED");
@@ -86,6 +84,5 @@ module.exports = {
   dailyJourneyLimit, recordDailyJourneyUsage,
   dailyPlacesLimit, recordDailyPlacesUsage,
   dailyGeocodeLimit, recordDailyGeocodeUsage,
-  dailyParseTimeLimit, recordDailyParseTimeUsage,
   dailyTranscribeLimit, recordDailyTranscribeUsage
 };

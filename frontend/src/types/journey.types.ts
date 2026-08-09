@@ -23,15 +23,7 @@ export type ResolveDestinationRequest = {
   };
 };
 
-export type ParseTimeRequest = {
-  text: string;
-};
 
-export type ParseTimeResponse = {
-  time_mode: "NOW" | "DEPART_AT" | "ARRIVE_BY" | "UNKNOWN";
-  target_datetime: string | null;
-  confidence?: "high" | "medium" | "low";
-};
 
 export type DestinationOption = {
   id: string;

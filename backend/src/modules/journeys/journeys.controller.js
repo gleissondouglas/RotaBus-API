@@ -3,7 +3,7 @@ const conversationalMapper = require("./conversational.mapper");
 const sessionManager = require("./dialog/session.manager");
 const dialogManager = require("./dialog/dialog.manager");
 const conversationCommandHandler = require("./dialog/conversation-command.handler");
-const { recordDailyJourneyUsage, recordDailyPlacesUsage, recordDailyGeocodeUsage, recordDailyParseTimeUsage, recordDailyTranscribeUsage } = require("../../shared/middlewares/dailyLimit.middleware");
+const { recordDailyJourneyUsage, recordDailyPlacesUsage, recordDailyGeocodeUsage, recordDailyTranscribeUsage } = require("../../shared/middlewares/dailyLimit.middleware");
 
 async function planJourney(req, res, next) {
   try {
@@ -176,24 +176,6 @@ async function handleConversationCommand(req, res, next) {
   }
 }
 
-async function parseTimeIntent(req, res, next) {
-  try {
-    const { text } = req.body;
-
-    if (process.env.NODE_ENV !== "production") {
-      console.log(`[JourneysController] POST /parse-time | texto: "${text}"`);
-    }
-
-    const result = await journeysService.parseTimeIntentService({ text });
-
-    await recordDailyParseTimeUsage(req);
-
-    return res.status(200).json(result);
-  } catch (error) {
-    console.error("[JourneysController] Erro no parse-time:", error.message);
-    next(error);
-  }
-}
 
 module.exports = {
   planJourney,
@@ -201,5 +183,4 @@ module.exports = {
   transcribeAudio,
   resolveDestination,
   handleConversationCommand,
-  parseTimeIntent,
 };

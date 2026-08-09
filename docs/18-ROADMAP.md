@@ -18,7 +18,7 @@ O Nuvem nasceu como um app de rotas reativo e segue sua trajetória acelerada pa
 * Injeção do Zod Validator global.
 * Migração da persistência FSM (Sessão) do Map (memória ram) para o Postgres (tolerante à falha em infraestrutura distribuída).
 * Expansão da Resposta Conversacional com a integração `conversational.mapper.js`.
-* Integração de Contextualização com LLMs (Groq / LLaMA 3.1) no backend para análise temporal/complexa (`nlp.provider.js`).
+* ~~Integração de Contextualização com LLMs (Groq / LLaMA 3.1) no backend para análise temporal/complexa (`nlp.provider.js`)~~ (Removido: seleção de horário via voz foi substituída por UI Touch).
 
 ## Fase 4: Refinamento de Frontend Voice Loop (✅ Concluído)
 * Ajuste no STT e TTS para aguardar a Promise de Finalização de Áudio (`speakAndWait`), sanando o loop infinito de gravação ruidosa.

@@ -8,7 +8,6 @@ const { findCachedRoute, createRouteCache } = require("./route-cache");
 const { getAddressFromCoordinates, geocodeAddress } = require("./providers/geocoding.provider");
 const speechProvider = require("./providers/speech.provider");
 const destinationProvider = require("./providers/destination.provider");
-const nlpProvider = require("../../shared/providers/nlp.provider");
 
 const localIntelligenceService = require("./local-intelligence/local-intelligence.service");
 
@@ -402,39 +401,10 @@ async function transcribeAudioService({ audioBase64, mimeType }) {
   };
 }
 
-/**
- * Interpreta APENAS a intenção de horário de uma frase falada pelo usuário.
- * Usado na tela "Quando você quer ir?" quando o destino já foi definido.
- *
- * @param {Object} params
- * @param {string} params.text - A frase falada pelo usuário
- * @returns {Promise<{ time_mode: string, target_datetime: string|null, confidence: string }>}
- */
-async function parseTimeIntentService({ text }) {
-  const serverTimestamp = new Date().toISOString();
-
-  try {
-    const result = await nlpProvider.parseTimeIntent(text, serverTimestamp);
-
-    if (process.env.NODE_ENV !== "production") {
-      console.log(`[ParseTimeIntent] Texto: "${text}" → Resultado:`, JSON.stringify(result));
-    }
-
-    return result;
-  } catch (error) {
-    console.error("[ParseTimeIntent] Erro no NLPProvider:", error);
-    return {
-      time_mode: "UNKNOWN",
-      target_datetime: null,
-      confidence: "low",
-    };
-  }
-}
 
 module.exports = {
   planJourney,
   reverseGeocodeService,
   transcribeAudioService,
   resolveDestinationService,
-  parseTimeIntentService,
 };
