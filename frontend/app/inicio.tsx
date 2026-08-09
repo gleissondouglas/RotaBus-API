@@ -6,9 +6,10 @@ import {
   StyleSheet,
   Text,
   View,
+  LayoutChangeEvent,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
+import Animated, { FadeIn, FadeInDown, useAnimatedStyle, withSpring, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ScreenContainer } from "../src/components/ScreenContainer";
@@ -37,6 +38,8 @@ import { VoiceVisualizer, type VoiceVisualizerState } from "../src/components/Vo
 import { VoicePromptText } from "../src/components/VoicePromptText";
 import { BottomActionBar } from "../src/components/BottomActionBar";
 import { FavoritesAndHistoryView } from "../src/components/FavoritesAndHistoryView";
+import { LiquidGlassView } from "../src/components/LiquidGlassView";
+import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
 
 type ScreenStatus = "idle" | "listening" | "processing" | "error" | "success";
 type VoiceScreenStatus = ScreenStatus | "speaking";
@@ -103,6 +106,7 @@ function toVisualizerState(status: VoiceScreenStatus): VoiceVisualizerState {
 export default function HomeScreen() {
   const params = useLocalSearchParams();
   const insets = useSafeAreaInsets();
+  const theme = useThemeColors();
 
   // Coordenadas passadas por parâmetro ou obtidas do serviço de localização
   const [originCoords, setOriginCoords] = useState({
@@ -113,6 +117,26 @@ export default function HomeScreen() {
   const longitude = originCoords.longitude;
 
   const [activeTab, setActiveTab] = useState<"voice" | "favorites" | "settings">("voice");
+
+  // Animação das abas estilo iOS 26
+  const [tabMeasurements, setTabMeasurements] = useState<Record<string, { x: number; width: number }>>({});
+  const activeMeasurement = tabMeasurements[activeTab];
+
+  const tabAnimatedStyle = useAnimatedStyle(() => {
+    if (!activeMeasurement) {
+      return { opacity: 0 };
+    }
+    return {
+      opacity: withTiming(1, { duration: 150 }),
+      transform: [{ translateX: withSpring(activeMeasurement.x, { damping: 20, stiffness: 200 }) }],
+      width: withSpring(activeMeasurement.width, { damping: 20, stiffness: 200 }),
+    };
+  });
+
+  const handleTabLayout = (tab: string, event: LayoutChangeEvent) => {
+    const { x, width } = event.nativeEvent.layout;
+    setTabMeasurements((prev) => ({ ...prev, [tab]: { x, width } }));
+  };
 
   /**
    * Máquina de Estados da Assistente:
@@ -540,32 +564,37 @@ export default function HomeScreen() {
   }
 
   return (
-    <ScreenContainer withPadding={false} style={{ backgroundColor: "#F6F8FA" }}>
+    <ScreenContainer withPadding={false} style={{ backgroundColor: theme.background }}>
       {/* ─── ZONA 1: TOPO ─── */}
       <Animated.View
         entering={FadeInDown.duration(400).delay(100)}
-        style={[styles.topHeader, { paddingTop: Math.max(insets.top, 16) }]}
+        style={[styles.topHeader, { paddingTop: Math.max(insets.top, 16), backgroundColor: theme.background }]}
       >
-        <View style={styles.tabsContainer}>
+        <LiquidGlassView style={styles.tabsContainer} intensity={40} fallbackColor={theme.border}>
+          <Animated.View style={[styles.activeTabBackground, tabAnimatedStyle]} />
+          
           <Pressable 
-            style={[styles.tabButton, activeTab === "voice" && styles.tabButtonActive]}
+            onLayout={(e) => handleTabLayout("voice", e)}
+            style={styles.tabButton}
             onPress={() => setActiveTab("voice")}
           >
             <Text style={[styles.tabText, activeTab === "voice" && styles.tabTextActive]}>Assistente</Text>
           </Pressable>
           <Pressable 
-            style={[styles.tabButton, activeTab === "favorites" && styles.tabButtonActive]}
+            onLayout={(e) => handleTabLayout("favorites", e)}
+            style={styles.tabButton}
             onPress={() => setActiveTab("favorites")}
           >
             <Text style={[styles.tabText, activeTab === "favorites" && styles.tabTextActive]}>Favoritos</Text>
           </Pressable>
           <Pressable 
-            style={[styles.tabButton, activeTab === "settings" && styles.tabButtonActive]}
+            onLayout={(e) => handleTabLayout("settings", e)}
+            style={styles.tabButton}
             onPress={() => setActiveTab("settings")}
           >
             <Text style={[styles.tabText, activeTab === "settings" && styles.tabTextActive]}>Ajustes</Text>
           </Pressable>
-        </View>
+        </LiquidGlassView>
       </Animated.View>
 
       {/* ─── ZONA 2: CENTRO ─── */}
@@ -573,14 +602,14 @@ export default function HomeScreen() {
         {activeTab === "settings" ? (
           <View style={{ width: "100%", maxWidth: 380, marginTop: 20, gap: 12 }}>
             <Pressable style={styles.settingsCard} onPress={handleSettings}>
-              <Ionicons name="settings-outline" size={24} color="#0F172A" />
+              <AdaptiveIcon iosSymbol="gearshape" fallbackFamily="Ionicons" fallbackName="settings-outline" size={24} color={theme.text} />
               <View>
                 <Text style={styles.settingsCardText}>Minha Conta e App</Text>
                 <Text style={styles.settingsCardSub}>Sua senha, acessibilidade e perfil</Text>
               </View>
             </Pressable>
             <Pressable style={styles.settingsCard} onPress={handleHelp}>
-              <Ionicons name="help-circle-outline" size={24} color="#0F172A" />
+              <AdaptiveIcon iosSymbol="questionmark.circle" fallbackFamily="Ionicons" fallbackName="help-circle-outline" size={24} color={theme.text} />
               <View>
                 <Text style={styles.settingsCardText}>Central de Ajuda</Text>
                 <Text style={styles.settingsCardSub}>Aprenda a usar o Nuvem</Text>
@@ -606,7 +635,7 @@ export default function HomeScreen() {
             style={styles.unifiedCard}
           >
             <Text style={styles.messageLabel}>Assistente</Text>
-            <View style={styles.assistantBubble}>
+            <LiquidGlassView style={styles.assistantBubble} intensity={50} fallbackColor={theme.card}>
               <VoicePromptText
                 text={promptText}
                 animated={promptAnimated && status === "speaking"}
@@ -630,7 +659,7 @@ export default function HomeScreen() {
                   </Text>
                 </Animated.View>
               )}
-            </View>
+            </LiquidGlassView>
           </Animated.View>
         )}
 
@@ -682,27 +711,37 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
     paddingBottom: 10,
-    backgroundColor: "#F6F8FA",
     zIndex: 10,
   },
   tabsContainer: {
     flexDirection: "row",
-    backgroundColor: "#E2E8F0",
     borderRadius: 20,
     padding: 4,
+    borderWidth: 1,
+    borderColor: "rgba(200,200,200,0.3)",
+    position: "relative",
   },
-  tabButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+  activeTabBackground: {
+    position: "absolute",
+    top: 4,
+    left: 0,
+    height: "100%",
+    backgroundColor: "rgba(255,255,255,0.7)",
     borderRadius: 16,
-  },
-  tabButtonActive: {
-    backgroundColor: "white",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+  },
+  tabButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    zIndex: 1,
+  },
+  tabButtonActive: {
+    // Agora removido porque a pílula de fundo faz esse papel via reanimated.
   },
   tabText: {
     fontSize: 14,
@@ -755,14 +794,13 @@ const styles = StyleSheet.create({
     ...APPLE_FONT,
   },
   assistantBubble: {
-    backgroundColor: "white",
     borderRadius: 30,
     borderTopLeftRadius: 10,
     paddingHorizontal: 24,
     paddingVertical: 22,
     minHeight: 190,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.02)",
+    borderColor: "rgba(200,200,200,0.3)",
     shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 16 },
     shadowOpacity: 0.06,

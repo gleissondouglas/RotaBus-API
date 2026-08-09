@@ -22,3 +22,6 @@ frontend/coverage/
 # Android APK build outputs
 *.apk
 frontend/build-*.apk
+
+# Audit files
+docs/liquid-glass-audit.md

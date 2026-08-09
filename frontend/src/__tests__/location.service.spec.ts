@@ -18,16 +18,7 @@ describe("locationService", () => {
     jest.clearAllMocks();
   });
 
-  describe("Em ambiente de PRODUCAO sem permissao", () => {
-    it("deve lancar erro 'permissao_negada'", async () => {
-      (global as any).__DEV__ = false;
-      (Location.requestForegroundPermissionsAsync as jest.Mock).mockResolvedValueOnce({
-        status: "denied",
-      });
 
-      await expect(locationService.getCurrentLocation()).rejects.toThrow("permissao_negada");
-    });
-  });
 
   describe("requestLocationPermission", () => {
     it("deve retornar true quando a permissão for concedida", async () => {

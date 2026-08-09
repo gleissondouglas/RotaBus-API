@@ -4,18 +4,20 @@ import { StyleSheet, Text, View, Pressable, useWindowDimensions } from "react-na
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { Ionicons } from "@expo/vector-icons";
+import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
 import { AssistantLoadingState, LoadingStep } from "../src/components/AssistantLoadingState";
 import { useAutoSpeak } from "../src/hooks/useAutoSpeak";
 import { journeyService } from "../src/services/journey.service";
 import { locationService } from "../src/services/location.service";
 import { formatLocalDateTimeWithOffset } from "../src/utils/date-time";
 import { layout } from "../src/theme/layout";
+import { useThemeColors } from "../src/theme/colors";
 
 
 export default function ProcessingScreen() {
   const params = useLocalSearchParams();
   const insets = useSafeAreaInsets();
+  const theme = useThemeColors();
   const { height } = useWindowDimensions();
 
   const isSmallHeight = height < 740;
@@ -186,7 +188,7 @@ export default function ProcessingScreen() {
   }
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: theme.background }]}>
       <Animated.View entering={FadeIn.duration(400)} style={styles.fullScreen}>
         <View style={[styles.content, { paddingHorizontal: isSmallHeight ? layout.screenHorizontalPaddingSmall : layout.screenHorizontalPadding }]}>
           <AssistantLoadingState
@@ -200,6 +202,7 @@ export default function ProcessingScreen() {
           <Pressable
             style={({ pressed }) => [
               styles.cancelButton,
+              { backgroundColor: theme.card, borderColor: theme.border },
               { height: isSmallHeight ? layout.secondaryButtonHeight : 60 },
               pressed && { opacity: 0.7 }
             ]}
@@ -207,8 +210,8 @@ export default function ProcessingScreen() {
             accessibilityRole="button"
             accessibilityLabel="Cancelar busca e voltar ao início"
           >
-            <Ionicons name="close-circle-outline" size={20} color="#64748B" />
-            <Text style={styles.cancelButtonText} maxFontSizeMultiplier={1.2}>
+            <AdaptiveIcon iosSymbol="xmark.circle" fallbackFamily="Ionicons" fallbackName="close-circle-outline" size={20} color={theme.textMuted} />
+            <Text style={[styles.cancelButtonText, { color: theme.textMuted }]} maxFontSizeMultiplier={1.2}>
               Cancelar
             </Text>
           </Pressable>
@@ -221,7 +224,6 @@ export default function ProcessingScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#F6F8FA",
   },
   fullScreen: {
     flex: 1,
@@ -245,9 +247,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    backgroundColor: "white",
     borderWidth: 1,
-    borderColor: "#E2E8F0",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.03,

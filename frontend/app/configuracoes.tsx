@@ -119,7 +119,7 @@ export default function SettingsScreen() {
   }
 
   return (
-    <ScreenContainer withPadding={false} style={{ backgroundColor: "#F6F8FA" }}>
+    <ScreenContainer withPadding={false} style={{ backgroundColor: theme.background }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
@@ -130,18 +130,18 @@ export default function SettingsScreen() {
 
         <Animated.View entering={FadeInUp.duration(600)} style={styles.content}>
           <View style={styles.header}>
-            <View style={[styles.avatarCircle, { backgroundColor: "white" }]}>
+            <View style={[styles.avatarCircle, { backgroundColor: theme.card }]}>
               <Ionicons name="person" size={40} color={theme.primary} />
             </View>
-            <Text style={[styles.title, { color: "#000" }]} maxFontSizeMultiplier={1.2}>
+            <Text style={[styles.title, { color: theme.text }]} maxFontSizeMultiplier={1.2}>
               {user?.name || "Configurações"}
             </Text>
-            <Text style={[styles.subtitle, { color: "#666" }]} maxFontSizeMultiplier={1.2}>
+            <Text style={[styles.subtitle, { color: theme.textMuted }]} maxFontSizeMultiplier={1.2}>
               {user?.email || "Ajuste sua conta e preferências"}
             </Text>
           </View>
 
-          <View style={styles.section}>
+          <View style={[styles.section, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <Text style={[styles.sectionTitle, { color: theme.primary }]} maxFontSizeMultiplier={1.2}>Conta</Text>
             <SettingOption 
               icon="person-outline" 
@@ -150,7 +150,7 @@ export default function SettingsScreen() {
               onPress={handleEditName} 
               theme={theme}
             />
-            <View style={[styles.divider, { backgroundColor: "#F0F0F0" }]} />
+            <View style={[styles.divider, { backgroundColor: theme.border }]} />
             <SettingOption 
               icon="key-outline" 
               title="Alterar senha" 
@@ -160,7 +160,7 @@ export default function SettingsScreen() {
             />
           </View>
 
-          <View style={styles.section}>
+          <View style={[styles.section, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <Text style={[styles.sectionTitle, { color: theme.primary }]} maxFontSizeMultiplier={1.2}>Preferências</Text>
             <SettingOption 
               icon="accessibility-outline" 
@@ -171,7 +171,7 @@ export default function SettingsScreen() {
             />
           </View>
 
-          <View style={styles.section}>
+          <View style={[styles.section, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <Text style={[styles.sectionTitle, { color: theme.primary }]} maxFontSizeMultiplier={1.2}>Privacidade</Text>
             <SettingOption 
               icon="shield-checkmark-outline" 
@@ -185,7 +185,7 @@ export default function SettingsScreen() {
               }} 
               theme={theme}
             />
-            <View style={[styles.divider, { backgroundColor: "#F0F0F0" }]} />
+            <View style={[styles.divider, { backgroundColor: theme.border }]} />
             <SettingOption 
               icon="trash-outline" 
               title={isDeleting ? "Excluindo..." : "Excluir conta"} 
@@ -254,7 +254,7 @@ const SettingOption = ({ icon, iconLibrary = "Ionicons", title, description, onP
       <Text style={[styles.optionTitle, { color: isDanger ? theme.danger : theme.text }]} maxFontSizeMultiplier={1.2}>
         {title}
       </Text>
-      <Text style={styles.optionDescription} maxFontSizeMultiplier={1.2}>
+      <Text style={[styles.optionDescription, { color: theme.textMuted }]} maxFontSizeMultiplier={1.2}>
         {description}
       </Text>
     </View>
@@ -313,7 +313,6 @@ const styles = StyleSheet.create({
   },
 
   section: {
-    backgroundColor: "white",
     padding: 24,
     borderRadius: 32,
     shadowColor: "#000",
@@ -322,7 +321,6 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 3,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.02)",
   },
 
   sectionTitle: {
@@ -361,7 +359,6 @@ const styles = StyleSheet.create({
   optionDescription: {
     marginTop: 2,
     fontSize: 14,
-    color: "#666",
     fontWeight: "500",
   },
 

@@ -5,10 +5,12 @@ import { ListenOptionsButton } from "../src/components/ListenOptionsButton";
 import { PrimaryButton } from "../src/components/PrimaryButton";
 import { ScreenContainer } from "../src/components/ScreenContainer";
 import { VoiceOrb } from "../src/components/VoiceOrb";
-import { colors } from "../src/theme/colors";
+import { useThemeColors } from "../src/theme/colors";
+import { LiquidGlassView } from "../src/components/LiquidGlassView";
 
 export default function DidNotUnderstandScreen() {
   const params = useLocalSearchParams();
+  const theme = useThemeColors();
 
   const latitude = String(params.latitude || "");
   const longitude = String(params.longitude || "");
@@ -57,16 +59,19 @@ export default function DidNotUnderstandScreen() {
           </View>
 
           <View style={styles.header}>
-            <Text style={styles.title}>Não consegui entender</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.title, { color: theme.text }]}>Não consegui entender</Text>
+            <Text style={[styles.subtitle, { color: theme.textMuted }]}>
               Por favor, tente falar novamente o nome do lugar ou o endereço completo.
             </Text>
           </View>
 
-          <View style={styles.card}>
-            <Text style={styles.cardText}>
-              Se preferir, você também pode digitar o destino usando o teclado.
-            </Text>
+          <View style={[styles.cardShadow]}>
+            <View style={[styles.cardContent, { borderColor: theme.danger }]}>
+              <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={30} fallbackColor="rgba(239, 68, 68, 0.1)" />
+              <Text style={[styles.cardText, { color: theme.danger }]}>
+                Se preferir, você também pode digitar o destino usando o teclado.
+              </Text>
+            </View>
           </View>
 
           <View style={styles.actions}>
@@ -78,11 +83,11 @@ export default function DidNotUnderstandScreen() {
               style={styles.secondaryButton}
               onPress={handleTypeDestination}
             >
-              <Text style={styles.secondaryButtonText}>Digitar destino</Text>
+              <Text style={[styles.secondaryButtonText, { color: theme.primary }]}>Digitar destino</Text>
             </Pressable>
 
             <Pressable style={styles.homeButton} onPress={handleGoHome}>
-              <Text style={styles.homeButtonText}>Voltar ao início</Text>
+              <Text style={[styles.homeButtonText, { color: theme.textMuted }]}>Voltar ao início</Text>
             </Pressable>
           </View>
         </View>
@@ -114,28 +119,31 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 30,
     fontWeight: "900",
-    color: colors.text,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 18,
-    color: colors.textMuted,
     textAlign: "center",
     lineHeight: 26,
     fontWeight: '600',
   },
-  card: {
+  cardShadow: {
     width: "100%",
+    shadowColor: "#EF4444",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  cardContent: {
     padding: 24,
     borderRadius: 24,
-    backgroundColor: '#FEF2F2',
     borderWidth: 1,
-    borderColor: '#FEE2E2',
+    overflow: "hidden",
   },
   cardText: {
     fontSize: 16,
     fontWeight: "700",
-    color: colors.danger,
     textAlign: "center",
     lineHeight: 22,
   },
@@ -150,7 +158,6 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     fontSize: 17,
     fontWeight: "800",
-    color: colors.primary,
     textDecorationLine: 'underline',
   },
   homeButton: {
@@ -162,6 +169,5 @@ const styles = StyleSheet.create({
   homeButtonText: {
     fontSize: 16,
     fontWeight: "700",
-    color: colors.textMuted,
   },
 });

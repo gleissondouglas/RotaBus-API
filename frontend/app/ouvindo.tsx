@@ -7,7 +7,8 @@ import {
   View,
   ActivityIndicator,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
+import { LiquidGlassView } from "../src/components/LiquidGlassView";
 import Animated, {
   FadeIn,
   FadeInUp,
@@ -343,7 +344,7 @@ export default function ListeningScreen() {
   }
 
   return (
-    <ScreenContainer withPadding={false} style={{ backgroundColor: "#F6F8FA" }}>
+    <ScreenContainer withPadding={false} style={{ backgroundColor: theme.background }}>
       <View style={[styles.topBar, { paddingTop: Math.max(insets.top, 16) }]}>
         <View style={{ flex: 1 }} />
       </View>
@@ -353,20 +354,23 @@ export default function ListeningScreen() {
           <Text style={[styles.greeting, { color: theme.primary }]}>
             {userName ? `Olá, ${userName}` : "Olá!"}
           </Text>
-          <Text style={[styles.title, { color: "#000" }]}>Estou ouvindo você...</Text>
-          <Text style={[styles.subtitle, { color: "#666" }]}>Fale o nome do lugar, rua ou bairro.</Text>
+          <Text style={[styles.title, { color: theme.text }]}>Estou ouvindo você...</Text>
+          <Text style={[styles.subtitle, { color: theme.textMuted }]}>Fale o nome do lugar, rua ou bairro.</Text>
         </Animated.View>
 
         <Animated.View 
           entering={FadeInUp.delay(200).duration(600).springify()} 
-          style={[styles.card, { backgroundColor: "white" }]}
+          style={styles.cardShadow}
         >
-          <Text style={[styles.cardLabel, { color: theme.primary }]}>Transcrição ao vivo</Text>
-          <View style={styles.transcriptWrapper}>
-            <Text style={[styles.transcriptText, { color: "#000" }]}>
-              {transcript || (status === "speaking" ? "Ouvindo em instantes..." : status === "listening" ? "Aguardando voz..." : "Processando...")}
-            </Text>
-            {status === "listening" && <BlinkingCursor />}
+          <View style={[styles.cardContent, { borderColor: theme.border }]}>
+            <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={50} fallbackColor={theme.card} />
+            <Text style={[styles.cardLabel, { color: theme.primary }]}>Transcrição ao vivo</Text>
+            <View style={styles.transcriptWrapper}>
+              <Text style={[styles.transcriptText, { color: theme.text }]}>
+                {transcript || (status === "speaking" ? "Ouvindo em instantes..." : status === "listening" ? "Aguardando voz..." : "Processando...")}
+              </Text>
+              {status === "listening" && <BlinkingCursor />}
+            </View>
           </View>
         </Animated.View>
 
@@ -387,16 +391,18 @@ export default function ListeningScreen() {
 
         <Animated.View 
           entering={FadeInUp.delay(300).springify()} 
-          style={[styles.bottomBar, { backgroundColor: "white", marginBottom: Math.max(insets.bottom, 24) }]}
+          style={[styles.bottomBarShadow, { marginBottom: Math.max(insets.bottom, 24) }]}
         >
-          <Pressable 
-            style={[styles.cancelButton, { backgroundColor: "#F1F5F9" }, isLoading && { opacity: 0.6 }]} 
-            disabled={isLoading}
-            onPress={handleCancel}
-            accessibilityLabel="Cancelar"
-          >
-            <Ionicons name="close" size={24} color="#000" />
-          </Pressable>
+          <View style={[styles.bottomBarContent, { borderColor: theme.border }]}>
+            <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={50} fallbackColor={theme.card} />
+            <Pressable 
+              style={[styles.cancelButton, { backgroundColor: theme.background }, isLoading && { opacity: 0.6 }]} 
+              disabled={isLoading}
+              onPress={handleCancel}
+              accessibilityLabel="Cancelar"
+            >
+              <AdaptiveIcon iosSymbol="xmark" fallbackFamily="Ionicons" fallbackName="close" size={24} color={theme.text} />
+            </Pressable>
 
           <View style={styles.statusContainer}>
             <Text style={[styles.statusText, { color: theme.primary }]}>
@@ -411,9 +417,10 @@ export default function ListeningScreen() {
               <Animated.View style={[styles.micPulse, { backgroundColor: theme.primary }, micPulseStyle]} />
             )}
             <View style={[styles.micButton, { backgroundColor: theme.primary }]}>
-              <Ionicons name="mic" size={28} color="white" />
+              <AdaptiveIcon iosSymbol="mic.fill" fallbackFamily="Ionicons" fallbackName="mic" size={28} color="white" />
             </View>
           </View>
+         </View>
         </Animated.View>
       </View>
     </ScreenContainer>
@@ -427,11 +434,13 @@ const styles = StyleSheet.create({
   greeting: { fontSize: 18, fontWeight: "600", marginBottom: 4 },
   title: { fontSize: 32, fontWeight: "900", letterSpacing: -0.5, marginBottom: 8 },
   subtitle: { fontSize: 17, fontWeight: "500" },
-  card: { width: "100%", minHeight: 180, borderRadius: 32, padding: 24, shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.04, shadowRadius: 20, elevation: 4, borderWidth: 1, borderColor: "rgba(0,0,0,0.02)" },
+  cardShadow: { width: "100%", shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.04, shadowRadius: 20, elevation: 4 },
+  cardContent: { minHeight: 180, borderRadius: 32, padding: 24, borderWidth: 1, overflow: 'hidden' },
   cardLabel: { fontSize: 13, fontWeight: "800", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 16 },
   transcriptWrapper: { flexDirection: "row", flexWrap: "wrap", alignItems: "center" },
   transcriptText: { fontSize: 24, fontWeight: "800", lineHeight: 32 },
-  bottomBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 12, paddingVertical: 12, borderRadius: 44, shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.08, shadowRadius: 20, elevation: 10, borderWidth: 1, borderColor: "rgba(0,0,0,0.01)" },
+  bottomBarShadow: { shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.08, shadowRadius: 20, elevation: 10 },
+  bottomBarContent: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 12, paddingVertical: 12, borderRadius: 44, borderWidth: 1, overflow: 'hidden' },
   cancelButton: { width: 56, height: 56, borderRadius: 28, alignItems: "center", justifyContent: "center" },
   statusContainer: { flex: 1, alignItems: "center", justifyContent: "center" },
   statusText: { fontSize: 15, fontWeight: "800", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 },

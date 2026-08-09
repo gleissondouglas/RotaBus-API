@@ -1,16 +1,17 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 
 import { BackButton } from "../src/components/BackButton";
 import { ListenOptionsButton } from "../src/components/ListenOptionsButton";
 import { PrimaryButton } from "../src/components/PrimaryButton";
 import { ScreenContainer } from "../src/components/ScreenContainer";
 import { useAutoSpeakOnce } from "../src/hooks/useAutoSpeakOnce";
-import { colors } from "../src/theme/colors";
+import { useThemeColors } from "../src/theme/colors";
+import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
 
 export default function HelpScreen() {
   const params = useLocalSearchParams();
+  const theme = useThemeColors();
 
   const latitude = String(params.latitude || "");
   const longitude = String(params.longitude || "");
@@ -59,47 +60,47 @@ export default function HelpScreen() {
         <BackButton />
 
         <View style={styles.content}>
-          <Text style={styles.title}>Ajuda</Text>
+          <Text style={[styles.title, { color: theme.text }]}>Ajuda</Text>
 
-          <Text style={styles.subtitle}>
+          <Text style={[styles.subtitle, { color: theme.textMuted }]}>
             Veja como usar o Nuvem de forma simples.
           </Text>
 
-          <View style={styles.card}>
-            <View style={styles.iconContainer}>
-              <Ionicons name="mic-outline" size={28} color={colors.primary} />
+          <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <View style={[styles.iconContainer, { backgroundColor: theme.background }]}>
+              <AdaptiveIcon iosSymbol="mic" fallbackFamily="Ionicons" fallbackName="mic-outline" size={28} color={theme.primary} />
             </View>
 
             <View style={styles.cardTextBox}>
-              <Text style={styles.cardTitle}>Falar destino</Text>
-              <Text style={styles.cardDescription}>
+              <Text style={[styles.cardTitle, { color: theme.text }]}>Falar destino</Text>
+              <Text style={[styles.cardDescription, { color: theme.textMuted }]}>
                 Mantenha o botão de voz pressionado e diga para onde você quer
                 ir.
               </Text>
             </View>
           </View>
 
-          <View style={styles.card}>
-            <View style={styles.iconContainer}>
-              <Ionicons name="create-outline" size={28} color={colors.primary} />
+          <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <View style={[styles.iconContainer, { backgroundColor: theme.background }]}>
+              <AdaptiveIcon iosSymbol="keyboard" fallbackFamily="Ionicons" fallbackName="create-outline" size={28} color={theme.primary} />
             </View>
 
             <View style={styles.cardTextBox}>
-              <Text style={styles.cardTitle}>Digitar destino</Text>
-              <Text style={styles.cardDescription}>
+              <Text style={[styles.cardTitle, { color: theme.text }]}>Digitar destino</Text>
+              <Text style={[styles.cardDescription, { color: theme.textMuted }]}>
                 Se preferir, você pode escrever o local desejado.
               </Text>
             </View>
           </View>
 
-          <View style={styles.card}>
-            <View style={styles.iconContainer}>
-              <Ionicons name="bus-outline" size={28} color={colors.primary} />
+          <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <View style={[styles.iconContainer, { backgroundColor: theme.background }]}>
+              <AdaptiveIcon iosSymbol="bus" fallbackFamily="Ionicons" fallbackName="bus-outline" size={28} color={theme.primary} />
             </View>
 
             <View style={styles.cardTextBox}>
-              <Text style={styles.cardTitle}>Ir até o ponto</Text>
-              <Text style={styles.cardDescription}>
+              <Text style={[styles.cardTitle, { color: theme.text }]}>Ir até o ponto</Text>
+              <Text style={[styles.cardDescription, { color: theme.textMuted }]}>
                 O Nuvem mostra o ponto de ônibus mais próximo e guia você até
                 lá.
               </Text>
@@ -117,11 +118,11 @@ export default function HelpScreen() {
             style={styles.secondaryButton}
             onPress={handleTypeDestination}
           >
-            <Text style={styles.secondaryButtonText}>Digitar destino</Text>
+            <Text style={[styles.secondaryButtonText, { color: theme.primary }]}>Digitar destino</Text>
           </Pressable>
 
           <Pressable style={styles.secondaryButton} onPress={handleSettings}>
-            <Text style={styles.secondaryButtonText}>Configurações</Text>
+            <Text style={[styles.secondaryButtonText, { color: theme.primary }]}>Configurações</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -144,13 +145,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 30,
     fontWeight: "900",
-    color: colors.text,
     textAlign: "center",
   },
 
   subtitle: {
     fontSize: 15,
-    color: colors.textMuted,
     textAlign: "center",
     lineHeight: 22,
     marginBottom: 6,
@@ -162,9 +161,7 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 14,
     borderRadius: 18,
-    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: colors.border,
   },
 
   iconContainer: {
@@ -173,7 +170,6 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.background,
   },
 
   cardTextBox: {
@@ -183,13 +179,11 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 16,
     fontWeight: "800",
-    color: colors.text,
   },
 
   cardDescription: {
     marginTop: 3,
     fontSize: 13,
-    color: colors.textMuted,
     lineHeight: 19,
   },
 
@@ -202,6 +196,5 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     fontSize: 16,
     fontWeight: "700",
-    color: colors.primary,
   },
 });

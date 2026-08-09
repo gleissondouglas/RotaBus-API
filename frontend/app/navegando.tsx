@@ -19,6 +19,9 @@ import { PrimaryButton } from "../src/components/PrimaryButton";
 import { ListenOptionsButton } from "../src/components/ListenOptionsButton";
 import { useThemeColors } from "../src/theme/colors";
 import Map from "../src/components/Map";
+import { LiquidGlassView } from "../src/components/LiquidGlassView";
+import { LinearGradient } from "expo-linear-gradient";
+import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
 import { speak } from "../src/services/speech.service";
 import { MapData } from "../src/types/journey.types";
 import { formatBusWaitingTimeToFriendlyTextShort } from "../src/utils/date-time";
@@ -71,15 +74,15 @@ export default function NavigatingScreen() {
     ? allSteps[globalStepIndex] 
     : allSteps.slice(globalStepIndex).find(s => s.type === "transit");
 
-  const busLine = String(activeTransitStep?.lineName || activeTransitStep?.line || params.busLine || "--");
+  const busLine = String(activeTransitStep?.line || params.busLine || "--");
   const direction = String(activeTransitStep?.headsign || params.direction || "--");
   const stopName = String(activeTransitStep?.from || activeTransitStep?.departureStop?.name || params.stopName || "ponto indicado");
   
   const transitStep = useMemo(() => allSteps.find(s => s.type === "transit"), [allSteps]);
   const lineDetails = useMemo(() => {
     const details = transitStep?.lineName || transitStep?.headsign || direction || "";
-    return details === "--" ? "" : details;
-  }, [transitStep, direction]);
+    return (details === "--" || details === busLine) ? "" : details;
+  }, [transitStep, direction, busLine]);
 
   // Estados de controle da tela
   const [stage, setStage] = useState<NavigationStage>("walking");
@@ -563,7 +566,7 @@ export default function NavigatingScreen() {
 
       {/* SOLID BACKGROUND (For status stages) */}
       {(stage === "waiting_bus" || stage === "on_bus" || stage === "arrived") && (
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: "#F6F8FA" }]} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: theme.background }]} />
       )}
 
       {/* Top Bar (Always Fixed) */}
@@ -598,90 +601,119 @@ export default function NavigatingScreen() {
             </View>
           )}
 
-          <View style={[styles.instructionCard, { backgroundColor: "white" }]}>
-            <View style={[styles.iconCircle, { backgroundColor: theme.primaryLight }]}>
-              <FontAwesome6 
-                name={formattedInstruction.maneuver?.includes("LEFT") ? "arrow-left" : formattedInstruction.maneuver?.includes("RIGHT") ? "arrow-right" : "arrow-up"} 
-                size={18} 
-                color={theme.primary} 
-              />
+          <Pressable onPress={() => speakControlled(formattedInstruction.speechText, true)}>
+            <View style={[styles.instructionCardShadow]}>
+              <View style={[styles.instructionCardContent, { borderColor: theme.border }]}>
+                <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={50} fallbackColor={theme.card} />
+                <View style={[styles.iconCircle, { backgroundColor: theme.primaryLight }]}>
+                  <AdaptiveIcon 
+                    iosSymbol={formattedInstruction.maneuver?.includes("LEFT") ? "arrow.left" : formattedInstruction.maneuver?.includes("RIGHT") ? "arrow.right" : "arrow.up"}
+                    fallbackFamily="FontAwesome6"
+                    fallbackName={formattedInstruction.maneuver?.includes("LEFT") ? "arrow-left" : formattedInstruction.maneuver?.includes("RIGHT") ? "arrow-right" : "arrow-up"} 
+                    size={18} 
+                    color={theme.primary} 
+                  />
+                </View>
+                <View style={styles.instructionTextContent}>
+                  <Text style={[styles.instructionTitle, { color: theme.text }]} numberOfLines={1}>{formattedInstruction.displayTitle}</Text>
+                  <Text style={[styles.instructionSubtitle, { color: theme.textMuted }]}>{formattedInstruction.displaySubtitle}</Text>
+                </View>
+              </View>
             </View>
-            <View style={styles.instructionTextContent}>
-              <Text style={styles.instructionTitle} numberOfLines={1}>{formattedInstruction.displayTitle}</Text>
-              <Text style={styles.instructionSubtitle}>{formattedInstruction.displaySubtitle}</Text>
-            </View>
-          </View>
+          </Pressable>
         </View>
       )}
 
       <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
         {/* Status Content (Scrollable) */}
         {(stage === "waiting_bus" || stage === "on_bus" || stage === "arrived") && (
-          <ScrollView 
+          <ScrollView
             contentContainerStyle={[
-              styles.statusContentContainer, 
-              { 
+              styles.statusContentContainer,
+              {
                 paddingTop: insets.top + ((stage === "on_bus" || stage === "arrived") ? 120 : 80),
                 paddingBottom: insets.bottom + 220
               }
             ]}
             showsVerticalScrollIndicator={false}
           >
-            <Animated.View style={[styles.largeStatusCard, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-              <View style={[styles.largeStatusIconBox, { backgroundColor: (stage === "on_bus" || stage === "arrived") ? "#DCFCE7" : "#F0F7FF" }]}>
+            <Animated.View 
+              style={[
+                styles.largeStatusCardShadow, 
+                { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
+              ]}
+            >
+              <View style={[styles.largeStatusCardContent, { borderColor: theme.border }]}>
+                <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={50} fallbackColor={theme.card} />
+              <View style={[styles.largeStatusIconBox, { backgroundColor: (stage === "on_bus" || stage === "arrived") ? "rgba(16, 185, 129, 0.15)" : theme.primaryLight }]}>
                  {stage === "waiting_bus" ? (
-                   <FontAwesome6 name="bus-simple" size={40} color={theme.primary} />
+                   <AdaptiveIcon iosSymbol="bus" fallbackFamily="FontAwesome6" fallbackName="bus-simple" size={40} color={theme.primary} />
                  ) : (
                    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
                      <Ionicons name="checkmark-circle" size={(stage === "on_bus" || stage === "arrived") ? 64 : 56} color="#10B981" />
                    </Animated.View>
                  )}
               </View>
-              <Text style={styles.largeStatusTitle}>{getStageTitle()}</Text>
-              
-              {stage === "on_bus" && (
-                <Text style={styles.boardedConfirmation}>Você embarcou no ônibus.</Text>
-              )}
 
-              <Text style={styles.largeStatusSubtitle}>
-                {stage === "waiting_bus" 
-                  ? formattedInstruction.displaySubtitle 
-                  : stage === "arrived"
-                  ? `Destino: ${stopName}`
-                  : "Boa viagem. Eu aviso quando estiver perto de descer."}
-              </Text>
-              
-              {stage === "waiting_bus" && !!stopName && stopName !== "ponto indicado" && (
-                <Text style={styles.stopNameStatusText} numberOfLines={1}>Ponto: {stopName}</Text>
-              )}
+              <View style={{ gap: 14, alignItems: "center", marginBottom: 24 }}>
+                <Text style={[styles.largeStatusTitle, { color: theme.text }]}>{getStageTitle()}</Text>
+                
+                {stage === "on_bus" && (
+                  <Text style={styles.boardedConfirmation}>Você embarcou no ônibus.</Text>
+                )}
 
-              {stage === "waiting_bus" && (
-                <Text style={styles.helperText}>Confira o número antes de embarcar.</Text>
-              )}
-
-              {stage === "waiting_bus" && (
-                <View style={styles.infoCardsGrid}>
-                  <View style={styles.infoCard}>
-                    <Text style={styles.infoCardLabel}>Linha</Text>
-                    <Text style={styles.infoCardValue}>{busLine}</Text>
-                    {!!lineDetails && lineDetails !== "--" && (
-                      <Text style={styles.infoCardSubValue} numberOfLines={2}>{lineDetails}</Text>
-                    )}
+                <Text style={[styles.largeStatusSubtitle, { color: theme.textMuted }]}>
+                  {stage === "waiting_bus" 
+                    ? formattedInstruction.displaySubtitle 
+                    : stage === "arrived"
+                    ? `Destino: ${stopName}`
+                    : "Boa viagem. Eu aviso quando estiver perto de descer."}
+                </Text>
+                
+                {stage === "waiting_bus" && !!stopName && stopName !== "ponto indicado" && (
+                  <View style={styles.stopNamePill}>
+                    <Ionicons name="location" size={16} color={theme.primary} />
+                    <Text style={[styles.stopNameStatusText, { color: theme.text }]} numberOfLines={1}>Ponto: {stopName}</Text>
                   </View>
-                  <View style={styles.infoCard}>
-                    <Text style={styles.infoCardLabel}>Chega</Text>
-                    <Text style={[styles.infoCardValue, { color: theme.primary }]}>{busCountdown || "Calculando..."}</Text>
-                  </View>
-                </View>
-              )}
+                )}
+
+                {stage === "waiting_bus" && (
+                  <Text style={[styles.helperText, { color: theme.textMuted }]}>Confira o número antes de embarcar.</Text>
+                )}
+
+                {stage === "waiting_bus" && (() => {
+                  const hasEmPrefix = busCountdown.startsWith("em ");
+                  const chegaLabel = hasEmPrefix ? "CHEGA EM" : "CHEGA";
+                  const chegaValue = hasEmPrefix ? busCountdown.substring(3) : (busCountdown || "...");
+
+                  return (
+                    <View style={styles.infoCardsGrid}>
+                      <View style={[styles.infoCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                        <Text style={[styles.infoCardLabel, { color: theme.textMuted }]}>LINHA {busLine}</Text>
+                        <Text style={[styles.infoCardValue, { color: theme.text, fontSize: 18 }]} numberOfLines={2} adjustsFontSizeToFit>{lineDetails || busLine}</Text>
+                      </View>
+                      <View style={[styles.infoCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                        <Text style={[styles.infoCardLabel, { color: theme.textMuted }]}>{chegaLabel}</Text>
+                        <Text style={[styles.infoCardValue, { color: theme.primary }]} numberOfLines={1} adjustsFontSizeToFit>{chegaValue}</Text>
+                        {!!stopName && stopName !== "ponto indicado" && (
+                          <Text style={[styles.infoCardSubValue, { color: theme.textMuted }]} numberOfLines={2}>{stopName}</Text>
+                        )}
+                      </View>
+                    </View>
+                  );
+                })()}
+              </View>
+              </View>
             </Animated.View>
           </ScrollView>
         )}
 
         {/* Fixed Actions for Status Stages */}
         {(stage === "waiting_bus" || stage === "on_bus" || stage === "arrived") && (
-          <Animated.View style={[styles.fixedStatusActions, { paddingBottom: insets.bottom + 16, opacity: (stage === "on_bus" || stage === "arrived") ? buttonFadeAnim : fadeAnim }]}>
-            <PrimaryButton title={getPrimaryButtonTitle()} onPress={handleStageTransition} style={styles.mainButton} />
+          <Animated.View style={[styles.fixedStatusActionsShadow, { opacity: (stage === "on_bus" || stage === "arrived") ? buttonFadeAnim : fadeAnim }]}>
+            <View style={[styles.fixedStatusActionsContent, { paddingBottom: insets.bottom + 16 }]}>
+              <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={50} fallbackColor={theme.card} />
+              <PrimaryButton title={getPrimaryButtonTitle()} onPress={handleStageTransition} style={styles.mainButton} />
             <Pressable 
               style={styles.secondaryActionBtn} 
               onPress={() => speakControlled(formattedInstruction.speechText, true)}
@@ -702,16 +734,19 @@ export default function NavigatingScreen() {
                 <Text style={styles.tertiaryActionText}>Nova rota</Text>
               </Pressable>
             )}
+            </View>
           </Animated.View>
         )}
 
         {/* Bottom Card for Walking Stage */}
         {(stage === "walking") && (
-          <View 
-            onLayout={(e) => setBottomCardHeight(e.nativeEvent.layout.height)}
-            style={[styles.bottomCard, { bottom: 0, paddingBottom: insets.bottom + 16, backgroundColor: "white" }]}
-          >
-            <View style={[styles.dragHandle, { backgroundColor: "#EEE" }]} />
+          <View style={[styles.bottomCardShadow, { bottom: 0 }]} pointerEvents="box-none">
+            <View 
+              onLayout={(e) => setBottomCardHeight(e.nativeEvent.layout.height)}
+              style={[styles.bottomCardContent, { paddingBottom: insets.bottom + 16 }]}
+            >
+              <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={50} fallbackColor={theme.card} />
+              <View style={[styles.dragHandle, { backgroundColor: theme.border }]} />
 
             <View style={styles.bottomSheetHeader}>
               <Text style={styles.bottomSheetLabel}>
@@ -742,18 +777,23 @@ export default function NavigatingScreen() {
             {!isWalkingOnly && (() => {
               const hasTransitAhead = allSteps.slice(globalStepIndex).some(s => s.type === "transit");
               if (!hasTransitAhead) return null;
+              
+              const hasEmPrefix = busCountdown.startsWith("em ");
+              const chegaLabel = hasEmPrefix ? "CHEGA EM" : "CHEGA";
+              const chegaValue = hasEmPrefix ? busCountdown.substring(3) : (busCountdown || "...");
+
               return (
-                <View style={styles.summaryRow}>
-                  <View style={styles.summaryItem}>
-                    <Text style={styles.summaryLabel}>Linha</Text>
-                    <Text style={styles.summaryValue}>{busLine}</Text>
-                    {!!lineDetails && lineDetails !== "--" && (
-                      <Text style={styles.infoCardSubValue} numberOfLines={2}>{lineDetails}</Text>
-                    )}
+                <View style={styles.infoCardsGrid}>
+                  <View style={[styles.infoCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                    <Text style={[styles.infoCardLabel, { color: theme.textMuted }]}>LINHA {busLine}</Text>
+                    <Text style={[styles.infoCardValue, { color: theme.text, fontSize: 18 }]} numberOfLines={2} adjustsFontSizeToFit>{lineDetails || busLine}</Text>
                   </View>
-                  <View style={styles.summaryItem}>
-                    <Text style={styles.summaryLabel}>Chega</Text>
-                    <Text style={[styles.summaryValue, { color: theme.primary }]}>{busCountdown || "..."}</Text>
+                  <View style={[styles.infoCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                    <Text style={[styles.infoCardLabel, { color: theme.textMuted }]}>{chegaLabel}</Text>
+                    <Text style={[styles.infoCardValue, { color: theme.primary }]} numberOfLines={1} adjustsFontSizeToFit>{chegaValue}</Text>
+                    {!!stopName && stopName !== "ponto indicado" && (
+                      <Text style={[styles.infoCardSubValue, { color: theme.textMuted }]} numberOfLines={2}>{stopName}</Text>
+                    )}
                   </View>
                 </View>
               );
@@ -774,21 +814,22 @@ export default function NavigatingScreen() {
               </View>
             </View>
           </View>
+        </View>
         )}
       </View>
 
       <Modal visible={showExitModal} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Sair da navegação?</Text>
+        <LiquidGlassView style={styles.modalOverlay} intensity={50} fallbackColor="rgba(0,0,0,0.7)">
+          <View style={[styles.modalContent, { backgroundColor: theme.card }]}>
+            <Text style={[styles.modalTitle, { color: theme.text }]}>Sair da navegação?</Text>
             <View style={styles.modalActions}>
               <PrimaryButton title="Continuar navegando" onPress={() => setShowExitModal(false)} />
               <Pressable onPress={confirmExit} style={styles.confirmExitBtn}>
-                <Text style={styles.confirmExitText}>Sim, encerrar</Text>
+                <Text style={[styles.confirmExitText, { color: theme.danger }]}>Sim, encerrar</Text>
               </Pressable>
             </View>
           </View>
-        </View>
+        </LiquidGlassView>
       </Modal>
     </View>
   );
@@ -802,41 +843,42 @@ const styles = StyleSheet.create({
   miniBadgeText: { fontWeight: "800", fontSize: 14, color: "#011030" },
   badgeDot: { width: 8, height: 8, borderRadius: 4, marginRight: 8 },
   instructionCardContainer: { position: "absolute", left: 16, right: 16, zIndex: 90, gap: 8 },
-  instructionCard: { flexDirection: "row", paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, alignItems: "center", elevation: 10, shadowColor: "#000", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.15, shadowRadius: 12 },
-  iconCircle: { width: 38, height: 38, borderRadius: 12, alignItems: "center", justifyContent: "center", marginRight: 12 },
-  instructionTextContent: { flex: 1 },
-  instructionTitle: { fontSize: 16, fontWeight: "900", letterSpacing: -0.3, color: "#011030", lineHeight: 22 },
-  instructionSubtitle: { fontSize: 15, fontWeight: "700", color: "#64748B", marginTop: 1 },
+  instructionCardShadow: { shadowColor: "#000", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 10 },
+  instructionCardContent: { flexDirection: "row", paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, alignItems: "center", borderWidth: 1, overflow: "hidden" },
+  iconCircle: { width: 38, height: 38, borderRadius: 12, alignItems: "center", justifyContent: "center", marginRight: 12, zIndex: 2 },
+  instructionTextContent: { flex: 1, zIndex: 2 },
+  instructionTitle: { fontSize: 16, fontWeight: "900", letterSpacing: -0.3, lineHeight: 22 },
+  instructionSubtitle: { fontSize: 15, fontWeight: "700", marginTop: 1 },
   warningPill: { flexDirection: "row", alignSelf: "flex-start", backgroundColor: "#FEF3C7", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, gap: 6, alignItems: "center", borderWidth: 1, borderColor: "#FDE68A" },
   warningPillText: { fontSize: 13, fontWeight: "800", color: "#B45309" },
-  bottomCard: { position: "absolute", left: 0, right: 0, borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingHorizontal: 24, paddingTop: 12, elevation: 20, shadowColor: "#000", shadowOffset: { width: 0, height: -10 }, shadowOpacity: 0.1, shadowRadius: 20 },
-  dragHandle: { width: 40, height: 4, borderRadius: 2, alignSelf: "center", marginBottom: 8 },
-  bottomSheetHeader: { marginBottom: 12, alignItems: 'center' },
-  bottomSheetLabel: { fontSize: 13, fontWeight: "800", color: "#94A3B8", textTransform: "uppercase", letterSpacing: 0.5 },
-  stopNameText: { fontSize: 16, fontWeight: "700", color: "#011030", marginTop: 2 },
-  summaryRow: { flexDirection: "row", gap: 10, marginBottom: 12 },
-  summaryItem: { flex: 1, paddingVertical: 8, borderRadius: 16, alignItems: "center", borderWidth: 1, borderColor: "#F1F5F9", backgroundColor: "#F8FAFC" },
-  summaryLabel: { fontSize: 11, fontWeight: "800", textTransform: "uppercase", color: "#94A3B8", marginBottom: 2 },
-  summaryValue: { fontSize: 18, fontWeight: "900", color: "#011030" },
-  arrivalWarningBox: { flexDirection: "row", backgroundColor: "#FFFBEB", padding: 10, borderRadius: 12, alignItems: "center", gap: 8, marginBottom: 16, borderWidth: 1, borderColor: "#FEF3C7" },
+  bottomCardShadow: { position: "absolute", left: 0, right: 0, elevation: 20, shadowColor: "#000", shadowOffset: { width: 0, height: -10 }, shadowOpacity: 0.1, shadowRadius: 20 },
+  bottomCardContent: { borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingHorizontal: 24, paddingTop: 12, overflow: "hidden", borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.02)" },
+  dragHandle: { width: 40, height: 4, borderRadius: 2, alignSelf: "center", marginBottom: 8, zIndex: 2 },
+  bottomSheetHeader: { marginBottom: 16, alignItems: 'center', zIndex: 2 },
+  bottomSheetLabel: { fontSize: 13, fontWeight: "800", textTransform: "uppercase", letterSpacing: 0.5 },
+  stopNameText: { fontSize: 16, fontWeight: "700", marginTop: 4 },
+  arrivalWarningBox: { flexDirection: "row", backgroundColor: "rgba(254, 243, 199, 0.4)", padding: 12, borderRadius: 16, alignItems: "center", gap: 8, marginBottom: 16, borderWidth: 1, borderColor: "rgba(253, 230, 138, 0.5)", zIndex: 2 },
   arrivalWarningText: { fontSize: 14, fontWeight: "700", color: "#B45309", flex: 1 },
-  actionArea: { gap: 8, alignItems: "center", width: "100%" },
+  actionArea: { gap: 8, alignItems: "center", width: "100%", zIndex: 2 },
   mainButton: { height: 56, borderRadius: 32 },
   ttsWrapper: { opacity: 0.9 },
-  statusContentContainer: { flexGrow: 1, paddingHorizontal: 20 },
-  largeStatusCard: { backgroundColor: "white", width: "100%", borderRadius: 32, padding: 24, alignItems: "center", elevation: 2, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10 },
-  largeStatusIconBox: { width: 80, height: 80, borderRadius: 24, alignItems: "center", justifyContent: "center", marginBottom: 20 },
-  largeStatusTitle: { fontSize: 28, fontWeight: "900", textAlign: "center", letterSpacing: -0.5, color: "#011030" },
-  boardedConfirmation: { fontSize: 20, fontWeight: "700", color: "#475569", marginTop: 4, textAlign: "center" },
-  stopNameStatusText: { fontSize: 18, fontWeight: "700", color: "#011030", marginTop: 8, textAlign: "center", paddingHorizontal: 10 },
-  largeStatusSubtitle: { fontSize: 18, fontWeight: "600", textAlign: "center", marginTop: 12, color: "#64748B", lineHeight: 24, paddingHorizontal: 10 },
-  helperText: { fontSize: 16, fontWeight: "500", textAlign: "center", marginTop: 8, color: "#64748B", lineHeight: 22 },
-  infoCardsGrid: { flexDirection: "row", gap: 10, marginTop: 24, width: "100%" },
-  infoCard: { flex: 1, backgroundColor: "#F8FAFC", borderRadius: 20, padding: 14, alignItems: "center", borderWidth: 1, borderColor: "#F1F5F9" },
-  infoCardLabel: { fontSize: 11, fontWeight: "800", color: "#6a97d7", textTransform: "uppercase", marginBottom: 4, textAlign: "center" },
-  infoCardValue: { fontSize: 18, fontWeight: "900", color: "#011030" },
-  infoCardSubValue: { fontSize: 12, fontWeight: "600", color: "#64748B", marginTop: 4, textAlign: "center", lineHeight: 15 },
-  fixedStatusActions: { position: "absolute", bottom: 0, left: 0, right: 0, backgroundColor: "white", paddingHorizontal: 24, paddingTop: 16, borderTopLeftRadius: 32, borderTopRightRadius: 32, shadowColor: "#000", shadowOffset: { width: 0, height: -8 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 10, gap: 12 },
+  statusContentContainer: { flexGrow: 1, paddingHorizontal: 20, zIndex: 2 },
+  largeStatusCardShadow: { shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 20 },
+  largeStatusCardContent: { borderRadius: 32, borderWidth: 1, overflow: "hidden", paddingTop: 20, paddingBottom: 24, paddingHorizontal: 16 },
+  largeStatusIconBox: { width: 72, height: 72, borderRadius: 24, alignItems: "center", justifyContent: "center", marginBottom: 20, alignSelf: "center" },
+  largeStatusTitle: { fontSize: 26, fontWeight: "900", textAlign: "center", letterSpacing: -0.5 },
+  boardedConfirmation: { fontSize: 18, fontWeight: "700", color: "#475569", textAlign: "center" },
+  stopNamePill: { flexDirection: "row", alignItems: "center", backgroundColor: "rgba(0,0,0,0.03)", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16, gap: 6, maxWidth: "90%", marginTop: 4 },
+  stopNameStatusText: { fontSize: 15, fontWeight: "700", flexShrink: 1 },
+  largeStatusSubtitle: { fontSize: 17, fontWeight: "500", textAlign: "center", color: "#64748B", lineHeight: 24, paddingHorizontal: 16 },
+  helperText: { fontSize: 15, fontWeight: "600", textAlign: "center", color: "#94A3B8" },
+  infoCardsGrid: { flexDirection: "row", gap: 12, marginBottom: 20 },
+  infoCard: { flex: 1, paddingVertical: 16, paddingHorizontal: 12, borderRadius: 24, alignItems: "flex-start", borderWidth: 1 },
+  infoCardLabel: { fontSize: 13, fontWeight: "700", textTransform: "uppercase", marginBottom: 6, letterSpacing: 0.5 },
+  infoCardValue: { fontSize: 22, fontWeight: "900", letterSpacing: -0.5 },
+  infoCardSubValue: { fontSize: 13, fontWeight: "600", marginTop: 4 },
+  fixedStatusActionsShadow: { position: "absolute", bottom: 0, left: 0, right: 0, shadowColor: "#000", shadowOffset: { width: 0, height: -8 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 10 },
+  fixedStatusActionsContent: { paddingHorizontal: 24, paddingTop: 16, borderTopLeftRadius: 32, borderTopRightRadius: 32, gap: 12, overflow: "hidden", borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.02)" },
   secondaryActionBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 8 },
   secondaryActionText: { fontSize: 17, fontWeight: "800" },
   tertiaryActionBtn: { alignItems: "center", paddingVertical: 8 },

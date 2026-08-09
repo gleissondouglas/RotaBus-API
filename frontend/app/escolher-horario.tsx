@@ -14,6 +14,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import Animated, { FadeInUp, FadeIn } from "react-native-reanimated";
 
+import { LiquidGlassView } from "../src/components/LiquidGlassView";
+import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
+
 import { BackButton } from "../src/components/BackButton";
 import { PrimaryButton } from "../src/components/PrimaryButton";
 import { useThemeColors } from "../src/theme/colors";
@@ -196,7 +199,7 @@ export default function ChooseTimeScreen() {
 
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: theme.background }]}>
       <View style={[styles.fixedHeader, { top: insets.top + 8 }]}>
         <BackButton accessibilityLabel="Voltar para a tela anterior" />
       </View>
@@ -218,22 +221,22 @@ export default function ChooseTimeScreen() {
           <View style={[styles.header, { gap: isSmallHeight ? 8 : 12 }]}>
             <View style={[
               styles.heroIconCircle, 
-              { backgroundColor: "white" },
+              { backgroundColor: theme.card },
               { width: isSmallHeight ? layout.heroIconSizeSmall : layout.heroIconSize, 
                 height: isSmallHeight ? layout.heroIconSizeSmall : layout.heroIconSize, 
                 borderRadius: (isSmallHeight ? layout.heroIconSizeSmall : layout.heroIconSize) / 2 }
             ]}>
-              <Ionicons name="time" size={isSmallHeight ? 32 : 40} color={theme.primary} />
+              <AdaptiveIcon iosSymbol="clock" fallbackFamily="Ionicons" fallbackName="time" size={isSmallHeight ? 32 : 40} color={theme.primary} />
             </View>
             <Text style={[
               styles.title, 
-              { color: "#000" },
+              { color: theme.text },
               { fontSize: isSmallHeight ? layout.titleFontSizeSmall : layout.titleFontSize }
             ]} maxFontSizeMultiplier={1.2}>Quando você quer ir?</Text>
             <Text 
               style={[
                 styles.subtitle, 
-                { color: "#666" },
+                { color: theme.textMuted },
                 { fontSize: isSmallHeight ? layout.subtitleFontSizeSmall : layout.subtitleFontSize }
               ]} 
               maxFontSizeMultiplier={1.1}
@@ -249,7 +252,7 @@ export default function ChooseTimeScreen() {
             <Pressable
               style={({ pressed }) => [
                 styles.optionCard,
-                { padding: isSmallHeight ? layout.cardPaddingSmall : layout.cardPadding },
+                { padding: isSmallHeight ? layout.cardPaddingSmall : layout.cardPadding, backgroundColor: theme.card, borderColor: theme.border },
                 (pressed || isActionDisabled) && { opacity: 0.7, transform: [{ scale: 0.98 }] },
               ]}
               disabled={isActionDisabled}
@@ -264,8 +267,10 @@ export default function ChooseTimeScreen() {
                   height: isSmallHeight ? layout.cardIconSizeSmall : layout.cardIconSize, 
                   borderRadius: 14 }
               ]}>
-                <MaterialCommunityIcons 
-                  name="clock-fast" 
+                <AdaptiveIcon 
+                  iosSymbol="clock.fill"
+                  fallbackFamily="MaterialCommunityIcons"
+                  fallbackName="clock-fast" 
                   size={isSmallHeight ? 24 : 28} 
                   color={theme.primary} 
                 />
@@ -273,24 +278,24 @@ export default function ChooseTimeScreen() {
               <View style={styles.optionInfo}>
                 <Text style={[
                   styles.optionTitle, 
-                  { color: "#000" },
+                  { color: theme.text },
                   { fontSize: isSmallHeight ? layout.cardTitleFontSizeSmall : layout.cardTitleFontSize }
                 ]} maxFontSizeMultiplier={1.2}>Agora</Text>
                 <Text style={[
                   styles.optionDescription, 
-                  { color: "#666" },
+                  { color: theme.textMuted },
                   { fontSize: isSmallHeight ? layout.cardSubtitleFontSizeSmall : layout.cardSubtitleFontSize }
                 ]} maxFontSizeMultiplier={1.1}>
                   Buscar o próximo ônibus.
                 </Text>
               </View>
-              <Ionicons name="chevron-forward" size={24} color="#CCC" />
+              <Ionicons name="chevron-forward" size={24} color={theme.textMuted} />
             </Pressable>
 
             <Pressable
               style={({ pressed }) => [
                 styles.optionCard,
-                { padding: isSmallHeight ? layout.cardPaddingSmall : layout.cardPadding },
+                { padding: isSmallHeight ? layout.cardPaddingSmall : layout.cardPadding, backgroundColor: theme.card, borderColor: theme.border },
                 (pressed || isActionDisabled) && { opacity: 0.7, transform: [{ scale: 0.98 }] },
               ]}
               disabled={isActionDisabled}
@@ -300,13 +305,15 @@ export default function ChooseTimeScreen() {
             >
               <View style={[
                 styles.iconBox, 
-                { backgroundColor: "white", borderWidth: 1, borderColor: "#F1F5F9" },
+                { backgroundColor: theme.background, borderWidth: 1, borderColor: theme.border },
                 { width: isSmallHeight ? layout.cardIconSizeSmall : layout.cardIconSize, 
                   height: isSmallHeight ? layout.cardIconSizeSmall : layout.cardIconSize, 
                   borderRadius: 14 }
               ]}>
-                <MaterialCommunityIcons 
-                  name="calendar-clock" 
+                <AdaptiveIcon 
+                  iosSymbol="calendar.badge.clock"
+                  fallbackFamily="MaterialCommunityIcons"
+                  fallbackName="calendar-clock" 
                   size={isSmallHeight ? 24 : 28} 
                   color={theme.primary} 
                 />
@@ -314,24 +321,24 @@ export default function ChooseTimeScreen() {
               <View style={styles.optionInfo}>
                 <Text style={[
                   styles.optionTitle, 
-                  { color: "#000" },
+                  { color: theme.text },
                   { fontSize: isSmallHeight ? layout.cardTitleFontSizeSmall : layout.cardTitleFontSize }
                 ]} maxFontSizeMultiplier={1.2}>Outro horário</Text>
                 <Text style={[
                   styles.optionDescription, 
-                  { color: "#666" },
+                  { color: theme.textMuted },
                   { fontSize: isSmallHeight ? layout.cardSubtitleFontSizeSmall : layout.cardSubtitleFontSize }
                 ]} maxFontSizeMultiplier={1.1}>
                   Escolha dia e hora.
                 </Text>
               </View>
-              <Ionicons name="chevron-forward" size={24} color="#CCC" />
+              <Ionicons name="chevron-forward" size={24} color={theme.textMuted} />
             </Pressable>
 
             <Pressable
               style={({ pressed }) => [
                 styles.optionCard,
-                { padding: isSmallHeight ? layout.cardPaddingSmall : layout.cardPadding },
+                { padding: isSmallHeight ? layout.cardPaddingSmall : layout.cardPadding, backgroundColor: theme.card, borderColor: theme.border },
                 (pressed || isActionDisabled) && { opacity: 0.7, transform: [{ scale: 0.98 }] },
               ]}
               disabled={isActionDisabled}
@@ -341,13 +348,15 @@ export default function ChooseTimeScreen() {
             >
               <View style={[
                 styles.iconBox, 
-                { backgroundColor: "white", borderWidth: 1, borderColor: "#F1F5F9" },
+                { backgroundColor: theme.background, borderWidth: 1, borderColor: theme.border },
                 { width: isSmallHeight ? layout.cardIconSizeSmall : layout.cardIconSize, 
                   height: isSmallHeight ? layout.cardIconSizeSmall : layout.cardIconSize, 
                   borderRadius: 14 }
               ]}>
-                <MaterialCommunityIcons 
-                  name="flag-checkered" 
+                <AdaptiveIcon 
+                  iosSymbol="flag.checkered"
+                  fallbackFamily="MaterialCommunityIcons"
+                  fallbackName="flag-checkered" 
                   size={isSmallHeight ? 24 : 28} 
                   color={theme.primary} 
                 />
@@ -355,18 +364,18 @@ export default function ChooseTimeScreen() {
               <View style={styles.optionInfo}>
                 <Text style={[
                   styles.optionTitle, 
-                  { color: "#000" },
+                  { color: theme.text },
                   { fontSize: isSmallHeight ? layout.cardTitleFontSizeSmall : layout.cardTitleFontSize }
                 ]} maxFontSizeMultiplier={1.2}>Chegar até um horário</Text>
                 <Text style={[
                   styles.optionDescription, 
-                  { color: "#666" },
+                  { color: theme.textMuted },
                   { fontSize: isSmallHeight ? layout.cardSubtitleFontSizeSmall : layout.cardSubtitleFontSize }
                 ]} maxFontSizeMultiplier={1.1}>
                   Defina a hora de chegada.
                 </Text>
               </View>
-              <Ionicons name="chevron-forward" size={24} color="#CCC" />
+              <Ionicons name="chevron-forward" size={24} color={theme.textMuted} />
             </Pressable>
           </View>
         </Animated.View>
@@ -380,26 +389,28 @@ export default function ChooseTimeScreen() {
         animationType="fade"
         onRequestClose={() => setIsModalOpen(false)}
       >
-        <View style={styles.modalOverlay}>
-          <Animated.View entering={FadeIn.duration(300)} style={styles.modalContent}>
+        <LiquidGlassView style={styles.modalOverlay} intensity={50} fallbackColor="rgba(0,0,0,0.6)">
+          <Animated.View entering={FadeIn.duration(300)} style={[styles.modalContent, { backgroundColor: theme.card }]}>
             <View style={styles.modalHeader}>
                <View style={[styles.modalIconBg, { backgroundColor: theme.primaryLight }]}>
-                  <Ionicons 
-                    name={mode === "DEPARTURE" ? "calendar" : "flag"} 
+                  <AdaptiveIcon 
+                    iosSymbol={mode === "DEPARTURE" ? "calendar" : "flag"}
+                    fallbackFamily="Ionicons"
+                    fallbackName={mode === "DEPARTURE" ? "calendar" : "flag"} 
                     size={28} 
                     color={theme.primary} 
                   />
                </View>
-               <Text style={styles.modalTitle}>
+               <Text style={[styles.modalTitle, { color: theme.text }]}>
                   {mode === "DEPARTURE" ? "Horário de saída" : "Horário de chegada"}
                </Text>
-               <Text style={styles.modalSubtitle}>
+               <Text style={[styles.modalSubtitle, { color: theme.textMuted }]}>
                   {mode === "DEPARTURE" ? "Escolha quando você quer sair." : "Escolha quando quer chegar ao destino."}
                </Text>
             </View>
 
             <View style={styles.formGrid}>
-                <Text style={styles.formLabel}>Escolha um dia nos próximos 7 dias</Text>
+                <Text style={[styles.formLabel, { color: theme.text }]}>Escolha um dia nos próximos 7 dias</Text>
                 <ScrollView 
                   horizontal 
                   showsHorizontalScrollIndicator={false}
@@ -416,16 +427,17 @@ export default function ChooseTimeScreen() {
                         }}
                         style={[
                           styles.dateChip,
+                          { backgroundColor: theme.background, borderColor: theme.border },
                           isSelected && [styles.dateChipActive, { borderColor: theme.primary, backgroundColor: theme.primaryLight }]
                         ]}
                         accessibilityRole="button"
                         accessibilityLabel={`${opt.label === 'Hoje' ? 'Hoje' : opt.label === 'Amanhã' ? 'Amanhã' : opt.label}, dia ${opt.dayNum}`}
                         accessibilityState={{ selected: isSelected }}
                       >
-                        <Text style={[styles.dateChipLabel, isSelected && { color: theme.primary }]}>
+                        <Text style={[styles.dateChipLabel, { color: theme.textMuted }, isSelected && { color: theme.primary }]}>
                           {opt.label}
                         </Text>
-                        <Text style={[styles.dateChipDay, isSelected && { color: theme.primary }]}>
+                        <Text style={[styles.dateChipDay, { color: theme.text }, isSelected && { color: theme.primary }]}>
                           {opt.dayNum}
                         </Text>
                       </Pressable>
@@ -433,7 +445,7 @@ export default function ChooseTimeScreen() {
                   })}
                 </ScrollView>
 
-                <Text style={styles.formLabel}>Escolha o horário</Text>
+                <Text style={[styles.formLabel, { color: theme.text }]}>Escolha o horário</Text>
                 <ScrollView 
                   horizontal 
                   showsHorizontalScrollIndicator={false}
@@ -450,13 +462,14 @@ export default function ChooseTimeScreen() {
                         }}
                         style={[
                           styles.timeChip,
+                          { backgroundColor: theme.background, borderColor: theme.border },
                           isSelected && [styles.timeChipActive, { borderColor: theme.primary, backgroundColor: theme.primaryLight }]
                         ]}
                         accessibilityRole="button"
                         accessibilityLabel={`Horário ${slot}`}
                         accessibilityState={{ selected: isSelected }}
                       >
-                        <Text style={[styles.timeChipText, isSelected && { color: theme.primary }]}>
+                        <Text style={[styles.timeChipText, { color: theme.text }, isSelected && { color: theme.primary }]}>
                           {slot}
                         </Text>
                       </Pressable>
@@ -481,7 +494,7 @@ export default function ChooseTimeScreen() {
                </Pressable>
             </View>
           </Animated.View>
-        </View>
+        </LiquidGlassView>
       </Modal>
     </View>
   );
@@ -490,7 +503,6 @@ export default function ChooseTimeScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#F6F8FA",
   },
   fixedHeader: {
     position: "absolute",
@@ -556,9 +568,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderRadius: layout.cardBorderRadius,
-    backgroundColor: "white",
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.02)",
     gap: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
@@ -594,12 +604,10 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     padding: layout.screenHorizontalPadding,
   },
   modalContent: {
-    backgroundColor: "white",
     borderRadius: layout.cardBorderRadius,
     padding: layout.cardPadding,
     gap: 20,
@@ -624,12 +632,10 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 24,
     fontWeight: "900",
-    color: "#011030",
   },
   modalSubtitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#64748B",
     textAlign: "center",
     lineHeight: 22,
   },
@@ -639,13 +645,11 @@ const styles = StyleSheet.create({
   formLabel: {
     fontSize: 15,
     fontWeight: "800",
-    color: "#0F172A",
     marginBottom: 4,
   },
   formLabelSmall: {
     fontSize: 14,
     fontWeight: "800",
-    color: "#0F172A",
     marginTop: 8,
     marginBottom: 2,
   },
@@ -657,9 +661,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 16,
-    backgroundColor: "#F8FAFC",
     borderWidth: 1.5,
-    borderColor: "#E2E8F0",
     alignItems: "center",
     justifyContent: "center",
     gap: 2,
@@ -670,21 +672,17 @@ const styles = StyleSheet.create({
   dateChipLabel: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#64748B",
   },
   dateChipDay: {
     fontSize: 20,
     fontWeight: "900",
-    color: "#0F172A",
   },
   timeChip: {
     height: 72,
     minWidth: 72,
     paddingHorizontal: 16,
     borderRadius: 16,
-    backgroundColor: "#F8FAFC",
     borderWidth: 1.5,
-    borderColor: "#E2E8F0",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -694,7 +692,6 @@ const styles = StyleSheet.create({
   timeChipText: {
     fontSize: 18,
     fontWeight: "900",
-    color: "#0F172A",
   },
   modalActions: {
     gap: 8,

@@ -19,6 +19,9 @@ import { PrimaryButton } from "../src/components/PrimaryButton";
 import { DestinationCategoryIcon } from "../src/components/DestinationCategoryIcon";
 import { useAutoSpeakOnce } from "../src/hooks/useAutoSpeakOnce";
 import { useThemeColors } from "../src/theme/colors";
+import { LiquidGlassView } from "../src/components/LiquidGlassView";
+import { LinearGradient } from "expo-linear-gradient";
+import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
 import { vibrationService } from "../src/services/vibration.service";
 import { parseJsonParam } from "../src/utils/helpers";
 import { layout } from "../src/theme/layout";
@@ -252,7 +255,7 @@ export default function ConfirmDestinationScreen() {
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: theme.background }]}>
       {/* TOP BAR — idêntico ao de melhor-rota */}
       <View style={[styles.fixedHeader, { top: insets.top + 12 }]}>
         <BackButton label="Voltar" accessibilityLabel="Voltar para a tela anterior" />
@@ -262,7 +265,7 @@ export default function ConfirmDestinationScreen() {
           accessibilityLabel="Abrir ajuda"
           accessibilityRole="button"
         >
-          <Ionicons name="help-circle-outline" size={28} color={theme.primary} />
+          <AdaptiveIcon iosSymbol="questionmark.circle" fallbackFamily="Ionicons" fallbackName="help-circle-outline" size={28} color={theme.primary} />
         </Pressable>
       </View>
 
@@ -284,10 +287,10 @@ export default function ConfirmDestinationScreen() {
 
           {/* Título + subtítulo — alinhado à esquerda, igual à rota pronta */}
           <View style={styles.header}>
-            <Text style={[styles.title, { color: "#000" }]} maxFontSizeMultiplier={1.2}>
+            <Text style={[styles.title, { color: theme.text }]} maxFontSizeMultiplier={1.2}>
               {showSuggestions ? "Destinos encontrados" : "Destino encontrado"}
             </Text>
-            <Text style={[styles.subtitle, { color: "#666" }]} maxFontSizeMultiplier={1.1}>
+            <Text style={[styles.subtitle, { color: theme.textMuted }]} maxFontSizeMultiplier={1.1}>
               {isChoosingSuggestion
                 ? `${options.length} ${options.length === 1 ? "opção" : "opções"} para escolher`
                 : `Para ${activeDestinationName}`}
@@ -515,21 +518,28 @@ export default function ConfirmDestinationScreen() {
       </ScrollView>
 
       {/* BOTÕES FIXOS — idêntico ao rodapé da rota pronta */}
-      <View style={[styles.fixedBottomActions, { paddingBottom: insets.bottom + 16 }]}>
-        <PrimaryButton
-          title="Buscar rota"
-          onPress={handlePrimaryAction}
-          isLoading={isLoadingCommand}
-          disabled={isActionDisabled}
-          style={styles.mainButton}
-          accessibilityLabel={
-            isChoosingSuggestion
-              ? "Buscar rota para o destino selecionado"
-              : "Buscar rota"
-          }
-        />
-
-
+      <View style={[styles.fixedBottomActionsShadow]}>
+        <View style={[styles.fixedBottomActionsContent, { paddingBottom: insets.bottom + 16 }]}>
+          <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={50} fallbackColor={theme.card} />
+          <LinearGradient
+            colors={['transparent', theme.background]}
+            locations={[0.2, 1]}
+            style={StyleSheet.absoluteFillObject}
+            pointerEvents="none"
+          />
+          <PrimaryButton
+            title="Buscar rota"
+            onPress={handlePrimaryAction}
+            isLoading={isLoadingCommand}
+            disabled={isActionDisabled}
+            style={styles.mainButton}
+            accessibilityLabel={
+              isChoosingSuggestion
+                ? "Buscar rota para o destino selecionado"
+                : "Buscar rota"
+            }
+          />
+        </View>
       </View>
     </View>
   );
@@ -539,7 +549,6 @@ const styles = StyleSheet.create({
   // ─── Layout base ────────────────────────────────────────────────────
   screen: {
     flex: 1,
-    backgroundColor: "#F6F8FA",
   },
   fixedHeader: {
     position: "absolute",
@@ -620,7 +629,7 @@ const styles = StyleSheet.create({
 
   // ─── Card (igual compactSummary da melhor-rota) ─────────────────────
   destCard: {
-    backgroundColor: "white",
+    backgroundColor: "white", // Mantendo opaque per HIG
     borderRadius: 24,
     padding: 16,
     shadowColor: "#000",
@@ -704,7 +713,7 @@ const styles = StyleSheet.create({
 
   // ─── Detalhes de endereço ────────────────────────────────────────────
   infoBox: {
-    backgroundColor: "#F8FAFC",
+    backgroundColor: "rgba(0,0,0,0.03)",
     borderRadius: 16,
     padding: 36,
     gap: 36,
@@ -738,7 +747,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: "#EEF4FF",
+    backgroundColor: "rgba(59,130,246,0.1)", // equivalent to primaryLight approx
   },
   chipText: {
     color: "#1D4ED8",
@@ -763,22 +772,25 @@ const styles = StyleSheet.create({
   },
 
   // ─── Rodapé fixo (idêntico ao de melhor-rota) ────────────────────────
-  fixedBottomActions: {
+  fixedBottomActionsShadow: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: "white",
-    paddingTop: 10,
-    paddingHorizontal: 26,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.05,
     shadowRadius: 12,
     elevation: 10,
+  },
+  fixedBottomActionsContent: {
+    paddingTop: 10,
+    paddingHorizontal: 26,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    overflow: "hidden",
     gap: 10,
+    minHeight: 100, // To ensure background stretches down safely
   },
   mainButton: {
     borderRadius: 30,

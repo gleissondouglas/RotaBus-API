@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { StyleSheet, Text, View, ScrollView } from "react-native";
+import { StyleSheet, Text, View, ScrollView, Pressable } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { BackButton } from "../src/components/BackButton";
@@ -7,10 +7,13 @@ import { ListenOptionsButton } from "../src/components/ListenOptionsButton";
 import { PrimaryButton } from "../src/components/PrimaryButton";
 import { ScreenContainer } from "../src/components/ScreenContainer";
 import { useAutoSpeak } from "../src/hooks/useAutoSpeak";
-import { colors } from "../src/theme/colors";
+import { useThemeColors } from "../src/theme/colors";
+import { LiquidGlassView } from "../src/components/LiquidGlassView";
+import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
 
 export default function RouteNotFoundScreen() {
   const params = useLocalSearchParams();
+  const theme = useThemeColors();
 
   const latitude = String(params.latitude || "");
   const longitude = String(params.longitude || "");
@@ -48,24 +51,29 @@ export default function RouteNotFoundScreen() {
         <BackButton label="Início" onPress={handleGoHome} />
 
         <View style={styles.content}>
-          <View style={[styles.iconContainer, isDailyLimit && styles.iconContainerWarning]}>
-            <MaterialCommunityIcons 
-              name={isDailyLimit ? "clock-alert" : "map-marker-off"} 
+          <View style={[styles.iconContainer, isDailyLimit ? { backgroundColor: "rgba(255, 152, 0, 0.1)" } : { backgroundColor: "rgba(239, 68, 68, 0.1)" }]}>
+            <AdaptiveIcon 
+              iosSymbol={isDailyLimit ? "clock.badge.exclamationmark" : "mappin.slash"} 
+              fallbackFamily="MaterialCommunityIcons"
+              fallbackName={isDailyLimit ? "clock-alert" : "map-marker-off"} 
               size={64} 
-              color={isDailyLimit ? "#FF9800" : colors.danger} 
+              color={isDailyLimit ? "#FF9800" : theme.danger} 
             />
           </View>
 
           <View style={styles.textContainer}>
-            <Text style={styles.title}>
+            <Text style={[styles.title, { color: theme.text }]}>
               {isDailyLimit ? "Limite atingido" : "Rota não encontrada"}
             </Text>
             
-            <View style={styles.messageCard}>
-              <Text style={styles.messageText}>{message}</Text>
+            <View style={styles.messageCardShadow}>
+              <View style={[styles.messageCardContent, { borderColor: theme.border }]}>
+                <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={50} fallbackColor={theme.card} />
+                <Text style={[styles.messageText, { color: theme.text }]}>{message}</Text>
+              </View>
             </View>
 
-            <Text style={styles.hintText}>
+            <Text style={[styles.hintText, { color: theme.textMuted }]}>
               {isDailyLimit 
                 ? "O Nuvem tem um limite diário de buscas. Tente novamente amanhã." 
                 : "Você pode tentar digitar o endereço novamente ou escolher outro local próximo."}
@@ -80,11 +88,20 @@ export default function RouteNotFoundScreen() {
               />
             )}
             
-            <PrimaryButton 
-              title="Voltar ao início" 
-              onPress={handleGoHome}
-              style={isDailyLimit ? undefined : styles.secondaryButton}
-            />
+            {isDailyLimit ? (
+              <PrimaryButton 
+                title="Voltar ao início" 
+                onPress={handleGoHome}
+              />
+            ) : (
+              <Pressable 
+                style={[styles.secondaryButton, { backgroundColor: theme.card, borderColor: theme.border }]}
+                onPress={handleGoHome}
+                accessibilityRole="button"
+              >
+                <Text style={[styles.secondaryButtonText, { color: theme.text }]}>Voltar ao início</Text>
+              </Pressable>
+            )}
 
             <ListenOptionsButton textToSpeak={screenMessage} />
           </View>
@@ -110,13 +127,9 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: "#FFF0F3",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 8,
-  },
-  iconContainerWarning: {
-    backgroundColor: "#FFF8E1",
   },
   textContainer: {
     alignItems: "center",
@@ -126,27 +139,30 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: "900",
-    color: colors.text,
     textAlign: "center",
   },
-  messageCard: {
-    backgroundColor: colors.white,
+  messageCardShadow: {
+    width: "100%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  messageCardContent: {
     padding: 24,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: colors.border,
-    width: "100%",
+    overflow: "hidden",
   },
   messageText: {
     fontSize: 18,
-    color: colors.text,
     textAlign: "center",
     lineHeight: 26,
     fontWeight: "600",
   },
   hintText: {
     fontSize: 15,
-    color: colors.textMuted,
     textAlign: "center",
     lineHeight: 22,
     paddingHorizontal: 20,
@@ -156,6 +172,15 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   secondaryButton: {
-    backgroundColor: "#F3F4F6",
+    width: "100%",
+    minHeight: 64,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+  },
+  secondaryButtonText: {
+    fontSize: 18,
+    fontWeight: "800",
   },
 });

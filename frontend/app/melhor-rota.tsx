@@ -10,6 +10,9 @@ import { ListenOptionsButton } from "../src/components/ListenOptionsButton";
 import { PrimaryButton } from "../src/components/PrimaryButton";
 import { RouteStep } from "../src/components/RouteStep";
 import Map from "../src/components/Map";
+import { LiquidGlassView } from "../src/components/LiquidGlassView";
+import { LinearGradient } from "expo-linear-gradient";
+import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
 import { useThemeColors } from "../src/theme/colors";
 import { journeyService } from "../src/services/journey.service";
 import { sessionService } from "../src/services/session.service";
@@ -232,9 +235,10 @@ export default function BestRouteScreen() {
   const bottomBarHeight = 160;
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: theme.background }]}>
       {/* FIXED HEADER */}
       <View style={[styles.fixedHeader, { paddingTop: insets.top + 8 }]}>
+        <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={40} fallbackColor={theme.background} />
         <BackButton label="Início" onPress={isLoadingCommand ? undefined : handleGoHome} accessibilityLabel="Voltar para a tela inicial" />
       </View>
 
@@ -251,8 +255,8 @@ export default function BestRouteScreen() {
         <Animated.View entering={FadeInUp.duration(400)} style={styles.content}>
           {/* 1. CABEÇALHO E PREVIEW MAPA */}
           <View style={styles.header}>
-            <Text style={styles.title} maxFontSizeMultiplier={1.2}>Sua melhor rota</Text>
-            <Text style={styles.subtitle} maxFontSizeMultiplier={1.1}>Para {destination}</Text>
+            <Text style={[styles.title, { color: theme.text }]} maxFontSizeMultiplier={1.2}>Sua melhor rota</Text>
+            <Text style={[styles.subtitle, { color: theme.textMuted }]} maxFontSizeMultiplier={1.1}>Para {destination}</Text>
           </View>
 
           {mapData && (
@@ -341,11 +345,11 @@ export default function BestRouteScreen() {
           {/* 3. PASSO A PASSO */}
           <View style={styles.stepsSection}>
             <View style={styles.stepsSectionHeader}>
-              <Ionicons name="map-outline" size={20} color="#0F172A" />
-              <Text style={styles.stepsSectionTitle}>Passo a passo</Text>
+              <AdaptiveIcon iosSymbol="map" fallbackFamily="Ionicons" fallbackName="map-outline" size={20} color={theme.text} />
+              <Text style={[styles.stepsSectionTitle, { color: theme.text }]}>Passo a passo</Text>
             </View>
 
-            <View style={styles.stepsList}>
+            <View style={[styles.stepsList, { backgroundColor: theme.card, borderColor: theme.border }]}>
               <RouteStep 
                 type="start"
                 time={summary?.leaveHomeAt || "Agora"}
@@ -388,24 +392,30 @@ export default function BestRouteScreen() {
       {/* 4. RODAPÉ FIXO DE AÇÕES */}
       <Animated.View 
         entering={FadeInDown.duration(400).delay(200)} 
-        style={[
-          styles.bottomActions, 
-          { paddingBottom: insets.bottom + 16 }
-        ]}
+        style={styles.bottomActionsShadow}
       >
-        <PrimaryButton
-          title={isWalkingOnly ? "Iniciar caminhada" : "Iniciar navegação"}
-          onPress={handleStartNavigation}
-          disabled={isLoadingCommand}
-          isLoading={isLoadingCommand}
-          style={styles.mainButton}
-          accessibilityLabel="Iniciar navegação para esta rota"
-        />
-        <ListenOptionsButton 
-          label="Ouvir resumo"
-          onPress={handleHearRoute} 
-          accessibilityLabel="Ouvir resumo da rota em voz alta"
-        />
+        <View style={[styles.bottomActionsContent, { paddingBottom: insets.bottom + 16 }]}>
+          <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={50} fallbackColor={theme.card} />
+          <LinearGradient
+            colors={['transparent', theme.background]}
+            locations={[0.2, 1]}
+            style={StyleSheet.absoluteFillObject}
+            pointerEvents="none"
+          />
+          <PrimaryButton
+            title={isWalkingOnly ? "Iniciar caminhada" : "Iniciar navegação"}
+            onPress={handleStartNavigation}
+            disabled={isLoadingCommand}
+            isLoading={isLoadingCommand}
+            style={styles.mainButton}
+            accessibilityLabel="Iniciar navegação para esta rota"
+          />
+          <ListenOptionsButton 
+            label="Ouvir resumo"
+            onPress={handleHearRoute} 
+            accessibilityLabel="Ouvir resumo da rota em voz alta"
+          />
+        </View>
       </Animated.View>
     </View>
   );
@@ -415,7 +425,6 @@ const styles = StyleSheet.create({
   /* ─── Layout ─── */
   screen: {
     flex: 1,
-    backgroundColor: "#F6F8FA",
   },
   fixedHeader: {
     position: "absolute",
@@ -424,7 +433,7 @@ const styles = StyleSheet.create({
     zIndex: 50,
     elevation: 5,
     paddingHorizontal: 16,
-    backgroundColor: "rgba(246,248,250,0.92)",
+    overflow: "hidden",
   },
   scrollContent: {
     flexGrow: 1,
@@ -442,13 +451,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: "900",
-    color: "#000",
     letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 17,
     fontWeight: "600",
-    color: "#64748B",
     marginTop: 4,
   },
   previewMapContainer: {
@@ -562,10 +569,8 @@ const styles = StyleSheet.create({
   stepsSectionTitle: {
     fontSize: 22,
     fontWeight: "900",
-    color: "#0F172A",
   },
   stepsList: {
-    backgroundColor: "white",
     borderRadius: 24,
     padding: 20,
     paddingTop: 24,
@@ -575,27 +580,28 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 2,
     borderWidth: 1,
-    borderColor: "#F1F5F9",
   },
 
   /* ─── 4. Rodapé fixo ─── */
-  bottomActions: {
+  bottomActionsShadow: {
     position: "absolute",
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "white",
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#F1F5F9",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
     elevation: 10,
+  },
+  bottomActionsContent: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
     gap: 8,
     alignItems: "center",
+    borderTopWidth: 1,
+    borderTopColor: "rgba(0,0,0,0.02)",
+    overflow: "hidden",
   },
   mainButton: {
     height: 64,

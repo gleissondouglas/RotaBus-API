@@ -19,6 +19,7 @@ import { useAutoSpeak } from "../src/hooks/useAutoSpeak";
 import { vibrationService } from "../src/services/vibration.service";
 import { useThemeColors } from "../src/theme/colors";
 import { layout } from "../src/theme/layout";
+import { LiquidGlassView } from "../src/components/LiquidGlassView";
 
 export default function TypeDestinationScreen() {
   const params = useLocalSearchParams();
@@ -146,86 +147,91 @@ export default function TypeDestinationScreen() {
       {/* Overlay escuro semitransparente atrás do sheet */}
       <Pressable style={styles.overlay} onPress={handleCancel} />
 
-      {/* Bottom sheet */}
+      {/* Bottom sheet com suporte a Liquid Glass na content area separada da shadow */}
       <Animated.View
         entering={FadeInDown.duration(300).springify()}
-        style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}
+        style={styles.sheetShadow}
       >
-        {/* Handle bar */}
-        <View style={styles.handle} />
+        <View style={[styles.sheetContent, { paddingBottom: insets.bottom + 16 }]}>
+          <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={50} fallbackColor={theme.card} />
+          
+          {/* Handle bar */}
+          <View style={[styles.handle, { backgroundColor: theme.border }]} />
 
-        {/* Campo de texto */}
-        <TextInput
-          ref={inputRef}
-          style={[
-            styles.input,
-            errorText ? styles.inputError : null,
-          ]}
-          placeholder="Digite o destino"
-          placeholderTextColor="#9CA3AF"
-          value={address}
-          onChangeText={(text) => {
-            setAddress(text);
-            if (errorText) setErrorText("");
-          }}
-          returnKeyType="search"
-          onSubmitEditing={handleConfirm}
-          autoCorrect={false}
-          autoCapitalize="words"
-          editable={!isLoading}
-          accessibilityLabel="Campo de destino"
-          accessibilityHint="Digite o nome do lugar para onde deseja ir"
-        />
-
-        {/* Mensagem de erro */}
-        {!!errorText && (
-          <Animated.Text
-            entering={FadeInUp.duration(200)}
-            style={styles.errorText}
-            accessibilityRole="alert"
-          >
-            {errorText}
-          </Animated.Text>
-        )}
-
-        {/* Botões lado a lado */}
-        <View style={styles.buttonsRow}>
-          {/* Cancelar */}
-          <Pressable
-            style={({ pressed }) => [
-              styles.btn,
-              styles.btnCancel,
-              pressed && { opacity: 0.7 },
-              isLoading && { opacity: 0.4 },
+          {/* Campo de texto */}
+          <TextInput
+            ref={inputRef}
+            style={[
+              styles.input,
+              { backgroundColor: theme.background, color: theme.text },
+              errorText ? { borderColor: theme.danger, backgroundColor: 'transparent' } : null,
             ]}
-            onPress={handleCancel}
-            disabled={isLoading}
-            accessibilityRole="button"
-            accessibilityLabel="Cancelar e voltar"
-          >
-            <Text style={styles.btnCancelText}>Cancelar</Text>
-          </Pressable>
-          {/* Confirmar */}
-          <Pressable
-            style={({ pressed }) => [
-              styles.btn,
-              styles.btnConfirm,
-              { backgroundColor: theme.primary },
-              (pressed || (!isInputValid && !isLoading)) && { opacity: 0.65 },
-            ]}
-            onPress={handleConfirm}
-            disabled={isLoading}
-            accessibilityRole="button"
-            accessibilityLabel={
-              isLoading ? "Buscando destino..." : "Confirmar e buscar destino"
-            }
-          >
-            {isLoading ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <Text style={styles.btnConfirmText}>Confirmar</Text>
-            )}
-          </Pressable>
+            placeholder="Digite o destino"
+            placeholderTextColor={theme.textMuted}
+            value={address}
+            onChangeText={(text) => {
+              setAddress(text);
+              if (errorText) setErrorText("");
+            }}
+            returnKeyType="search"
+            onSubmitEditing={handleConfirm}
+            autoCorrect={false}
+            autoCapitalize="words"
+            editable={!isLoading}
+            accessibilityLabel="Campo de destino"
+            accessibilityHint="Digite o nome do lugar para onde deseja ir"
+          />
+
+          {/* Mensagem de erro */}
+          {!!errorText && (
+            <Animated.Text
+              entering={FadeInUp.duration(200)}
+              style={[styles.errorText, { color: theme.danger }]}
+              accessibilityRole="alert"
+            >
+              {errorText}
+            </Animated.Text>
+          )}
+
+          {/* Botões lado a lado */}
+          <View style={styles.buttonsRow}>
+            {/* Cancelar */}
+            <Pressable
+              style={({ pressed }) => [
+                styles.btn,
+                { backgroundColor: theme.primaryLight },
+                pressed && { opacity: 0.7 },
+                isLoading && { opacity: 0.4 },
+              ]}
+              onPress={handleCancel}
+              disabled={isLoading}
+              accessibilityRole="button"
+              accessibilityLabel="Cancelar e voltar"
+            >
+              <Text style={[styles.btnCancelText, { color: theme.primaryDark }]}>Cancelar</Text>
+            </Pressable>
+            {/* Confirmar */}
+            <Pressable
+              style={({ pressed }) => [
+                styles.btn,
+                styles.btnConfirm,
+                { backgroundColor: theme.primary },
+                (pressed || (!isInputValid && !isLoading)) && { opacity: 0.65 },
+              ]}
+              onPress={handleConfirm}
+              disabled={isLoading}
+              accessibilityRole="button"
+              accessibilityLabel={
+                isLoading ? "Buscando destino..." : "Confirmar e buscar destino"
+              }
+            >
+              {isLoading ? (
+                <ActivityIndicator size="small" color={theme.white} />
+              ) : (
+                <Text style={[styles.btnConfirmText, { color: theme.white }]}>Confirmar</Text>
+              )}
+            </Pressable>
+          </View>
         </View>
       </Animated.View>
     </KeyboardAvoidingView>
@@ -242,44 +248,38 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.35)",
   },
-  sheet: {
-    backgroundColor: "white",
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    paddingTop: 12,
-    paddingHorizontal: 20,
-    gap: 14,
+  sheetShadow: {
     shadowColor: "#000",
     shadowOffset: { width: 0, height: -6 },
     shadowOpacity: 0.08,
     shadowRadius: 16,
     elevation: 12,
   },
+  sheetContent: {
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingTop: 12,
+    paddingHorizontal: 20,
+    gap: 14,
+    overflow: "hidden",
+  },
   handle: {
     alignSelf: "center",
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#E2E8F0",
     marginBottom: 4,
   },
   input: {
     height: 56,
     borderRadius: 16,
-    backgroundColor: "#F1F5F9",
     paddingHorizontal: 18,
     fontSize: 17,
     fontWeight: "600",
-    color: "#0F172A",
     borderWidth: 1.5,
     borderColor: "transparent",
   },
-  inputError: {
-    borderColor: "#FCA5A5",
-    backgroundColor: "#FFF5F5",
-  },
   errorText: {
-    color: "#EF4444",
     fontSize: 13,
     fontWeight: "700",
     marginTop: -6,
@@ -296,11 +296,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  btnCancel: {
-    backgroundColor: "#EEF2FF",
-  },
   btnCancelText: {
-    color: "#3730A3",
     fontSize: 17,
     fontWeight: "800",
     letterSpacing: -0.2,
@@ -313,7 +309,6 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   btnConfirmText: {
-    color: "#fff",
     fontSize: 17,
     fontWeight: "800",
     letterSpacing: -0.2,
