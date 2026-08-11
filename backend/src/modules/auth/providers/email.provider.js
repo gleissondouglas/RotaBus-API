@@ -47,7 +47,7 @@ function buildResetEmailHtml({ name, resetLink }) {
         </td></tr>
         <tr><td style="font-size:16px;color:#333;line-height:24px;padding-bottom:24px;">
           Olá, <strong>${firstName}</strong>!<br><br>
-          Recebemos uma solicitação para redefinir a senha da sua conta no <strong>Nuvem</strong>.
+          Recebemos uma solicitação para redefinir a senha da sua conta no <strong>RotaBus</strong>.
           Clique no botão abaixo para criar uma nova senha:
         </td></tr>
         <tr><td align="center" style="padding-bottom:24px;">
@@ -61,7 +61,7 @@ function buildResetEmailHtml({ name, resetLink }) {
           Se você não solicitou essa alteração, ignore este email — sua senha permanecerá a mesma.
         </td></tr>
       </table>
-      <p style="font-size:12px;color:#BBB;margin-top:16px;">Nuvem — Mobilidade acessível para todos.</p>
+      <p style="font-size:12px;color:#BBB;margin-top:16px;">RotaBus — Mobilidade acessível para todos.</p>
     </td></tr>
   </table>
 </body>
@@ -84,12 +84,12 @@ async function sendPasswordResetEmail({ to, name, resetLink }) {
   }
 
   // Produção → envia email real via Resend
-  const fromEmail = env.resendFromEmail || "Nuvem <onboarding@resend.dev>";
+  const fromEmail = env.resendFromEmail || "RotaBus <onboarding@resend.dev>";
 
   const { error } = await client.emails.send({
     from: fromEmail,
     to,
-    subject: "Nuvem — Redefinição de senha",
+    subject: "RotaBus — Redefinição de senha",
     html: buildResetEmailHtml({ name, resetLink }),
   });
 

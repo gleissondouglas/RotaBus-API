@@ -1,6 +1,6 @@
 # Fluxos do Sistema
 
-Este documento descreve visualmente e logicamente as jornadas completas dos usuários dentro da arquitetura do Nuvem.
+Este documento descreve visualmente e logicamente as jornadas completas dos usuários dentro da arquitetura do RotaBus.
 
 ## 1. Fluxo Principal Conversacional (Voice-First Loop)
 

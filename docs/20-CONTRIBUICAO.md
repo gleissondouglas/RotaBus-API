@@ -1,6 +1,6 @@
 # Guia de Contribuição e Onboarding
 
-Bem-vindo ao Nuvem! Siga este guia para subir seu ambiente local rapidamente e entender os padrões obrigatórios antes de abrir seu primeiro Pull Request.
+Bem-vindo ao RotaBus! Siga este guia para subir seu ambiente local rapidamente e entender os padrões obrigatórios antes de abrir seu primeiro Pull Request.
 
 ## 1. Pré-Requisitos
 

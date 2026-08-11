@@ -29,7 +29,7 @@ O usuário ou o sistema emitem eventos que forçam a FSM a mudar de estado:
 
 ## 2. Regras de Inteligência Local (Local Intelligence)
 
-Para garantir resiliência e evitar custos excessivos de chamadas geográficas, o Nuvem implementa regras de negócio fixas no módulo `LocalIntelligence`:
+Para garantir resiliência e evitar custos excessivos de chamadas geográficas, o RotaBus implementa regras de negócio fixas no módulo `LocalIntelligence`:
 
 * **Sinônimos e Apelidos (Aliases):** O módulo substitui termos coloquiais ("UPA") por nomes oficiais de busca ("UPA Uberaba", ou um local predefinido). 
 * **Regras Estritas:** Reduz a incerteza antes de acionar a IA ou APIs do Google.

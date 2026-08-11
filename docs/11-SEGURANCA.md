@@ -1,6 +1,6 @@
 # Segurança e Privacidade
 
-Este documento define os pilares de segurança implementados no backend do Nuvem, abordando desde ataques automatizados até as regras de adequação à LGPD (Lei Geral de Proteção de Dados).
+Este documento define os pilares de segurança implementados no backend do RotaBus, abordando desde ataques automatizados até as regras de adequação à LGPD (Lei Geral de Proteção de Dados).
 
 ## 1. Autenticação e Autorização (JWT)
 

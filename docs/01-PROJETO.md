@@ -1,12 +1,12 @@
 # O Projeto
 
-Este documento descreve as características fundamentais do projeto Nuvem, detalhando suas motivações, escopo técnico, limitações estruturais e requisitos.
+Este documento descreve as características fundamentais do projeto RotaBus, detalhando suas motivações, escopo técnico, limitações estruturais e requisitos.
 
 ## 1. História e Motivação
 
 O projeto nasceu sob o codinome `RotaBus-API` (ainda refletido em repositórios e pacotes). A motivação inicial era criar uma alternativa ao transporte público que resolvesse rotas de ônibus, mas logo a equipe identificou uma lacuna severa de UX em aplicativos de mercado: a exclusão digital de pessoas mais velhas ou com limitações.
 
-Ao invés de criar mais um aplicativo de mapas complexo, a decisão arquitetural e de produto pivotou para o **Nuvem**: um assistente conversacional simplificado. O sistema evoluiu de ser apenas uma camada que repassava comandos para a API do Google (estado anterior) para possuir um motor de estado de diálogo (Dialog Manager) residente no backend.
+Ao invés de criar mais um aplicativo de mapas complexo, a decisão arquitetural e de produto pivotou para o **RotaBus**: um assistente conversacional simplificado. O sistema evoluiu de ser apenas uma camada que repassava comandos para a API do Google (estado anterior) para possuir um motor de estado de diálogo (Dialog Manager) residente no backend.
 
 ## 2. Objetivos Principais
 

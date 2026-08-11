@@ -1,6 +1,6 @@
 # Frontend (React Native & Expo)
 
-A camada de interface do Nuvem foi construída utilizando o ecossistema moderno do React Native com **Expo** e **Expo Router**.
+A camada de interface do RotaBus foi construída utilizando o ecossistema moderno do React Native com **Expo** e **Expo Router**.
 
 ## 1. Estrutura de Pastas
 

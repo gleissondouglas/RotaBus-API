@@ -1,8 +1,8 @@
-# Visão Geral do Projeto Nuvem
+# Visão Geral do Projeto RotaBus
 
 ## 1. O que é o projeto?
 
-O **Nuvem** (codinome técnico: RotaBus-API) é uma plataforma assistida de mobilidade urbana. Ao contrário de aplicativos de navegação convencionais que apresentam interfaces carregadas de mapas complexos e dezenas de botões, o Nuvem propõe uma abordagem simplificada, conversacional e altamente acessível.
+O **RotaBus** (codinome técnico: RotaBus-API) é uma plataforma assistida de mobilidade urbana. Ao contrário de aplicativos de navegação convencionais que apresentam interfaces carregadas de mapas complexos e dezenas de botões, o RotaBus propõe uma abordagem simplificada, conversacional e altamente acessível.
 
 A interação central baseia-se no conceito de **Voice-First** (Prioridade na Voz), onde a jornada do usuário é orquestrada por uma assistente de voz interativa que guia o passageiro desde a escolha do destino até a chegada.
 
@@ -19,7 +19,7 @@ Democratizar o acesso ao transporte público e à cidade por meio de uma tecnolo
 
 ## 4. Impacto Social
 
-O Nuvem proporciona autonomia para populações vulnerabilizadas. Com uma interface de conversação, o aplicativo devolve a independência para que idosos e pessoas com dificuldades tecnológicas possam ir ao médico, visitar familiares ou transitar pela cidade sem a necessidade de solicitar ajuda constante a terceiros.
+O RotaBus proporciona autonomia para populações vulnerabilizadas. Com uma interface de conversação, o aplicativo devolve a independência para que idosos e pessoas com dificuldades tecnológicas possam ir ao médico, visitar familiares ou transitar pela cidade sem a necessidade de solicitar ajuda constante a terceiros.
 
 ## 5. Público-Alvo
 
@@ -36,7 +36,7 @@ O Nuvem proporciona autonomia para populações vulnerabilizadas. Com uma interf
 
 ## 7. Visão Futura
 
-O Nuvem continuará a transição de um sistema "reativo a comandos" para um verdadeiro **Assistente Conversacional de Mobilidade**.
+O RotaBus continuará a transição de um sistema "reativo a comandos" para um verdadeiro **Assistente Conversacional de Mobilidade**.
 A visão futura inclui:
 - **Proatividade:** O app aprende a rotina do usuário (ex: sugerir a rota de volta para casa no fim do dia).
 - **Busca Híbrida Inteligente:** A busca funciona com a velocidade do determinismo local associada à robustez do Google Places para casos não mapeados, evitando IAs generativas lentas e focando na precisão de cliques (UI Touch) e velocidade.

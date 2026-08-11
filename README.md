@@ -1,13 +1,13 @@
-# ☁️ Nuvem (RotaBus)
+# ☁️ RotaBus (RotaBus)
 
 ![Badge](https://img.shields.io/badge/Status-Em_Desenvolvimento-blue)
 ![Architecture](https://img.shields.io/badge/Arquitetura-Monorepo-orange)
 ![Mobile](https://img.shields.io/badge/Frontend-React_Native_%2F_Expo-black)
 ![Backend](https://img.shields.io/badge/Backend-Node.js_%2F_Express-green)
 
-O **Nuvem** (anteriormente chamado RotaBus) é um ecossistema de mobilidade urbana construído com foco em **Acessibilidade, Simplicidade (UI Touch-First) e Velocidade**. 
+O **RotaBus** (anteriormente chamado RotaBus) é um ecossistema de mobilidade urbana construído com foco em **Acessibilidade, Simplicidade (UI Touch-First) e Velocidade**. 
 
-Nasceu para ajudar passageiros de transporte público a encontrarem a melhor rota para os seus destinos sem precisarem decifrar mapas complexos, letras miúdas ou interfaces poluídas (focado no Design "Nuvem Apple" edge-to-edge).
+Nasceu para ajudar passageiros de transporte público a encontrarem a melhor rota para os seus destinos sem precisarem decifrar mapas complexos, letras miúdas ou interfaces poluídas (focado no Design "RotaBus Apple" edge-to-edge).
 
 ---
 

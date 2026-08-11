@@ -1,6 +1,6 @@
 # Histórico e Decisões Arquiteturais (ADRs)
 
-Este documento registra as principais escolhas técnicas do projeto e os motivos que levaram a essas direções ao longo da história do Nuvem (RotaBus-API).
+Este documento registra as principais escolhas técnicas do projeto e os motivos que levaram a essas direções ao longo da história do RotaBus (RotaBus-API).
 
 ## ADR-001: Monólito Modular
 - **Contexto:** Havia um debate sobre fragmentar as integrações Google Routes em Microsserviços para facilitar o versionamento isolado de IA.
@@ -20,7 +20,7 @@ Este documento registra as principais escolhas técnicas do projeto e os motivos
 ## ADR-004: FSM (Sessão) Persistida no PostgreSQL
 - **Contexto:** A Máquina de Estados da Conversa rodava no `Map` global do Node.js (`memory`).
 - **Decisão:** Alterada para usar `Driver: Postgres` e tabela `ConversationSession` em produção.
-- **Justificativa:** A escalabilidade Cloud nativa (Deployments em nuvem) reinicia os containers sem aviso (Spin-down) ou roda réplicas paralelas. Se a conversa rodar localmente no Container 1 e o usuário mandar a resposta que for balanceada para o Container 2, ocorreria erro de Sessão 404. O BD centraliza o estado agnosticamente.
+- **Justificativa:** A escalabilidade Cloud nativa (Deployments em rotaBus) reinicia os containers sem aviso (Spin-down) ou roda réplicas paralelas. Se a conversa rodar localmente no Container 1 e o usuário mandar a resposta que for balanceada para o Container 2, ocorreria erro de Sessão 404. O BD centraliza o estado agnosticamente.
 
 ## ADR-005: Voice-First Híbrido, Não Voice-Only
 - **Contexto:** Visão radical inicial desejava que a tela fosse 100% limpa, forçando interação via microfone exclusivamente.

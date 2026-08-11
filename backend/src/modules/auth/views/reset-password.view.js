@@ -5,7 +5,7 @@ function getResetPasswordHtml(token) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nuvem - Nova Senha</title>
+  <title>RotaBus - Nova Senha</title>
   <style>
     :root {
       --primary: #3B82F6;
@@ -144,7 +144,7 @@ function getResetPasswordHtml(token) {
   <div class="card" id="success-state">
     <div class="icon" style="background: #D1FAE5;">✅</div>
     <h1>Senha alterada!</h1>
-    <p>Sua nova senha foi salva com sucesso. Você já pode voltar ao aplicativo do Nuvem e fazer login.</p>
+    <p>Sua nova senha foi salva com sucesso. Você já pode voltar ao aplicativo do RotaBus e fazer login.</p>
   </div>
 
   <script>

@@ -1,6 +1,6 @@
 # Integrações (Google APIs)
 
-O coração geoespacial do Nuvem depende das APIs da Google Cloud Platform (GCP). Como essas integrações são vitais e envolvem cobrança em dólar, o mapeamento e blindagem dessas APIs é prioridade extrema.
+O coração geoespacial do RotaBus depende das APIs da Google Cloud Platform (GCP). Como essas integrações são vitais e envolvem cobrança em dólar, o mapeamento e blindagem dessas APIs é prioridade extrema.
 
 ## 1. Provider de Rotas (`googleRoutes.provider.js`)
 

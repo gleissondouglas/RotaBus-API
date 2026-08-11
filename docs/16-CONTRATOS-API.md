@@ -1,6 +1,6 @@
 # Contratos de API (Interfaces HTTP)
 
-Este documento concentra a documentação formal para consumo da REST API do RotaBus-API (Nuvem).
+Este documento concentra a documentação formal para consumo da REST API do RotaBus-API (RotaBus).
 O formato central de payload das respostas conversacionais (`Server-Driven UI`) atende às especificações mais modernas do projeto.
 
 ## 1. Padrões Base

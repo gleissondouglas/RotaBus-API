@@ -1,6 +1,6 @@
 # Infraestrutura e Operação (DevOps)
 
-Este documento dita como a arquitetura do projeto é empacotada, persistida e enviada a produção. A infraestrutura do Nuvem prefere PaaS moderno ao invés do gerenciamento cru de VPS (IaaS) visando velocidade e menor fricção de manutenção.
+Este documento dita como a arquitetura do projeto é empacotada, persistida e enviada a produção. A infraestrutura do RotaBus prefere PaaS moderno ao invés do gerenciamento cru de VPS (IaaS) visando velocidade e menor fricção de manutenção.
 
 ## 1. Banco de Dados Remoto (Supabase)
 
@@ -23,7 +23,7 @@ O empacotamento ideal do backend Node.js deve utilizar **Docker**.
 
 O Expo App é distribuído utilizando a ferramenta nativa EAS (Expo Application Services).
 - **Arquivos Vitais:** `eas.json` (Profiles de build) e `app.config.js`.
-- **EAS Build:** A nuvem da Expo compila os `.apk` (Android) e `.ipa` (iOS) sem a necessidade primária de computadores caros com MacOS local da equipe.
+- **EAS Build:** A rotaBus da Expo compila os `.apk` (Android) e `.ipa` (iOS) sem a necessidade primária de computadores caros com MacOS local da equipe.
 - **EAS Update (OTA):** O Over The Air Updates é essencial. Caso ajustemos uma tela de SDUI, fazemos push. O app na mão dos idosos recebe a nova interface na próxima abertura, sem depender de aprovações demoradas nas Lojas da Google/Apple.
 
 ## 4. Variáveis de Ambiente (Configuração .env)

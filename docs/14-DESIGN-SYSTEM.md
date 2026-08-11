@@ -1,6 +1,6 @@
 # Design System e Tokens
 
-O Nuvem exige uma padronização extrema. Como a carga visual precisa ser baixíssima, criamos um Design System simplificado com tokens utilitários centralizados em `frontend/src/theme/`.
+O RotaBus exige uma padronização extrema. Como a carga visual precisa ser baixíssima, criamos um Design System simplificado com tokens utilitários centralizados em `frontend/src/theme/`.
 
 ## 1. Cores e Identidade (`colors.ts`)
 

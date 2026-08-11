@@ -1,6 +1,6 @@
 # Roadmap e Evolução
 
-O Nuvem nasceu como um app de rotas reativo e segue sua trajetória acelerada para o conceito de Assistente Proativo de Voz (Voice-First). Abaixo está o estado atual e o planejamento futuro.
+O RotaBus nasceu como um app de rotas reativo e segue sua trajetória acelerada para o conceito de Assistente Proativo de Voz (Voice-First). Abaixo está o estado atual e o planejamento futuro.
 
 ## Fase 1: MVP Reactivo Inicial (✅ Concluído)
 * Roteamento utilizando Google Routes puro.
@@ -34,11 +34,11 @@ O Nuvem nasceu como um app de rotas reativo e segue sua trajetória acelerada pa
 * Refinamento do ciclo de vida do GPS do dispositivo (ex: Alarme de proximidade de descida).
 
 ## Fase 6: Sincronização e Proatividade (✅ Concluído)
-1. **Nuvem (Sync de Dados):** Migração do Histórico e Locais Favoritos do armazenamento local (AsyncStorage) para o banco de dados (Prisma/Postgres) atrelado à conta do usuário logado.
+1. **RotaBus (Sync de Dados):** Migração do Histórico e Locais Favoritos do armazenamento local (AsyncStorage) para o banco de dados (Prisma/Postgres) atrelado à conta do usuário logado.
 2. **Push Notifications:** Integração com Expo Notifications para disparos proativos (ex: "Você está perto do ponto do ônibus 100, ele passa em 5 min.").
 3. **Cache Offline-First:** Salvar rotas muito frequentes ("Ida p/ Casa") no dispositivo para permitir navegação ininterrupta em áreas sem 4G.
 
-## Fase 7: Overhaul de UI / Design System "Nuvem Apple" (🔄 Em Andamento)
+## Fase 7: Overhaul de UI / Design System "RotaBus Apple" (🔄 Em Andamento)
 Uma refatoração completa do visual do aplicativo para deixá-lo mais fluido, limpo e com sensação nativa (padrão Apple).
 1. **Fluxo de Autenticação e Onboarding:** (✅ Concluído)
    - Substituição de "cards" opacos brancos por `LinearGradient` imersivo de ponta a ponta em todas as telas iniciais (`index`, `onboarding`, `login`, `criar-conta`, `esqueci-senha`, `permissoes`).

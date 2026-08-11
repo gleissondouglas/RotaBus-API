@@ -1,7 +1,7 @@
 const Redis = require("ioredis");
 const { env } = require("./env"); // Assumindo que você tenha um validador de env
 
-// Conexão com o Redis (Local ou Nuvem)
+// Conexão com o Redis (Local ou RotaBus)
 // Em produção (Heroku, AWS), você usaria a variável REDIS_URL
 const redisUrl = process.env.REDIS_URL || "redis://127.0.0.1:6379";
 

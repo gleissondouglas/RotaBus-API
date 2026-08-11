@@ -1,6 +1,6 @@
 # Arquitetura do Sistema
 
-A arquitetura do projeto Nuvem adota a abordagem de **Monólito Modular** no backend e uma estrutura baseada no **Expo Router** (File-based Routing) no frontend. O design do sistema é severamente influenciado pelos princípios da **Clean Architecture**, embora implementado de maneira pragmática para a escala atual da equipe.
+A arquitetura do projeto RotaBus adota a abordagem de **Monólito Modular** no backend e uma estrutura baseada no **Expo Router** (File-based Routing) no frontend. O design do sistema é severamente influenciado pelos princípios da **Clean Architecture**, embora implementado de maneira pragmática para a escala atual da equipe.
 
 ## 1. Visão Arquitetural de Alto Nível
 

@@ -1,6 +1,6 @@
 # Backend (Node.js & Express)
 
-A API do projeto Nuvem é estruturada sobre Node.js e utiliza o framework Express. Ela é robusta, projetada com separação rigorosa de camadas.
+A API do projeto RotaBus é estruturada sobre Node.js e utiliza o framework Express. Ela é robusta, projetada com separação rigorosa de camadas.
 
 ## 1. Pilha Tecnológica
 

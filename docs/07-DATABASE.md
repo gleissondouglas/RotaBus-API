@@ -1,6 +1,6 @@
 # Banco de Dados (Database)
 
-A persistência do Nuvem baseia-se em PostgreSQL com modelagem orquestrada pelo Prisma ORM. O design prioriza estabilidade para logs de segurança, dados de autenticação e proteção financeira.
+A persistência do RotaBus baseia-se em PostgreSQL com modelagem orquestrada pelo Prisma ORM. O design prioriza estabilidade para logs de segurança, dados de autenticação e proteção financeira.
 
 ## 1. Tabelas e Relacionamentos Principais
 

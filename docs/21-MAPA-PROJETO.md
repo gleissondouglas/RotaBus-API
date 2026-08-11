@@ -60,7 +60,7 @@ frontend/
 │
 ├── src/                             # Lógicas Isoladas da View do Router
 │   ├── components/                  # (UI) Peças Reutilizáveis (Cards, Botões Grandes)
-│   │   ├── FavoritesAndHistoryView.tsx # Painel unificado que exibe locais salvos e histórico em nuvem
+│   │   ├── FavoritesAndHistoryView.tsx # Painel unificado que exibe locais salvos e histórico em rotaBus
 │   │   ├── LiveTranscript.tsx       # Visor em tempo real do STT pro Usuário
 │   │   ├── RouteStep.tsx            # Peça da UI que renderiza passo-a-passo da jornada
 │   │   └── VoiceOrb.tsx             # Elemento dinâmico de pulsar do microfone

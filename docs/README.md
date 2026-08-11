@@ -1,10 +1,10 @@
-# Dossiê Técnico Profissional: Nuvem (RotaBus-API)
+# Dossiê Técnico Profissional: RotaBus (RotaBus-API)
 
-Bem-vindo ao dossiê técnico do projeto **Nuvem** (conhecido internamente como RotaBus-API). 
+Bem-vindo ao dossiê técnico do projeto **RotaBus** (conhecido internamente como RotaBus-API). 
 Esta documentação foi elaborada para atuar como a fonte definitiva de verdade (Single Source of Truth) para o desenvolvimento, manutenção e evolução arquitetural do sistema.
 
-## O que é o Nuvem?
-O Nuvem é uma plataforma de mobilidade urbana assistida com uma abordagem **Voice-First**, projetada prioritariamente para democratizar o acesso ao transporte público, reduzindo a carga cognitiva e facilitando a navegação para idosos, pessoas com deficiência (PCDs) e usuários com baixa literacia digital.
+## O que é o RotaBus?
+O RotaBus é uma plataforma de mobilidade urbana assistida com uma abordagem **Voice-First**, projetada prioritariamente para democratizar o acesso ao transporte público, reduzindo a carga cognitiva e facilitando a navegação para idosos, pessoas com deficiência (PCDs) e usuários com baixa literacia digital.
 
 ## Mapa da Documentação
 
