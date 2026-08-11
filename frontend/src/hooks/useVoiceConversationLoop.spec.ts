@@ -262,7 +262,9 @@ describe("useVoiceConversationLoop", () => {
     expect(SpeechService.speakAndWait).toHaveBeenCalledWith(
       "Não consegui te ouvir. Pode repetir?",
     );
-    expect(result.current.status).toBe("error");
+    await waitFor(() => {
+      expect(result.current.status).toBe("error");
+    });
     expect(vibrationService.error).toHaveBeenCalledTimes(1);
   });
 
