@@ -21,6 +21,12 @@ module.exports = [
         afterEach: "readonly",
         beforeAll: "readonly",
         afterAll: "readonly",
+        setTimeout: "readonly",
+        clearTimeout: "readonly",
+        setInterval: "readonly",
+        clearInterval: "readonly",
+        URL: "readonly",
+        Buffer: "readonly",
       }
     },
     rules: {
