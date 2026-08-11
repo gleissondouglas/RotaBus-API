@@ -75,7 +75,7 @@ export default function RouteNotFoundScreen() {
 
             <Text style={[styles.hintText, { color: theme.textMuted }]}>
               {isDailyLimit 
-                ? "O Nuvem tem um limite diário de buscas. Tente novamente amanhã." 
+                ? "O RotaBus tem um limite diário de buscas. Tente novamente amanhã." 
                 : "Você pode tentar digitar o endereço novamente ou escolher outro local próximo."}
             </Text>
           </View>

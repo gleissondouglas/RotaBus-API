@@ -99,7 +99,7 @@ describe("WelcomeScreen", () => {
 
     const screen = render(<WelcomeScreen />);
 
-    expect(screen.getByText("Entrando no Nuvem...")).toBeTruthy();
+    expect(screen.getByText("Entrando no RotaBus...")).toBeTruthy();
   });
 
   it("redireciona para inicio quando existe token e permissões vistas", async () => {
@@ -128,7 +128,7 @@ describe("WelcomeScreen", () => {
     const screen = render(<WelcomeScreen />);
 
     await waitFor(() => {
-      expect(screen.getByText("Bem-vindo ao Nuvem")).toBeTruthy();
+      expect(screen.getByText("Bem-vindo ao RotaBus")).toBeTruthy();
     });
 
     expect(screen.getByText("Encontre sua rota de ônibus falando para onde deseja ir.")).toBeTruthy();
@@ -136,7 +136,7 @@ describe("WelcomeScreen", () => {
     expect(screen.queryByText("Sua assistente de mobilidade por voz.")).toBeNull();
     expect(screen.queryByText("Encontre rotas de ônibus de forma simples.")).toBeNull();
     expect(speak).toHaveBeenCalledWith(
-      "Bem-vindo ao Nuvem. Encontre sua rota de ônibus falando para onde deseja ir.",
+      "Bem-vindo ao RotaBus. Encontre sua rota de ônibus falando para onde deseja ir.",
     );
   });
 

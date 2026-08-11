@@ -10,7 +10,7 @@ function getBaseUrl() {
     return "http://localhost:3000";
   }
 
-  // Em PRODUÇÃO (EAS Build/Lojas), sempre força a URL da nuvem
+  // Em PRODUÇÃO (EAS Build/Lojas), sempre força a URL da rotaBus
   if (!__DEV__) {
     return (extraApiUrl && !extraApiUrl.includes("localhost") && !extraApiUrl.includes("192.168.")) 
       ? extraApiUrl 

@@ -1,3 +1,4 @@
+import { BackgroundGradient } from "../src/components/BackgroundGradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -346,11 +347,7 @@ export default function ListeningScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <LinearGradient 
-        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
-        locations={[0, 0.4, 1]}
-        style={StyleSheet.absoluteFillObject} 
-      />
+      <BackgroundGradient />
       <ScreenContainer withPadding={false} backgroundColor="transparent">
       <View style={[styles.topBar, { paddingTop: Math.max(insets.top, 16) }]}>
         <View style={{ flex: 1 }} />

@@ -1,3 +1,4 @@
+import { BackgroundGradient } from "../src/components/BackgroundGradient";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -20,7 +21,7 @@ import { layout } from "../src/theme/layout";
 import { LinearGradient } from "expo-linear-gradient";
 
 const welcomeMessage =
-  "Bem-vindo ao Nuvem. Encontre sua rota de ônibus falando para onde deseja ir.";
+  "Bem-vindo ao RotaBus. Encontre sua rota de ônibus falando para onde deseja ir.";
 
 /**
  * Esta é a tela de entrada (WelcomeScreen). 
@@ -174,7 +175,7 @@ export default function WelcomeScreen() {
       <ScreenContainer backgroundColor={theme.background}>
         <View style={styles.loading}>
           <ActivityIndicator size="large" color={theme.primary} />
-          <Text style={[styles.loadingText, { color: theme.text }]}>Entrando no Nuvem...</Text>
+          <Text style={[styles.loadingText, { color: theme.text }]}>Entrando no RotaBus...</Text>
         </View>
       </ScreenContainer>
     );
@@ -182,11 +183,7 @@ export default function WelcomeScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <LinearGradient 
-        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
-        locations={[0, 0.4, 1]}
-        style={StyleSheet.absoluteFillObject} 
-      />
+      <BackgroundGradient />
       <ScreenContainer backgroundColor="transparent" withPadding={false}>
       <View style={[styles.content, isCompact && styles.contentCompact]}>
         <View style={[styles.visualRegion, isCompact && styles.visualRegionCompact]}>
@@ -204,7 +201,7 @@ export default function WelcomeScreen() {
         <Animated.View style={[styles.textRegion, { opacity: textOpacity }]}>
           <View style={styles.textContent}>
             <Text style={[styles.title, isCompact && styles.titleCompact, { color: theme.text }]} maxFontSizeMultiplier={1.3}>
-              Bem-vindo ao Nuvem
+              Bem-vindo ao RotaBus
             </Text>
             <Text style={[styles.description, { color: theme.textMuted }]} maxFontSizeMultiplier={1.45}>
               Encontre sua rota de ônibus falando para onde deseja ir.

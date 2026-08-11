@@ -1,3 +1,4 @@
+import { BackgroundGradient } from "../src/components/BackgroundGradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View, Pressable, useWindowDimensions } from "react-native";
@@ -190,11 +191,7 @@ export default function ProcessingScreen() {
 
   return (
     <View style={styles.screen}>
-      <LinearGradient 
-        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
-        locations={[0, 0.4, 1]}
-        style={StyleSheet.absoluteFillObject} 
-      />
+      <BackgroundGradient />
       <Animated.View entering={FadeIn.duration(400)} style={styles.fullScreen}>
         <View style={[styles.content, { paddingHorizontal: isSmallHeight ? layout.screenHorizontalPaddingSmall : layout.screenHorizontalPadding }]}>
           <AssistantLoadingState

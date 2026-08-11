@@ -27,7 +27,7 @@ describe("SessionService - SessionId Persistence", () => {
     
     // Pequeno delay para garantir que o background work (.catch) do setItemAsync foi acionado
     await new Promise((resolve) => setTimeout(resolve, 10));
-    expect(SecureStore.setItemAsync).toHaveBeenCalledWith("nuvem_session_id", "uuid-123");
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith("rotaBus_session_id", "uuid-123");
   });
 
   test("deve remover o sessionId da memória e do storage ao limpar a sessão", async () => {
@@ -37,7 +37,7 @@ describe("SessionService - SessionId Persistence", () => {
 
     // Pequeno delay
     await new Promise((resolve) => setTimeout(resolve, 10));
-    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith("nuvem_session_id");
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith("rotaBus_session_id");
   });
 
   test("deve restaurar o sessionId do storage local para a memória", async () => {
@@ -45,7 +45,7 @@ describe("SessionService - SessionId Persistence", () => {
     const restored = await sessionService.restoreSessionId();
     expect(restored).toBe("uuid-stored");
     expect(sessionService.getSessionId()).toBe("uuid-stored");
-    expect(SecureStore.getItemAsync).toHaveBeenCalledWith("nuvem_session_id");
+    expect(SecureStore.getItemAsync).toHaveBeenCalledWith("rotaBus_session_id");
   });
 
   test("deve retornar null e manter sessionId null se falhar ao restaurar", async () => {

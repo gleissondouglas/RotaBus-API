@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Alert,
   Pressable,
@@ -47,7 +47,7 @@ export default function ChooseTimeScreen() {
   const params = useLocalSearchParams();
   const theme = useThemeColors();
   const insets = useSafeAreaInsets();
-  const { height } = useWindowDimensions();
+  const { height, width } = useWindowDimensions();
 
   const isSmallHeight = height < 740;
   const latitude = String(params.latitude || "");
@@ -65,6 +65,8 @@ export default function ChooseTimeScreen() {
   const [timeText, setTimeText] = useState(getCurrentTimeText());
   const isActionDisabled = false;
 
+  const scrollViewRef = useRef<ScrollView>(null);
+
   const dateOptions = getNext7Days();
   const startHour = mode === "ARRIVAL" ? 6 : 4;
 
@@ -74,6 +76,33 @@ export default function ChooseTimeScreen() {
     timeSlots.push(`${hr}:00`, `${hr}:15`, `${hr}:30`, `${hr}:45`);
   }
 
+  useEffect(() => {
+    if (isModalOpen) {
+      const now = new Date();
+      const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
+      let bestSlot = timeSlots[timeSlots.length - 1]; // fallback to last slot
+      
+      for (const slot of timeSlots) {
+        const [h, m] = slot.split(':').map(Number);
+        if (h * 60 + m >= currentTotalMinutes) {
+          bestSlot = slot;
+          break;
+        }
+      }
+      
+      setTimeText(bestSlot);
+      
+      const index = timeSlots.indexOf(bestSlot);
+      if (index !== -1 && scrollViewRef.current) {
+        setTimeout(() => {
+          // approx 80px per item (72 width + 8 gap)
+          const itemX = index * 80;
+          const centerOffset = itemX - (width / 2) + 40;
+          scrollViewRef.current?.scrollTo({ x: Math.max(0, centerOffset), animated: true });
+        }, 150); // wait a bit for modal to finish animating in
+      }
+    }
+  }, [isModalOpen, mode]);
 
 
   function buildProcessingParams(type: "DEPARTURE" | "ARRIVAL", dateTime: string) {
@@ -454,6 +483,7 @@ export default function ChooseTimeScreen() {
 
                 <Text style={[styles.formLabel, { color: theme.text }]}>Escolha o horário</Text>
                 <ScrollView 
+                  ref={scrollViewRef}
                   horizontal 
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.dateChipsContainer}

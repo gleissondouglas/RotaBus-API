@@ -24,7 +24,7 @@ export function ListenOptionsButton({
 
     speak(
       textToSpeak ||
-        "Você está usando o Nuvem. Use os botões da tela para continuar.",
+        "Você está usando o RotaBus. Use os botões da tela para continuar.",
     );
   }
 

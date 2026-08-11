@@ -1,3 +1,4 @@
+import { BackgroundGradient } from "../src/components/BackgroundGradient";
 import { router } from "expo-router";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useState } from "react";
@@ -27,7 +28,7 @@ export default function PermissionsScreen() {
       if (!hasLocationPermission) {
         Alert.alert(
           "Permissão necessária",
-          "Para encontrar o ponto de ônibus mais próximo, o Nuvem precisa acessar sua localização.",
+          "Para encontrar o ponto de ônibus mais próximo, o RotaBus precisa acessar sua localização.",
         );
 
         return;
@@ -60,11 +61,7 @@ export default function PermissionsScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <LinearGradient 
-        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
-        locations={[0, 0.4, 1]}
-        style={StyleSheet.absoluteFillObject} 
-      />
+      <BackgroundGradient />
       <ScreenContainer withPadding={false} backgroundColor="transparent">
 
       <ScrollView
@@ -79,7 +76,7 @@ export default function PermissionsScreen() {
           <View style={styles.header}>
             <Text style={[styles.title, { color: "#000" }]}>Precisamos da sua permissão</Text>
             <Text style={[styles.subtitle, { color: "#666" }]}>
-              Para te ajudar nas rotas, o Nuvem precisa acessar alguns recursos do seu celular.
+              Para te ajudar nas rotas, o RotaBus precisa acessar alguns recursos do seu celular.
             </Text>
           </View>
 
@@ -137,7 +134,7 @@ export default function PermissionsScreen() {
             />
 
             <View style={styles.ttsWrapper}>
-              <ListenOptionsButton textToSpeak="O Nuvem precisa de permissão para usar o microfone, a localização e as notificações. Toque em permitir e continuar." />
+              <ListenOptionsButton textToSpeak="O RotaBus precisa de permissão para usar o microfone, a localização e as notificações. Toque em permitir e continuar." />
             </View>
 
             <Text style={[styles.note, { color: "#94A3B8" }]}>

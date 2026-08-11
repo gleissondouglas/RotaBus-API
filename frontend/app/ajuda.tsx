@@ -63,7 +63,7 @@ export default function HelpScreen() {
           <Text style={[styles.title, { color: theme.text }]}>Ajuda</Text>
 
           <Text style={[styles.subtitle, { color: theme.textMuted }]}>
-            Veja como usar o Nuvem de forma simples.
+            Veja como usar o RotaBus de forma simples.
           </Text>
 
           <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
@@ -101,7 +101,7 @@ export default function HelpScreen() {
             <View style={styles.cardTextBox}>
               <Text style={[styles.cardTitle, { color: theme.text }]}>Ir até o ponto</Text>
               <Text style={[styles.cardDescription, { color: theme.textMuted }]}>
-                O Nuvem mostra o ponto de ônibus mais próximo e guia você até
+                O RotaBus mostra o ponto de ônibus mais próximo e guia você até
                 lá.
               </Text>
             </View>

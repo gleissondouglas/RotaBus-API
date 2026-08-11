@@ -1,3 +1,4 @@
+import { BackgroundGradient } from "../src/components/BackgroundGradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState, useRef, useMemo } from "react";
 import { 
@@ -566,11 +567,7 @@ export default function NavigatingScreen() {
 
       {/* SOLID BACKGROUND (For status stages) */}
       {(stage === "waiting_bus" || stage === "on_bus" || stage === "arrived") && (
-        <LinearGradient 
-          colors={['#E0F2FE', '#F0F9FF', theme.background]} 
-          locations={[0, 0.4, 1]}
-          style={StyleSheet.absoluteFillObject} 
-        />
+        <BackgroundGradient />
       )}
 
       {/* Top Bar (Always Fixed) */}

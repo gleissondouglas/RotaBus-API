@@ -1,3 +1,4 @@
+import { BackgroundGradient } from "../src/components/BackgroundGradient";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
@@ -56,11 +57,7 @@ export default function ChangePasswordScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <LinearGradient 
-        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
-        locations={[0, 0.4, 1]}
-        style={StyleSheet.absoluteFillObject} 
-      />
+      <BackgroundGradient />
       <ScreenContainer backgroundColor="transparent">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}

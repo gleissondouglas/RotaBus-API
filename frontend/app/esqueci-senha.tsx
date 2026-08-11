@@ -1,3 +1,4 @@
+import { BackgroundGradient } from "../src/components/BackgroundGradient";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, StyleSheet, Text, View, ScrollView } from "react-native";
@@ -49,11 +50,7 @@ export default function ForgotPasswordScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <LinearGradient 
-        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
-        locations={[0, 0.4, 1]}
-        style={StyleSheet.absoluteFillObject} 
-      />
+      <BackgroundGradient />
       <ScreenContainer withPadding={false} backgroundColor="transparent">
       <View style={styles.header}>
         <BackButton />

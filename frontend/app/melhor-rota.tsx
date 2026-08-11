@@ -1,3 +1,4 @@
+import { BackgroundGradient } from "../src/components/BackgroundGradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState, useCallback, useEffect } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
@@ -20,7 +21,7 @@ import { vibrationService } from "../src/services/vibration.service";
 import { speak } from "../src/services/speech.service";
 import { trackingService } from "../src/services/tracking.service";
 import { isConnected } from "../src/utils/network";
-import { JourneyStep, JourneySummary } from "../src/types/journey.types";
+import { JourneyStep, JourneySummary, MapFocusMode } from "../src/types/journey.types";
 import { formatMinutesToFriendlyText } from "../src/utils/date-time";
 import { parseJsonParam } from "../src/utils/helpers";
 
@@ -102,6 +103,7 @@ export default function BestRouteScreen() {
 
   const [isLoadingCommand, setIsLoadingCommand] = useState(false);
   const [liveBusPosition, setLiveBusPosition] = useState<{lat: number, lng: number, heading?: number} | null>(null);
+  const [mapFocusMode, setMapFocusMode] = useState<MapFocusMode>('full_route');
 
   const transitSteps = getTransitSteps(steps);
   const firstTransitStep = transitSteps[0];
@@ -236,11 +238,7 @@ export default function BestRouteScreen() {
 
   return (
     <View style={styles.screen}>
-      <LinearGradient 
-        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
-        locations={[0, 0.4, 1]}
-        style={StyleSheet.absoluteFillObject} 
-      />
+      <BackgroundGradient />
       {/* FIXED HEADER */}
       <View style={[styles.fixedHeader, { paddingTop: insets.top + 8 }]}>
         <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={40} fallbackColor={theme.background} />
@@ -269,8 +267,10 @@ export default function BestRouteScreen() {
               <Map 
                 mapData={mapData} 
                 initialRegion={initialRegion} 
+                userLocation={{ latitude: Number(latitude), longitude: Number(longitude) }}
                 colors={theme} 
-                focusMode="full_route" 
+                focusMode={mapFocusMode} 
+                onFocusModeChange={setMapFocusMode}
                 isNavigating={false}
                 liveBusPosition={liveBusPosition}
               />

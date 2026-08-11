@@ -11,7 +11,7 @@ export type OnboardingSlideData = {
 export const onboardingSlides: OnboardingSlideData[] = [
   {
     id: "welcome",
-    title: "Bem-vindo ao Nuvem",
+    title: "Bem-vindo ao RotaBus",
     description: "Seu assistente para encontrar rotas de ônibus de forma simples.",
     visual: "assistant",
   },

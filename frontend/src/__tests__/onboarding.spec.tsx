@@ -58,7 +58,7 @@ describe("OnboardingScreen", () => {
   it("avança e volta entre os slides mantendo a paginação", () => {
     const screen = render(<OnboardingScreen />);
 
-    expect(screen.getByText("Bem-vindo ao Nuvem")).toBeTruthy();
+    expect(screen.getByText("Bem-vindo ao RotaBus")).toBeTruthy();
     expect(screen.getByLabelText("Página 1 de 3")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Ir para próxima página"));
@@ -66,7 +66,7 @@ describe("OnboardingScreen", () => {
     expect(screen.getByLabelText("Página 2 de 3")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Voltar para página anterior"));
-    expect(screen.getByText("Bem-vindo ao Nuvem")).toBeTruthy();
+    expect(screen.getByText("Bem-vindo ao RotaBus")).toBeTruthy();
   });
 
   it("pular salva a conclusão e abre as boas-vindas", async () => {
@@ -95,12 +95,12 @@ describe("OnboardingScreen", () => {
     const screen = render(<OnboardingScreen />);
     mockedStopSpeaking.mockClear();
 
-    fireEvent.press(screen.getByLabelText("Ouvir conteúdo da página: Bem-vindo ao Nuvem"));
+    fireEvent.press(screen.getByLabelText("Ouvir conteúdo da página: Bem-vindo ao RotaBus"));
 
     await waitFor(() => {
       expect(mockedStopSpeaking).toHaveBeenCalled();
       expect(mockedSpeak).toHaveBeenCalledWith(
-        "Bem-vindo ao Nuvem. Seu assistente para encontrar rotas de ônibus de forma simples.",
+        "Bem-vindo ao RotaBus. Seu assistente para encontrar rotas de ônibus de forma simples.",
       );
     });
   });

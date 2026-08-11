@@ -1,6 +1,6 @@
-# Nuvem — App Padrão (Toque e Acessibilidade)
+# RotaBus — App Padrão (Toque e Acessibilidade)
 
-O **Nuvem** é um aplicativo mobile de mobilidade urbana com foco em acessibilidade, simplicidade e inclusão digital.
+O **RotaBus** é um aplicativo mobile de mobilidade urbana com foco em acessibilidade, simplicidade e inclusão digital.
 
 A proposta deste repositório é ser o **App Padrão (Normal)**. Ele oferece uma interface limpa com navegação guiada por toque (Touch) e suporte a síntese de voz (TTS) para leitura de tela. O usuário pode buscar o destino por voz na tela inicial, mas todo o restante da navegação e escolha de opções é feito tocando na tela de forma simplificada e acessível.
 
@@ -12,7 +12,7 @@ A proposta deste repositório é ser o **App Padrão (Normal)**. Ele oferece uma
 
 Muitos aplicativos de transporte mostram mapas, textos pequenos, várias cores, muitos detalhes técnicos e interfaces difíceis para pessoas com pouca familiaridade com tecnologia.
 
-O Nuvem nasce com outro objetivo: conversar com o usuário de forma clara, simples e acessível.
+O RotaBus nasce com outro objetivo: conversar com o usuário de forma clara, simples e acessível.
 
 A ideia principal é que o app funcione como uma assistente de mobilidade por voz, ajudando o usuário a entender:
 
@@ -27,7 +27,7 @@ A ideia principal é que o app funcione como uma assistente de mobilidade por vo
 
 ## Público-alvo
 
-O Nuvem foi pensado principalmente para:
+O RotaBus foi pensado principalmente para:
 
 - pessoas idosas;
 - pessoas com baixa familiaridade com tecnologia;
@@ -102,7 +102,7 @@ Em vez de mostrar apenas dados complexos ou mapas difíceis de interpretar.
 ## Estrutura do projeto
 
 ```txt
-nuvem-front
+rotaBus-front
 ├── app
 │   ├── _layout.tsx
 │   ├── index.tsx
@@ -142,7 +142,7 @@ nuvem-front
 
 ### Boas-vindas
 
-Tela inicial de apresentação do aplicativo, explicando que o Nuvem é uma assistente de mobilidade por voz.
+Tela inicial de apresentação do aplicativo, explicando que o RotaBus é uma assistente de mobilidade por voz.
 
 ### Login
 
@@ -195,13 +195,13 @@ Tela para futuras configurações de conta e preferências do usuário.
 ### 1. Clonar o repositório
 
 ```bash
-git clone https://github.com/SEU-USUARIO/nuvem-front.git
+git clone https://github.com/SEU-USUARIO/rotaBus-front.git
 ```
 
 ### 2. Entrar na pasta do projeto
 
 ```bash
-cd nuvem-front
+cd rotaBus-front
 ```
 
 ### 3. Instalar dependências
@@ -333,11 +333,11 @@ Atualmente, o app já possui o fluxo principal de mobilidade funcionando com:
 
 ## Motivação
 
-O Nuvem foi criado a partir da ideia de que a tecnologia deve incluir pessoas, não afastá-las.
+O RotaBus foi criado a partir da ideia de que a tecnologia deve incluir pessoas, não afastá-las.
 
 Muitas pessoas não conseguem usar bem aplicativos convencionais por causa de telas complexas, textos pequenos, excesso de informação e dificuldade em interpretar mapas.
 
-O Nuvem busca resolver esse problema com uma interface mais simples, acessível e guiada por voz.
+O RotaBus busca resolver esse problema com uma interface mais simples, acessível e guiada por voz.
 
 > Tecnologia boa é tecnologia que aproxima, orienta e inclui.
 

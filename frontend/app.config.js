@@ -7,34 +7,34 @@ const GOOGLE_MAPS_IOS_API_KEY = process.env.GOOGLE_MAPS_IOS_API_KEY || "";
 
 module.exports = {
   expo: {
-    name: "Nuvem",
-    slug: "nuvem-front",
+    name: "RotaBus",
+    slug: "rotaBus-front",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
-    scheme: "nuvemfront",
+    scheme: "rotaBusfront",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
 
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.anonymous.nuvem-front",
+      bundleIdentifier: "com.anonymous.rotaBus-front",
       config: {
         googleMapsApiKey: GOOGLE_MAPS_IOS_API_KEY,
       },
       infoPlist: {
         NSSpeechRecognitionUsageDescription:
-          "O Nuvem usa reconhecimento de fala para entender o destino informado por voz.",
+          "O RotaBus usa reconhecimento de fala para entender o destino informado por voz.",
         NSMicrophoneUsageDescription:
-          "O Nuvem usa o microfone para ouvir o destino informado por voz.",
+          "O RotaBus usa o microfone para ouvir o destino informado por voz.",
         NSLocationWhenInUseUsageDescription:
-          "O Nuvem precisa da sua localização para encontrar os pontos de ônibus mais próximos.",
+          "O RotaBus precisa da sua localização para encontrar os pontos de ônibus mais próximos.",
         ITSAppUsesNonExemptEncryption: false,
       },
     },
 
     android: {
-      package: "com.gleissondouglas.nuvem",
+      package: "com.gleissondouglas.rotaBus",
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
       permissions: [
@@ -66,8 +66,8 @@ module.exports = {
       [
         "@sentry/react-native/expo",
         {
-          organization: "nuvem",
-          project: "nuvem-front",
+          organization: "rotaBus",
+          project: "rotaBus-front",
           disableOnRelease: true,
         },
       ],

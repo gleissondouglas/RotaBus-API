@@ -1,3 +1,4 @@
+import { BackgroundGradient } from "../src/components/BackgroundGradient";
 import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { useEffect, useState, useCallback, useRef } from "react";
 import {
@@ -477,7 +478,7 @@ export default function HomeScreen() {
       if (!params.searchText && userName) {
         // Primeira vez: texto anima progressivamente
         setPromptAnimated(true);
-        const greetingText = `Olá, ${userName}. Bem-vindo ao Nuvem. Para onde você quer ir hoje?`;
+        const greetingText = `Olá, ${userName}. Bem-vindo ao RotaBus. Para onde você quer ir hoje?`;
         setPromptText(greetingText);
       } else if (userName) {
         // Retorno à tela: texto aparece completo de uma vez
@@ -588,18 +589,14 @@ export default function HomeScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <LinearGradient 
-        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
-        locations={[0, 0.4, 1]}
-        style={StyleSheet.absoluteFillObject} 
-      />
+      <BackgroundGradient />
       <ScreenContainer withPadding={false} backgroundColor="transparent">
       {/* ─── ZONA 1: TOPO ─── */}
       <Animated.View
         entering={FadeInDown.duration(400).delay(100)}
         style={[styles.topHeader, { paddingTop: Math.max(insets.top, 16), backgroundColor: "transparent" }]}
       >
-        <LiquidGlassView style={styles.tabsContainer} intensity={40} fallbackColor={theme.border}>
+        <LiquidGlassView style={styles.tabsContainer} intensity={80} fallbackColor={theme.card}>
           <Animated.View style={[styles.activeTabBackground, tabAnimatedStyle]} />
           
           <Pressable 
@@ -641,7 +638,7 @@ export default function HomeScreen() {
               <AdaptiveIcon iosSymbol="questionmark.circle" fallbackFamily="Ionicons" fallbackName="help-circle-outline" size={24} color={theme.text} />
               <View>
                 <Text style={styles.settingsCardText}>Central de Ajuda</Text>
-                <Text style={styles.settingsCardSub}>Aprenda a usar o Nuvem</Text>
+                <Text style={styles.settingsCardSub}>Aprenda a usar o RotaBus</Text>
               </View>
             </Pressable>
           </View>
@@ -664,7 +661,7 @@ export default function HomeScreen() {
             style={styles.unifiedCard}
           >
             <Text style={styles.messageLabel}>Assistente</Text>
-            <LiquidGlassView style={styles.assistantBubble} intensity={50} fallbackColor={theme.card}>
+            <LiquidGlassView style={styles.assistantBubble} intensity={80} fallbackColor={theme.card}>
               <VoicePromptText
                 text={promptText}
                 animated={promptAnimated && status === "speaking"}
@@ -748,7 +745,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 4,
     borderWidth: 1,
-    borderColor: "rgba(200,200,200,0.3)",
+    borderColor: "rgba(255, 255, 255, 0.8)",
+    backgroundColor: "rgba(255, 255, 255, 0.5)",
     position: "relative",
   },
   activeTabBackground: {
@@ -830,11 +828,12 @@ const styles = StyleSheet.create({
     paddingVertical: 22,
     minHeight: 190,
     borderWidth: 1,
-    borderColor: "rgba(200,200,200,0.3)",
-    shadowColor: "#0F172A",
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.06,
-    shadowRadius: 32,
+    borderColor: "rgba(255, 255, 255, 0.9)",
+    backgroundColor: "rgba(255, 255, 255, 0.5)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.08,
+    shadowRadius: 24,
     elevation: 5,
   },
   promptTextWrapper: {

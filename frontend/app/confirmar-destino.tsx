@@ -1,3 +1,4 @@
+import { BackgroundGradient } from "../src/components/BackgroundGradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import {
@@ -408,11 +409,7 @@ export default function ConfirmDestinationScreen() {
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <View style={styles.screen}>
-      <LinearGradient 
-        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
-        locations={[0, 0.4, 1]}
-        style={StyleSheet.absoluteFillObject} 
-      />
+      <BackgroundGradient />
       {/* TOP BAR — com fundo blur para não embolar o scroll */}
       <LiquidGlassView
         style={[styles.fixedHeaderBackground, { height: insets.top + 72 }]}
@@ -709,19 +706,26 @@ const styles = StyleSheet.create({
   },
 
   destCard: {
-    backgroundColor: "rgba(255, 255, 255, 0.4)",
-    borderRadius: 24,
-    padding: 16,
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    borderRadius: 28,
+    padding: 20,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.6)",
+    borderColor: "rgba(255, 255, 255, 0.9)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 4,
     gap: 16,
   },
   destCardActive: {
     shadowColor: "#2563EB",
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 3,
-    borderColor: "rgba(37,99,235,0.15)",
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 8,
+    borderColor: "rgba(37,99,235,0.3)",
+    backgroundColor: "rgba(255, 255, 255, 0.85)",
   },
 
   cardContent: {
@@ -774,11 +778,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   placeName: {
-    fontSize: 18,
-    fontWeight: "800",
+    fontSize: 20,
+    fontWeight: "900",
     color: "#0F172A",
-    marginBottom: 2,
-    lineHeight: 22,
+    marginBottom: 4,
+    lineHeight: 24,
+    letterSpacing: -0.3,
   },
   placeType: {
     fontSize: 15,
@@ -788,10 +793,12 @@ const styles = StyleSheet.create({
 
   // ─── Detalhes de endereço ────────────────────────────────────────────
   infoBox: {
-    backgroundColor: "rgba(0,0,0,0.03)",
-    borderRadius: 16,
-    padding: 36,
-    gap: 36,
+    backgroundColor: "rgba(255, 255, 255, 0.6)",
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.8)",
+    gap: 20,
   },
   cardDetails: {
     gap: 16,
@@ -818,11 +825,13 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 9,
+    gap: 6,
     borderRadius: 999,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: "rgba(59,130,246,0.1)", // equivalent to primaryLight approx
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: "rgba(59, 130, 246, 0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(59, 130, 246, 0.1)",
   },
   chipText: {
     color: "#1D4ED8",

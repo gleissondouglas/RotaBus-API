@@ -1,9 +1,9 @@
 import { AuthResponse, AuthUser } from "../types/auth.types";
 import { appStorage } from "./storage.service";
 
-const TOKEN_KEY = "nuvem_token";
-const USER_KEY = "nuvem_user";
-const PERMISSIONS_SEEN_KEY = "nuvem_permissions_seen";
+const TOKEN_KEY = "rotaBus_token";
+const USER_KEY = "rotaBus_user";
+const PERMISSIONS_SEEN_KEY = "rotaBus_permissions_seen";
 
 async function saveAuthSession(auth: AuthResponse) {
   try {
@@ -70,7 +70,7 @@ async function getHasSeenPermissions() {
   }
 }
 
-const SESSION_ID_KEY = "nuvem_session_id";
+const SESSION_ID_KEY = "rotaBus_session_id";
 let currentSessionId: string | null = null;
 
 async function clearSession() {

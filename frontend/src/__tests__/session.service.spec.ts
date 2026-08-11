@@ -25,8 +25,8 @@ describe("sessionService", () => {
 
       await sessionService.saveAuthSession(mockAuth);
 
-      expect(appStorage.setItem).toHaveBeenNthCalledWith(1, "nuvem_token", "jwt-123");
-      expect(appStorage.setItem).toHaveBeenNthCalledWith(2, "nuvem_user", JSON.stringify(mockAuth.user));
+      expect(appStorage.setItem).toHaveBeenNthCalledWith(1, "rotaBus_token", "jwt-123");
+      expect(appStorage.setItem).toHaveBeenNthCalledWith(2, "rotaBus_user", JSON.stringify(mockAuth.user));
     });
 
     it("deve lancar erro se não houver token", async () => {
@@ -65,10 +65,10 @@ describe("sessionService", () => {
     it("deve remover todas as chaves do storage na limpeza", async () => {
       await sessionService.clearSession();
 
-      expect(appStorage.deleteItem).toHaveBeenCalledWith("nuvem_token");
-      expect(appStorage.deleteItem).toHaveBeenCalledWith("nuvem_user");
-      expect(appStorage.deleteItem).toHaveBeenCalledWith("nuvem_permissions_seen");
-      expect(appStorage.deleteItem).toHaveBeenCalledWith("nuvem_session_id");
+      expect(appStorage.deleteItem).toHaveBeenCalledWith("rotaBus_token");
+      expect(appStorage.deleteItem).toHaveBeenCalledWith("rotaBus_user");
+      expect(appStorage.deleteItem).toHaveBeenCalledWith("rotaBus_permissions_seen");
+      expect(appStorage.deleteItem).toHaveBeenCalledWith("rotaBus_session_id");
     });
   });
 });

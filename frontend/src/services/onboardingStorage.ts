@@ -1,6 +1,6 @@
 import { appStorage } from "./storage.service";
 
-export const ONBOARDING_STORAGE_KEY = "nuvem_has_seen_onboarding";
+export const ONBOARDING_STORAGE_KEY = "rotaBus_has_seen_onboarding";
 
 export async function hasSeenOnboarding(): Promise<boolean> {
   try {

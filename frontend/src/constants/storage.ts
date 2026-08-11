@@ -1,3 +1,3 @@
 export const STORAGE_KEYS = {
-  ACCESSIBILITY_SETTINGS: "nuvem_accessibility_settings",
+  ACCESSIBILITY_SETTINGS: "rotaBus_accessibility_settings",
 };

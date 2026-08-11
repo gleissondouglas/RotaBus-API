@@ -1,3 +1,4 @@
+import { BackgroundGradient } from "../src/components/BackgroundGradient";
 import { ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeInUp } from "react-native-reanimated";
@@ -28,11 +29,7 @@ export default function AccessibilityScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <LinearGradient 
-        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
-        locations={[0, 0.4, 1]}
-        style={StyleSheet.absoluteFillObject} 
-      />
+      <BackgroundGradient />
       <ScreenContainer withPadding={false} backgroundColor="transparent">
       <ScrollView
         showsVerticalScrollIndicator={false}

@@ -1,3 +1,4 @@
+import { BackgroundGradient } from "../src/components/BackgroundGradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -75,7 +76,7 @@ export default function SettingsScreen() {
   function handleDeleteAccount() {
     Alert.alert(
       "Excluir sua conta?",
-      "Essa ação é permanente. Seus dados de conta serão removidos e você precisará criar uma nova conta se quiser usar o Nuvem novamente.",
+      "Essa ação é permanente. Seus dados de conta serão removidos e você precisará criar uma nova conta se quiser usar o RotaBus novamente.",
       [
         {
           text: "Cancelar",
@@ -121,11 +122,7 @@ export default function SettingsScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <LinearGradient 
-        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
-        locations={[0, 0.4, 1]}
-        style={StyleSheet.absoluteFillObject} 
-      />
+      <BackgroundGradient />
       <ScreenContainer withPadding={false} backgroundColor="transparent">
         <ScrollView
         showsVerticalScrollIndicator={false}
@@ -153,7 +150,7 @@ export default function SettingsScreen() {
             <SettingOption 
               icon="person-outline" 
               title="Alterar nome" 
-              description="Atualize como o Nuvem chama você" 
+              description="Atualize como o RotaBus chama você" 
               onPress={handleEditName} 
               theme={theme}
             />
@@ -186,7 +183,7 @@ export default function SettingsScreen() {
               description="Entenda o uso de localização e voz" 
               onPress={() => {
                 Alert.alert(
-                  "Uso de dados no Nuvem",
+                  "Uso de dados no RotaBus",
                   "Localização: Usamos para encontrar pontos de ônibus próximos e guiar você no caminho.\n\nVoz: Usamos o microfone apenas quando você pressiona o botão para entender para onde quer ir.\n\nDados: Seus dados de rota são processados para criar o melhor caminho e não são compartilhados com terceiros para fins publicitários."
                 );
               }} 

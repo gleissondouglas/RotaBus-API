@@ -189,10 +189,10 @@ const Map: React.FC<MapProps> = ({
       const uniqueCoords = coordinatesToFit.filter((c, i, self) => i === self.findIndex(t => t.latitude === c.latitude && t.longitude === c.longitude));
       fitTimer = setTimeout(() => {
         if (uniqueCoords.length === 1) {
-          mapRef.current?.animateToRegion({ ...uniqueCoords[0], latitudeDelta: 0.005, longitudeDelta: 0.005 }, 1000);
+          mapRef.current?.animateToRegion({ ...uniqueCoords[0], latitudeDelta: 0.003, longitudeDelta: 0.003 }, 1000);
         } else if (uniqueCoords.length > 1) {
           mapRef.current?.fitToCoordinates(uniqueCoords, { 
-            edgePadding: { top: 180, right: 40, bottom: controlsBottomOffset + 40, left: 40 }, 
+            edgePadding: { top: 60, right: 20, bottom: controlsBottomOffset + 20, left: 20 }, 
             animated: true 
           });
         }
@@ -386,33 +386,33 @@ const styles = StyleSheet.create({
   map: { width: '100%', height: '100%' },
   controls: { 
     position: 'absolute', 
-    right: 16, 
+    right: 12, 
     zIndex: 100 
   },
   controlGroup: {
     flexDirection: 'row',
     borderRadius: 20,
-    padding: 4,
+    padding: 2,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 8,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.05)',
+    borderColor: 'rgba(0,0,0,0.08)',
   },
   controlButton: {
-    width: 48,
-    height: 48,
+    width: 42,
+    height: 42,
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
   divider: {
     width: 1,
-    height: 24,
-    marginHorizontal: 2,
+    height: 20,
+    marginHorizontal: 4,
   },
   boardingMarker: {
     padding: 8,

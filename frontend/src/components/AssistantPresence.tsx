@@ -8,7 +8,7 @@ type AssistantPresenceProps = {
 };
 
 /**
- * Presença visual da assistente Nuvem.
+ * Presença visual da assistente RotaBus.
  * Usa somente opacity e transform para manter a animação no driver nativo.
  */
 export function AssistantPresence({ compact = false }: AssistantPresenceProps) {
@@ -66,7 +66,7 @@ export function AssistantPresence({ compact = false }: AssistantPresenceProps) {
     <View
       style={[styles.container, { width: size, height: size }]}
       accessibilityRole="image"
-      accessibilityLabel="Assistente Nuvem"
+      accessibilityLabel="Assistente RotaBus"
     >
       <Animated.View
         style={[

@@ -1,3 +1,4 @@
+import { BackgroundGradient } from "../src/components/BackgroundGradient";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -59,11 +60,7 @@ export default function EditNameScreen() {
   if (initialLoading) {
     return (
       <View style={{ flex: 1 }}>
-        <LinearGradient 
-          colors={['#E0F2FE', '#F0F9FF', theme.background]} 
-          locations={[0, 0.4, 1]}
-          style={StyleSheet.absoluteFillObject} 
-        />
+        <BackgroundGradient />
         <ScreenContainer backgroundColor="transparent">
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={theme.primary} />
@@ -75,11 +72,7 @@ export default function EditNameScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <LinearGradient 
-        colors={['#E0F2FE', '#F0F9FF', theme.background]} 
-        locations={[0, 0.4, 1]}
-        style={StyleSheet.absoluteFillObject} 
-      />
+      <BackgroundGradient />
       <ScreenContainer backgroundColor="transparent">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -94,7 +87,7 @@ export default function EditNameScreen() {
           <View style={styles.content}>
             <Text style={styles.title}>Alterar nome</Text>
             <Text style={styles.subtitle}>
-              Como você gostaria que o Nuvem chamasse você?
+              Como você gostaria que o RotaBus chamasse você?
             </Text>
 
             <View style={styles.form}>
