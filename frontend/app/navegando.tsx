@@ -689,17 +689,17 @@ export default function NavigatingScreen() {
 
                   return (
                     <View style={styles.infoCardsGrid}>
-                      <View style={[styles.infoCard, { backgroundColor: "rgba(255, 255, 255, 0.4)", borderColor: "rgba(255, 255, 255, 0.6)" }]}>
+                      <LiquidGlassView style={[styles.infoCard, { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={80} fallbackColor={theme.card}>
                         <Text style={[styles.infoCardLabel, { color: theme.textMuted }]}>LINHA {busLine}</Text>
                         <Text style={[styles.infoCardValue, { color: theme.text, fontSize: 18 }]} numberOfLines={2} adjustsFontSizeToFit>{lineDetails || busLine}</Text>
-                      </View>
-                      <View style={[styles.infoCard, { backgroundColor: "rgba(255, 255, 255, 0.4)", borderColor: "rgba(255, 255, 255, 0.6)" }]}>
+                      </LiquidGlassView>
+                      <LiquidGlassView style={[styles.infoCard, { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={80} fallbackColor={theme.card}>
                         <Text style={[styles.infoCardLabel, { color: theme.textMuted }]}>{chegaLabel}</Text>
                         <Text style={[styles.infoCardValue, { color: theme.primary }]} numberOfLines={1} adjustsFontSizeToFit>{chegaValue}</Text>
                         {!!stopName && stopName !== "ponto indicado" && (
                           <Text style={[styles.infoCardSubValue, { color: theme.textMuted }]} numberOfLines={2}>{stopName}</Text>
                         )}
-                      </View>
+                      </LiquidGlassView>
                     </View>
                   );
                 })()}
@@ -785,17 +785,17 @@ export default function NavigatingScreen() {
 
               return (
                 <View style={styles.infoCardsGrid}>
-                  <View style={[styles.infoCard, { backgroundColor: "rgba(255, 255, 255, 0.4)", borderColor: "rgba(255, 255, 255, 0.6)" }]}>
+                  <LiquidGlassView style={[styles.infoCard, { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={80} fallbackColor={theme.card}>
                     <Text style={[styles.infoCardLabel, { color: theme.textMuted }]}>LINHA {busLine}</Text>
                     <Text style={[styles.infoCardValue, { color: theme.text, fontSize: 18 }]} numberOfLines={2} adjustsFontSizeToFit>{lineDetails || busLine}</Text>
-                  </View>
-                  <View style={[styles.infoCard, { backgroundColor: "rgba(255, 255, 255, 0.4)", borderColor: "rgba(255, 255, 255, 0.6)" }]}>
+                  </LiquidGlassView>
+                  <LiquidGlassView style={[styles.infoCard, { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={80} fallbackColor={theme.card}>
                     <Text style={[styles.infoCardLabel, { color: theme.textMuted }]}>{chegaLabel}</Text>
                     <Text style={[styles.infoCardValue, { color: theme.primary }]} numberOfLines={1} adjustsFontSizeToFit>{chegaValue}</Text>
                     {!!stopName && stopName !== "ponto indicado" && (
                       <Text style={[styles.infoCardSubValue, { color: theme.textMuted }]} numberOfLines={2}>{stopName}</Text>
                     )}
-                  </View>
+                  </LiquidGlassView>
                 </View>
               );
             })()}

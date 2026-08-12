@@ -1,4 +1,5 @@
 import { BackgroundGradient } from "../src/components/BackgroundGradient";
+import { LiquidGlassView } from "../src/components/LiquidGlassView";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -145,7 +146,7 @@ export default function SettingsScreen() {
             </Text>
           </View>
 
-          <View style={[styles.section, { backgroundColor: "rgba(255, 255, 255, 0.4)", borderColor: "rgba(255, 255, 255, 0.6)" }]}>
+          <LiquidGlassView style={[styles.section, { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={80} fallbackColor={theme.card}>
             <Text style={[styles.sectionTitle, { color: theme.primary }]} maxFontSizeMultiplier={1.2}>Conta</Text>
             <SettingOption 
               icon="person-outline" 
@@ -162,9 +163,9 @@ export default function SettingsScreen() {
               onPress={handleChangePassword} 
               theme={theme}
             />
-          </View>
+          </LiquidGlassView>
 
-          <View style={[styles.section, { backgroundColor: "rgba(255, 255, 255, 0.4)", borderColor: "rgba(255, 255, 255, 0.6)" }]}>
+          <LiquidGlassView style={[styles.section, { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={80} fallbackColor={theme.card}>
             <Text style={[styles.sectionTitle, { color: theme.primary }]} maxFontSizeMultiplier={1.2}>Preferências</Text>
             <SettingOption 
               icon="accessibility-outline" 
@@ -173,9 +174,9 @@ export default function SettingsScreen() {
               onPress={handleAccessibility} 
               theme={theme}
             />
-          </View>
+          </LiquidGlassView>
 
-          <View style={[styles.section, { backgroundColor: "rgba(255, 255, 255, 0.4)", borderColor: "rgba(255, 255, 255, 0.6)" }]}>
+          <LiquidGlassView style={[styles.section, { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={80} fallbackColor={theme.card}>
             <Text style={[styles.sectionTitle, { color: theme.primary }]} maxFontSizeMultiplier={1.2}>Privacidade</Text>
             <SettingOption 
               icon="shield-checkmark-outline" 
@@ -199,7 +200,7 @@ export default function SettingsScreen() {
               disabled={isDeleting}
               theme={theme}
             />
-          </View>
+          </LiquidGlassView>
 
           <View style={styles.footer}>
             <View style={styles.ttsWrapper}>

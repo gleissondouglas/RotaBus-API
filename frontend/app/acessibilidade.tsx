@@ -1,4 +1,5 @@
 import { BackgroundGradient } from "../src/components/BackgroundGradient";
+import { LiquidGlassView } from "../src/components/LiquidGlassView";
 import { ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeInUp } from "react-native-reanimated";
@@ -47,7 +48,7 @@ export default function AccessibilityScreen() {
             </Text>
           </View>
 
-          <View style={styles.card}>
+          <LiquidGlassView style={[styles.card, { backgroundColor: "transparent" }]} intensity={80} fallbackColor={theme.card}>
             <View style={styles.option}>
               <View style={styles.optionTextBox}>
                 <Text style={styles.optionTitle}>Texto maior</Text>
@@ -132,7 +133,7 @@ export default function AccessibilityScreen() {
                 trackColor={{ false: "#E2E8F0", true: "#3B82F6" }}
               />
             </View>
-          </View>
+          </LiquidGlassView>
 
           <View style={styles.footer}>
             <Text style={styles.note}>

@@ -39,7 +39,7 @@ O RotaBus nasceu como um app de rotas reativo e segue sua trajetória acelerada 
 3. **Cache Offline-First:** Salvar rotas muito frequentes ("Ida p/ Casa") no dispositivo para permitir navegação ininterrupta em áreas sem 4G.
 
 ## Fase 7: Overhaul de UI / Design System "RotaBus Apple" (🔄 Em Andamento)
-Uma refatoração completa do visual do aplicativo para deixá-lo mais fluido, limpo e com sensação nativa (padrão Apple).
+Uma refatoração completa do visual do aplicativo para deixá-lo mais fluido, limpo e com sensação nativa (padrão Apple), focando fortemente no estilo Premium White Glass (Glassmorphism).
 1. **Fluxo de Autenticação e Onboarding:** (✅ Concluído)
    - Substituição de "cards" opacos brancos por `LinearGradient` imersivo de ponta a ponta em todas as telas iniciais (`index`, `onboarding`, `login`, `criar-conta`, `esqueci-senha`, `permissoes`).
    - Refatoração dos ícones para utilizar padronização fina do `Ionicons` (outline).
@@ -52,3 +52,7 @@ Uma refatoração completa do visual do aplicativo para deixá-lo mais fluido, l
 ## Fase 8: Rastreamento em Tempo Real e Operações (🔄 Em Andamento)
 1. **Tempo Real (Crowdsourcing Waze-style):** (✅ Concluído) Utilização do aplicativo dos próprios passageiros como "Satélites" de GPS. Integrado com Redis no backend para desenhar os ônibus ao vivo na tela sem depender de APIs governamentais (GTFS-R).
 2. **Painel CMS de Inteligência Local:** (🔮 Backlog) Um Web-App de dashboard para administradores gerenciarem a base de apelidos (`LocalIntelligence`), permitindo adicionar novos termos sem necessidade de novos deploys.
+
+## Fase 9: Deploy e Homologação (🔮 Backlog)
+1. **Migração Oficial e Deploy:** Colocar todas as renomeações do sistema ("RotaBus") nos servidores de produção (Render) de forma segura.
+2. **Validação em Nuvem (End-to-end):** Rodar baterias de testes em dispositivos físicos (iOS e Android) consumindo dados da Nuvem Real (sem mock ou bypass local) para garantir o comportamento em condições de rede lentas (4G).
