@@ -18,6 +18,7 @@ const { sanitizeMiddleware } = require("./shared/middlewares/sanitize.middleware
 const { nodeEnv, appUrl } = require("./config/env");
 
 const app = express();
+app.set("trust proxy", 1);
 
 // Helmet: Adiciona cabeçalhos de segurança para proteger contra ataques web comuns
 app.use(helmet());
