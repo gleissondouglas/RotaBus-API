@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   glow: { position: "absolute", top: 0, width: 230, height: 52, borderRadius: 999 },
   compactGlow: { width: "100%" },
   button: { height: 52, borderRadius: 999, flexDirection: "row", alignItems: "center", justifyContent: "center", paddingHorizontal: 24, minWidth: 220, backgroundColor: "rgba(59, 130, 246, 0.08)", shadowColor: "#2563EB", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.08, shadowRadius: 10, elevation: 2 },
-  compactButton: { minWidth: 0, width: "100%", paddingHorizontal: 12 },
+  compactButton: { minWidth: 0, width: "100%", paddingHorizontal: 12, borderRadius: 36 },
   errorButton: { backgroundColor: "#FFFFFF" },
   icon: { marginRight: 8 },
   label: { fontSize: 16, fontWeight: "800" },

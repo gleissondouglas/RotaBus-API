@@ -13,6 +13,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import Animated, { FadeInUp, FadeIn, ZoomIn, withSpring, withTiming } from "react-native-reanimated";
+import { usePreventDoublePress } from "../src/hooks/usePreventDoublePress";
 
 import { LiquidGlassView } from "../src/components/LiquidGlassView";
 import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
@@ -143,7 +144,7 @@ export default function ChooseTimeScreen() {
 
 
 
-  function handleGoNow() {
+  const handleGoNow = usePreventDoublePress(async () => {
     vibrationService.selection();
     const now = new Date();
     const dateTime = formatLocalDateTimeWithOffset(now);
@@ -157,7 +158,7 @@ export default function ChooseTimeScreen() {
       pathname: "/processando",
       params: navigationParams,
     });
-  }
+  });
 
   function handleOpenTimeSelector(selectedMode: "DEPARTURE" | "ARRIVAL") {
     vibrationService.light();
@@ -165,7 +166,7 @@ export default function ChooseTimeScreen() {
     setIsModalOpen(true);
   }
 
-  function validateAndNavigate(type: "DEPARTURE" | "ARRIVAL", date: string, time: string) {
+  const validateAndNavigate = usePreventDoublePress(async (type: "DEPARTURE" | "ARRIVAL", date: string, time: string) => {
     try {
       vibrationService.selection();
       const dateTime = buildLocalDateTimeFromInputs(date, time);
@@ -218,7 +219,7 @@ export default function ChooseTimeScreen() {
           : "Informe uma data e um horário válidos.",
       );
     }
-  }
+  });
 
   function handleConfirmCustomTime() {
     validateAndNavigate(mode === "ARRIVAL" ? "ARRIVAL" : "DEPARTURE", dateText, timeText);

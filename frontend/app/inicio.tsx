@@ -1,6 +1,7 @@
 import { BackgroundGradient } from "../src/components/BackgroundGradient";
 import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { useEffect, useState, useCallback, useRef } from "react";
+import { usePreventDoublePress } from "../src/hooks/usePreventDoublePress";
 import {
   Platform,
   Pressable,
@@ -504,23 +505,26 @@ export default function HomeScreen() {
    * Alterna a captura de voz: o primeiro toque inicia a escuta e o segundo
    * encerra e envia a transcrição disponível.
    */
-  function handleMicPress() {
-    if (status === "listening") {
-      void stopListeningAndSubmit();
-      return;
-    }
+  const handleMicPress = usePreventDoublePress(
+    function () {
+      if (status === "listening") {
+        void stopListeningAndSubmit();
+        return;
+      }
 
-    if (status === "processing" || status === "speaking") {
-      return;
-    }
+      if (status === "processing" || status === "speaking") {
+        return;
+      }
 
-    vibrationService.light();
-    setTranscript("");
-    setIsTranscriptFinal(false);
-    setErrorMessage("");
-    voiceIssueMessageRef.current = "";
-    void startLoop();
-  }
+      vibrationService.light();
+      setTranscript("");
+      setIsTranscriptFinal(false);
+      setErrorMessage("");
+      voiceIssueMessageRef.current = "";
+      void startLoop();
+    },
+    800,
+  );
 
   function getMicActionLabel() {
     if (status === "speaking") {
@@ -542,7 +546,7 @@ export default function HomeScreen() {
     return "Falar destino";
   }
 
-  async function handleTypeDestination() {
+  const handleTypeDestination = usePreventDoublePress(async function () {
     vibrationService.light();
     void stopAll();
     const origin = await getOriginCoords();
@@ -553,9 +557,9 @@ export default function HomeScreen() {
         params: { latitude: origin.latitude, longitude: origin.longitude },
       });
     }, 100);
-  }
+  }, 1000);
 
-  async function handleHelp() {
+  const handleHelp = usePreventDoublePress(async function () {
     vibrationService.light();
     void stopAll();
     const origin = await getOriginCoords();
@@ -563,13 +567,16 @@ export default function HomeScreen() {
       pathname: "/ajuda",
       params: { latitude: origin.latitude, longitude: origin.longitude },
     });
-  }
+  }, 1000);
 
-  function handleSettings() {
-    vibrationService.light();
-    void stopAll();
-    router.push("/configuracoes");
-  }
+  const handleSettings = usePreventDoublePress(
+    function () {
+      vibrationService.light();
+      void stopAll();
+      router.push("/configuracoes");
+    },
+    800,
+  );
 
   /** Mostra transcrição na área central quando está ouvindo ou processando */
   const showLiveTranscript =
