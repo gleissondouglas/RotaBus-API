@@ -56,3 +56,7 @@ Uma refatoração completa do visual do aplicativo para deixá-lo mais fluido, l
 ## Fase 9: Deploy e Homologação (🔮 Backlog)
 1. **Migração Oficial e Deploy:** Colocar todas as renomeações do sistema ("RotaBus") nos servidores de produção (Render) de forma segura.
 2. **Validação em Nuvem (End-to-end):** Rodar baterias de testes em dispositivos físicos (iOS e Android) consumindo dados da Nuvem Real (sem mock ou bypass local) para garantir o comportamento em condições de rede lentas (4G).
+
+## Fase 10: Seleção de Múltiplas Rotas e Preferências (🔮 Backlog)
+1. **Seleção de Rotas (Estilo Uber):** Em vez de retornar uma única "melhor rota", o backend fornecerá as 3 melhores opções (ex: "Mais Rápida", "Menos Caminhada", "Menos Baldeações"). O frontend exibirá essas opções como "cards" interativos para o usuário decidir qual se alinha mais à sua necessidade atual.
+2. **Configurações de Preferência Pessoal:** Adição de configurações na conta do usuário (Perfil) para definir seu comportamento padrão (ex: "Sempre priorizar menor tempo de viagem" ou "Prefiro caminhar o mínimo possível"), que ajustará dinamicamente o *Comfort Score* (pesos do algoritmo) no backend.
