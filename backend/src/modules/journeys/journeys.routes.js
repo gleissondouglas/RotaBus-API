@@ -18,17 +18,19 @@ router.post(
   validate(planJourneySchema),
   journeysController.planJourney,
 );
-router.get("/reverse-geocode", authMiddleware, dailyGeocodeLimit, journeysController.reverseGeocode);
+router.get("/reverse-geocode", authMiddleware, dailyJourneyLimit, dailyGeocodeLimit, journeysController.reverseGeocode);
 router.post(
   "/transcribe",
   express.json({ limit: "50mb" }),
   authMiddleware,
+  dailyJourneyLimit,
   dailyTranscribeLimit,
   journeysController.transcribeAudio,
 );
 router.post(
   "/resolve-destination",
   authMiddleware,
+  dailyJourneyLimit,
   dailyPlacesLimit,
   validate(resolveDestinationSchema),
   journeysController.resolveDestination,
@@ -36,6 +38,7 @@ router.post(
 router.post(
   "/command",
   authMiddleware,
+  dailyJourneyLimit,
   validate(conversationCommandSchema),
   journeysController.handleConversationCommand,
 );
