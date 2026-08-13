@@ -1,4 +1,5 @@
 import { normalizeVoiceTranscript } from "./voiceIntentParser";
+import { getNow } from "./date-time";
 
 export type VoiceTimeIntent =
   | { type: "NOW" }
@@ -40,7 +41,7 @@ function parseNumber(word: string | undefined): number | undefined {
   return NUMBER_WORDS[word];
 }
 
-export function parseVoiceTimeIntent(transcript: string, referenceDate = new Date()): VoiceTimeIntent {
+export function parseVoiceTimeIntent(transcript: string, referenceDate?: Date | string | number): VoiceTimeIntent {
   const normalized = normalizeVoiceTranscript(transcript);
   if (!normalized) return { type: "UNKNOWN" };
 
@@ -52,7 +53,7 @@ export function parseVoiceTimeIntent(transcript: string, referenceDate = new Dat
 
   const isArrival = /\b(chegar|chegada|estar\s+la|estiver\s+la)\b/i.test(normalized);
   
-  const targetDate = new Date(referenceDate);
+  let targetDate = getNow(referenceDate);
   let timeAssigned = false;
 
   // 1. Check for "daqui X minutos/horas"
@@ -67,9 +68,9 @@ export function parseVoiceTimeIntent(transcript: string, referenceDate = new Dat
     if (amount) {
         const unit = relativeMatch[2];
         if (unit.startsWith("hora") || unit.startsWith("hr")) {
-        targetDate.setHours(targetDate.getHours() + amount);
+          targetDate = targetDate.add(amount, "hour");
         } else {
-        targetDate.setMinutes(targetDate.getMinutes() + amount);
+          targetDate = targetDate.add(amount, "minute");
         }
         timeAssigned = true;
     }
@@ -78,13 +79,13 @@ export function parseVoiceTimeIntent(transcript: string, referenceDate = new Dat
   // 2. Check for date (hoje, amanhã, dias da semana)
   if (!timeAssigned) {
     if (normalized.includes("amanha")) {
-      targetDate.setDate(targetDate.getDate() + 1);
+      targetDate = targetDate.add(1, "day");
     } else {
       for (const [dayStr, dayNum] of Object.entries(WEEKDAYS)) {
         if (normalized.includes(dayStr)) {
-          let diff = dayNum - targetDate.getDay();
+          let diff = dayNum - targetDate.day();
           if (diff <= 0) diff += 7; // Next occurrence
-          targetDate.setDate(targetDate.getDate() + diff);
+          targetDate = targetDate.add(diff, "day");
           break;
         }
       }
@@ -94,7 +95,7 @@ export function parseVoiceTimeIntent(transcript: string, referenceDate = new Dat
     if (normalized.includes("mesmo horario")) {
       timeAssigned = true;
     } else if (normalized.includes("de manha") && !normalized.match(/(?:as|:|\d)/i)) {
-      targetDate.setHours(8, 0, 0, 0);
+      targetDate = targetDate.hour(8).minute(0).second(0);
       timeAssigned = true;
     } else {
       const exactTimeMatch = normalized.match(/(?:as\s+)?\b(\d+|uma?|duas?|tres|quatro|cinco|seis|sete|oito|nove|dez|onze|doze|treze|quatorze|quinze|dezesseis|dezessete|dezoito|dezenove|vinte|trinta|quarenta|cinquenta)\b(?:(?:\s*[:h]\s*|\s+e\s+|\s+horas?\s+e\s+|\s+hrs?\s+e\s+)(\d{1,2}|meia|uma?|duas?|tres|quatro|cinco|seis|sete|oito|nove|dez|onze|doze|treze|quatorze|quinze|vinte|trinta|quarenta\s+e\s+cinco|quarenta|cinquenta)\b)?(?:\s*minutos?)?(?:\s+(da\s+manha|da\s+tarde|da\s+noite|horas|hrs))?/i);
@@ -113,7 +114,7 @@ export function parseVoiceTimeIntent(transcript: string, referenceDate = new Dat
             }
           }
           
-          targetDate.setHours(hours, minutes, 0, 0);
+          targetDate = targetDate.hour(hours).minute(minutes).second(0);
           timeAssigned = true;
         }
       }
@@ -121,8 +122,8 @@ export function parseVoiceTimeIntent(transcript: string, referenceDate = new Dat
   }
 
   if (timeAssigned) {
-    const dateStr = `${targetDate.getFullYear()}-${pad(targetDate.getMonth() + 1)}-${pad(targetDate.getDate())}`;
-    const timeStr = `${pad(targetDate.getHours())}:${pad(targetDate.getMinutes())}`;
+    const dateStr = targetDate.format("YYYY-MM-DD");
+    const timeStr = targetDate.format("HH:mm");
 
     if (isArrival) {
       return { type: "ARRIVAL_TIME", date: dateStr, time: timeStr };
