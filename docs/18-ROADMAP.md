@@ -60,3 +60,8 @@ Uma refatoração completa do visual do aplicativo para deixá-lo mais fluido, l
 ## Fase 10: Seleção de Múltiplas Rotas e Preferências (🔮 Backlog)
 1. **Seleção de Rotas (Estilo Uber):** Em vez de retornar uma única "melhor rota", o backend fornecerá as 3 melhores opções (ex: "Mais Rápida", "Menos Caminhada", "Menos Baldeações"). O frontend exibirá essas opções como "cards" interativos para o usuário decidir qual se alinha mais à sua necessidade atual.
 2. **Configurações de Preferência Pessoal:** Adição de configurações na conta do usuário (Perfil) para definir seu comportamento padrão (ex: "Sempre priorizar menor tempo de viagem" ou "Prefiro caminhar o mínimo possível"), que ajustará dinamicamente o *Comfort Score* (pesos do algoritmo) no backend.
+
+## Fase 11: Refinamento Premium do Modo Escuro (🔮 Backlog)
+1. **Profundidade Atmosférica (Midnight Gradient):** Substituir o fundo preto sólido/cinza tradicional por um degradê sutil e profundo (ex: do topo Preto-Azulado para o fundo Azul-Noturno), espelhando a lógica do Modo Claro (Branco para Azul-Claro). Isso cria a sensação orgânica de que "o app anoiteceu".
+2. **Hierarquia de Luminância e Vidro Fosco:** Utilizar desfoque translúcido (Glassmorphism) para menus e modais inferiores flutuando sobre o mapa escuro. Elevação e relevo criados com tons de azul mais claros em vez de sombras pesadas.
+3. **Contraste Confortável:** Substituir o texto "Branco Puro" por tons gelo ou prateados (`#F1F5F9` ou similares) para evitar "vibração" nas vistas e fadiga ocular, garantindo um design luxuoso, moderno e focado em acessibilidade noturna.
