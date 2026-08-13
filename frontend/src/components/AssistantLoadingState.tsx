@@ -26,37 +26,6 @@ interface AssistantLoadingStateProps {
   steps?: LoadingStep[];
 }
 
-const RouteAnimation = () => {
-  const pulse1 = useSharedValue(0);
-  const pulse2 = useSharedValue(0);
-
-  useEffect(() => {
-    pulse1.value = withRepeat(withTiming(1, { duration: 2000 }), -1, false);
-    const timer = setTimeout(() => {
-      pulse2.value = withRepeat(withTiming(1, { duration: 2000 }), -1, false);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [pulse1, pulse2]);
-
-  const ring1Style = useAnimatedStyle(() => ({
-    transform: [{ scale: interpolate(pulse1.value, [0, 1], [0.5, 2.5]) }],
-    opacity: interpolate(pulse1.value, [0, 0.5, 1], [0.8, 0.3, 0]),
-  }));
-  const ring2Style = useAnimatedStyle(() => ({
-    transform: [{ scale: interpolate(pulse2.value, [0, 1], [0.5, 2.5]) }],
-    opacity: interpolate(pulse2.value, [0, 0.5, 1], [0.8, 0.3, 0]),
-  }));
-
-  return (
-    <View style={styles.animationContainer}>
-      <Animated.View style={[styles.ring, ring1Style]} />
-      <Animated.View style={[styles.ring, ring2Style]} />
-      <View style={styles.centerPin}>
-        <MaterialCommunityIcons name="google-maps" size={36} color={colors.primary} />
-      </View>
-    </View>
-  );
-};
 
 export const AssistantLoadingState: React.FC<AssistantLoadingStateProps> = ({
   title,
@@ -69,9 +38,7 @@ export const AssistantLoadingState: React.FC<AssistantLoadingStateProps> = ({
 
   return (
     <View style={styles.container}>
-      <View style={styles.orbContainer}>
-        <RouteAnimation />
-      </View>
+
 
       <View style={[styles.header, { marginBottom: isSmallHeight ? 24 : 32 }]}>
         <Text style={[styles.title, { fontSize: isSmallHeight ? layout.titleFontSizeSmall : layout.titleFontSize }]} maxFontSizeMultiplier={1.4}>{title}</Text>
@@ -134,36 +101,7 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: 'transparent',
   },
-  animationContainer: {
-    width: 120,
-    height: 120,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-  },
-  ring: {
-    position: 'absolute',
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: colors.primary,
-  },
-  centerPin: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  orbContainer: {
-    marginBottom: 0,
-  },
+
   header: {
     alignItems: 'center',
     gap: 12,
