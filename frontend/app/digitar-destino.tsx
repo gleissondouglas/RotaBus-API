@@ -1,5 +1,6 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState, useRef } from "react";
+import { usePreventDoublePress } from "../src/hooks/usePreventDoublePress";
 import {
   StyleSheet,
   Text,
@@ -49,7 +50,7 @@ export default function TypeDestinationScreen() {
 
   const isInputValid = address.trim().length >= 3;
 
-  async function handleConfirm() {
+  const handleConfirm = usePreventDoublePress(async function () {
     if (!isInputValid) {
       vibrationService.error();
       setErrorText("Digite pelo menos 3 letras do destino.");
@@ -132,7 +133,7 @@ export default function TypeDestinationScreen() {
     } finally {
       setIsLoading(false);
     }
-  }
+  });
 
   function handleCancel() {
     vibrationService.light();

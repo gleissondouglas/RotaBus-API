@@ -21,6 +21,8 @@ import { DestinationCategoryIcon } from "../src/components/DestinationCategoryIc
 import { useAutoSpeakOnce } from "../src/hooks/useAutoSpeakOnce";
 import { useThemeColors } from "../src/theme/colors";
 import { LiquidGlassView } from "../src/components/LiquidGlassView";
+import { ScreenContainer } from "../src/components/ScreenContainer";
+import { usePreventDoublePress } from "../src/hooks/usePreventDoublePress";
 import { LinearGradient } from "expo-linear-gradient";
 import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
 import { vibrationService } from "../src/services/vibration.service";
@@ -359,41 +361,38 @@ export default function ConfirmDestinationScreen() {
     [],
   );
 
-  const handleConfirmDestination = useCallback(
-    async (option?: any) => {
-      const selected = option || selectedSuggestion || bestOption;
+  const handleConfirmDestination = usePreventDoublePress(async (option?: any) => {
+    const selected = option || selectedSuggestion || bestOption;
 
-      if (showSuggestions && !selectedSuggestion && !option) {
-        vibrationService.light();
-        return;
-      }
+    if (showSuggestions && !selectedSuggestion && !option) {
+      vibrationService.light();
+      return;
+    }
 
-      if (!selected || Object.keys(selected).length === 0) {
-        vibrationService.error();
-        Alert.alert(
-          "Destino não encontrado",
-          "Não recebi os dados do destino. Escolha outro destino e tente novamente.",
-        );
-        return;
-      }
+    if (!selected || Object.keys(selected).length === 0) {
+      vibrationService.error();
+      Alert.alert(
+        "Destino não encontrado",
+        "Não recebi os dados do destino. Escolha outro destino e tente novamente.",
+      );
+      return;
+    }
 
-      setIsLoadingCommand(true);
-      if (option || selectedSuggestion) {
-        vibrationService.selection();
-      } else {
-        vibrationService.success();
-      }
+    setIsLoadingCommand(true);
+    if (option || selectedSuggestion) {
+      vibrationService.selection();
+    } else {
+      vibrationService.success();
+    }
 
-      try {
-        navigateWithSelectedDestination(selected);
-      } finally {
-        setIsLoadingCommand(false);
-      }
-    },
-    [bestOption, navigateWithSelectedDestination, selectedSuggestion, showSuggestions],
-  );
+    try {
+      navigateWithSelectedDestination(selected);
+    } finally {
+      setIsLoadingCommand(false);
+    }
+  });
 
-  const handlePrimaryAction = useCallback(async () => {
+  const handlePrimaryAction = usePreventDoublePress(async () => {
     if (isChoosingSuggestion) {
       const currentOption = options[currentSuggestionIndex];
       if (!currentOption) return;
@@ -402,7 +401,7 @@ export default function ConfirmDestinationScreen() {
       return;
     }
     await handleConfirmDestination();
-  }, [currentSuggestionIndex, handleConfirmDestination, handleSelectSuggestion, isChoosingSuggestion, options]);
+  });
 
   const handleHelp = () => router.push("/ajuda");
 
