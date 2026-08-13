@@ -37,7 +37,7 @@ export function isOperationalTime(hour: number, minute: number): boolean {
  */
 export function formatLocalDateTimeWithOffset(date?: Date | string | number) {
   const d = getNow(date);
-  const formatted = d.format("YYYY-MM-DDTHH:mm:ssZ");
+  const formatted = d.toISOString();
   
   console.log(`[DateTime] Formatando data para Brasília:`, formatted);
   
@@ -74,7 +74,7 @@ export function buildLocalDateTimeFromInputs(
     throw new Error("Data ou horário inválido.");
   }
 
-  return parsed.format("YYYY-MM-DDTHH:mm:ssZ");
+  return parsed.toISOString();
 }
 
 export interface Next7DaysOption {
