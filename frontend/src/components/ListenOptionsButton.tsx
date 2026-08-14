@@ -1,7 +1,7 @@
 import { speak } from "../services/speech.service";
 import { Pressable, StyleSheet, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { colors } from "../theme/colors";
+import { useThemeColors } from "../theme/colors";
 
 type ListenOptionsButtonProps = {
   textToSpeak?: string;
@@ -16,6 +16,8 @@ export function ListenOptionsButton({
   label = "Ouvir opções",
   accessibilityLabel,
 }: ListenOptionsButtonProps) {
+  const theme = useThemeColors();
+
   function handlePress() {
     if (onPress) {
       onPress();
@@ -30,13 +32,13 @@ export function ListenOptionsButton({
 
   return (
     <Pressable 
-      style={styles.button} 
+      style={[styles.button, { backgroundColor: theme.primary + "0D" }]} 
       onPress={handlePress}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel || label}
     >
-      <Ionicons name="volume-high-outline" size={20} color={colors.primary} />
-      <Text style={styles.text}>{label}</Text>
+      <Ionicons name="volume-high-outline" size={20} color={theme.primary} />
+      <Text style={[styles.text, { color: theme.primary }]}>{label}</Text>
     </Pressable>
   );
 }
@@ -52,11 +54,9 @@ const styles = StyleSheet.create({
     marginTop: 8,
     gap: 8,
     borderRadius: 20,
-    backgroundColor: "rgba(0, 122, 255, 0.05)",
   },
   text: {
     fontSize: 16,
     fontWeight: "700",
-    color: colors.primary,
   },
 });

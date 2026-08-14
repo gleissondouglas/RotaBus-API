@@ -4,6 +4,7 @@ import type { VoiceLoopStatus } from "../hooks/useVoiceConversationLoop";
 import { BottomVoiceMicButton } from "./BottomVoiceMicButton";
 import { LiquidGlassView } from "./LiquidGlassView";
 import { AdaptiveIcon } from "./AdaptiveIcon";
+import { useThemeColors } from "../theme/colors";
 
 type BottomActionBarStatus = VoiceLoopStatus | "success";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -17,9 +18,10 @@ interface BottomActionBarProps {
 
 export function BottomActionBar({ status, micLabel, onTypeDestination, onMicPress }: BottomActionBarProps) {
   const isTypingDisabled = status === "speaking" || status === "processing" || status === "success";
+  const theme = useThemeColors();
 
   return (
-    <LiquidGlassView style={styles.pill} intensity={40} fallbackColor="white">
+    <LiquidGlassView style={styles.pill} intensity={40} fallbackColor={theme.card}>
       <View style={styles.row}>
         <Pressable
           style={({ pressed }) => [styles.typeButton, pressed && styles.typeButtonPressed, isTypingDisabled && styles.typeButtonDisabled]}
@@ -28,10 +30,10 @@ export function BottomActionBar({ status, micLabel, onTypeDestination, onMicPres
           accessibilityLabel="Digitar destino"
           accessibilityRole="button"
         >
-          <AdaptiveIcon iosSymbol="square.and.pencil" fallbackFamily="Ionicons" fallbackName="pencil" size={20} color="#011030" />
-          <Text style={styles.typeText}>Digitar destino</Text>
+          <AdaptiveIcon iosSymbol="square.and.pencil" fallbackFamily="Ionicons" fallbackName="pencil" size={20} color={theme.text} />
+          <Text style={[styles.typeText, { color: theme.text }]}>Digitar destino</Text>
         </Pressable>
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: theme.border }]} />
         <BottomVoiceMicButton status={status} label={micLabel} compact tone="primary" onPress={onMicPress} accessibilityLabel={micLabel} />
       </View>
     </LiquidGlassView>
@@ -49,6 +51,6 @@ const styles = StyleSheet.create({
   typeButton: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", height: "100%", gap: 8, borderRadius: 36 },
   typeButtonPressed: { opacity: 0.6 },
   typeButtonDisabled: { opacity: 0.4 },
-  typeText: { fontSize: 16, fontWeight: "700", color: "#011030", letterSpacing: -0.3, ...APPLE_FONT },
-  divider: { width: 1, height: 40, backgroundColor: "rgba(0,0,0,0.1)", marginHorizontal: 4 },
+  typeText: { fontSize: 16, fontWeight: "700", letterSpacing: -0.3, ...APPLE_FONT },
+  divider: { width: 1, height: 40, marginHorizontal: 4 },
 });

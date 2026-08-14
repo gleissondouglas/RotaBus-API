@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import {
   Alert,
   Pressable,
@@ -71,11 +71,14 @@ export default function ChooseTimeScreen() {
   const dateOptions = getNext7Days();
   const startHour = mode === "ARRIVAL" ? 6 : 4;
 
-  const timeSlots: string[] = [];
-  for (let i = startHour; i < 24; i++) {
-    const hr = String(i).padStart(2, "0");
-    timeSlots.push(`${hr}:00`, `${hr}:15`, `${hr}:30`, `${hr}:45`);
-  }
+  const timeSlots = useMemo(() => {
+    const slots: string[] = [];
+    for (let i = startHour; i < 24; i++) {
+      const hr = String(i).padStart(2, "0");
+      slots.push(`${hr}:00`, `${hr}:15`, `${hr}:30`, `${hr}:45`);
+    }
+    return slots;
+  }, [startHour]);
 
   useEffect(() => {
     if (isModalOpen) {
@@ -103,7 +106,7 @@ export default function ChooseTimeScreen() {
         }, 150); // wait a bit for modal to finish animating in
       }
     }
-  }, [isModalOpen, mode]);
+  }, [isModalOpen, mode, timeSlots, width]);
 
 
   function buildProcessingParams(type: "DEPARTURE" | "ARRIVAL", dateTime: string) {

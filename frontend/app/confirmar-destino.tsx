@@ -2,13 +2,13 @@ import { BackgroundGradient } from "../src/components/BackgroundGradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import {
-
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
   useWindowDimensions,
+  useColorScheme,
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -21,7 +21,6 @@ import { DestinationCategoryIcon } from "../src/components/DestinationCategoryIc
 import { useAutoSpeakOnce } from "../src/hooks/useAutoSpeakOnce";
 import { useThemeColors } from "../src/theme/colors";
 import { LiquidGlassView } from "../src/components/LiquidGlassView";
-import { ScreenContainer } from "../src/components/ScreenContainer";
 import { usePreventDoublePress } from "../src/hooks/usePreventDoublePress";
 import { LinearGradient } from "expo-linear-gradient";
 import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
@@ -73,6 +72,7 @@ const CarouselCardItem = ({
   theme,
   scrollX,
 }: any) => {
+  const isDark = useColorScheme() === 'dark';
   const isCurrent = index === currentSuggestionIndex;
   const optionCategory = resolveDestinationCategory(option);
   const addressDetails = getAddressDetails(option.address || "");
@@ -116,6 +116,10 @@ const CarouselCardItem = ({
           styles.destCard,
           { minHeight: cardMinHeight },
           isCurrent && styles.destCardActive,
+          theme.background === '#0F172A' && {
+            backgroundColor: 'rgba(255,255,255,0.06)',
+            borderColor: 'rgba(255,255,255,0.10)',
+          },
           (pressed || isActionDisabled) && { opacity: 0.7, transform: [{ scale: 0.99 }] },
         ]}
         disabled={isActionDisabled}
@@ -136,7 +140,7 @@ const CarouselCardItem = ({
                   {index + 1}
                 </Text>
               </View>
-              <Text style={styles.cardCountText}>
+              <Text style={[styles.cardCountText, { color: theme.textMuted }]}>
                 Opção {index + 1} de {optionsLength}
               </Text>
               {isCurrent && (
@@ -146,14 +150,14 @@ const CarouselCardItem = ({
 
             {/* Centro do Card: Ícone + nome + detalhes */}
             <View style={{ flex: 1, justifyContent: "center" }}>
-              <View style={styles.infoBox}>
+              <View style={[styles.infoBox, theme.background === '#0F172A' && { backgroundColor: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.10)' }]}>
                 <View style={styles.cardPlaceRow}>
                   <DestinationCategoryIcon category={optionCategory} />
                   <View style={styles.placeTextBox}>
-                    <Text style={styles.placeName} numberOfLines={2}>
+                    <Text style={[styles.placeName, { color: theme.text }]} numberOfLines={2}>
                       {option.name}
                     </Text>
-                    <Text style={styles.placeType}>
+                    <Text style={[styles.placeType, { color: theme.textMuted }]}>
                       {getDestinationCategoryLabel(optionCategory)}
                     </Text>
                   </View>
@@ -162,14 +166,14 @@ const CarouselCardItem = ({
                 <View style={styles.cardDetails}>
                   <View style={styles.cardDetailRow}>
                     <Ionicons name="location-outline" size={16} color={theme.primary} />
-                    <Text style={styles.cardDetailText} numberOfLines={2}>
+                    <Text style={[styles.cardDetailText, { color: theme.textMuted }]} numberOfLines={2}>
                       {addressDetails.main}
                     </Text>
                   </View>
                   {!!addressDetails.area && (
                     <View style={styles.cardDetailRow}>
                       <Ionicons name="business-outline" size={16} color={theme.primary} />
-                      <Text style={styles.cardDetailText} numberOfLines={1}>
+                      <Text style={[styles.cardDetailText, { color: theme.textMuted }]} numberOfLines={1}>
                         {addressDetails.area}
                       </Text>
                     </View>
@@ -181,9 +185,9 @@ const CarouselCardItem = ({
           {/* Chips */}
           <View style={styles.chipsContainer}>
             <View style={styles.chipsRow}>
-              <View style={styles.chip}>
+              <View style={[styles.chip, isDark && { backgroundColor: 'rgba(59,130,246,0.15)', borderColor: 'rgba(59,130,246,0.25)' }]}>
                 <Ionicons name="map-outline" size={13} color={theme.primary} />
-                <Text style={styles.chipText} numberOfLines={1}>{city}</Text>
+                <Text style={[styles.chipText, { color: theme.primary }]} numberOfLines={1}>{city}</Text>
               </View>
               <View style={styles.chip}>
                 <Ionicons
@@ -191,7 +195,7 @@ const CarouselCardItem = ({
                   size={13}
                   color={theme.primary}
                 />
-                <Text style={styles.chipText} numberOfLines={1}>
+                <Text style={[styles.chipText, { color: theme.primary }]} numberOfLines={1}>
                   {hasCoordinates ? "Localização ok" : "Pendente"}
                 </Text>
               </View>
@@ -206,6 +210,7 @@ const CarouselCardItem = ({
 export default function ConfirmDestinationScreen() {
   const params = useLocalSearchParams();
   const theme = useThemeColors();
+  const isDark = useColorScheme() === 'dark';
   const insets = useSafeAreaInsets();
   const { height, width } = useWindowDimensions();
 
@@ -516,20 +521,24 @@ export default function ConfirmDestinationScreen() {
               entering={FadeInUp.delay(150).duration(400)}
               style={[
                 styles.destCard, 
-                { minHeight: cardMinHeight, width: carouselCardWidth, alignSelf: "center" }
+                { minHeight: cardMinHeight, width: carouselCardWidth, alignSelf: "center" },
+                isDark && {
+                  backgroundColor: 'rgba(255,255,255,0.06)',
+                  borderColor: 'rgba(255,255,255,0.10)',
+                },
               ]}
             >
               <View style={styles.cardContent}>
                   {/* Centro do Card Único: Ícone + nome + detalhes */}
                   <View style={{ flex: 1, justifyContent: "center" }}>
-                    <View style={styles.infoBox}>
+                    <View style={[styles.infoBox, isDark && { backgroundColor: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.10)' }]}>
                       <View style={styles.cardPlaceRow}>
                         <DestinationCategoryIcon category={activeDestinationCategory} />
                         <View style={styles.placeTextBox}>
-                          <Text style={styles.placeName} numberOfLines={2}>
+                          <Text style={[styles.placeName, { color: theme.text }]} numberOfLines={2}>
                             {activeDestinationName}
                           </Text>
-                          <Text style={styles.placeType}>
+                          <Text style={[styles.placeType, { color: theme.textMuted }]}>
                             {getDestinationCategoryLabel(activeDestinationCategory)}
                           </Text>
                         </View>
@@ -538,14 +547,14 @@ export default function ConfirmDestinationScreen() {
                       <View style={styles.cardDetails}>
                         <View style={styles.cardDetailRow}>
                           <Ionicons name="location-outline" size={16} color={theme.primary} />
-                          <Text style={styles.cardDetailText} numberOfLines={2}>
+                          <Text style={[styles.cardDetailText, { color: theme.textMuted }]} numberOfLines={2}>
                             {activeAddressDetails.main}
                           </Text>
                         </View>
                         {!!activeAddressDetails.area && (
                           <View style={styles.cardDetailRow}>
                             <Ionicons name="business-outline" size={16} color={theme.primary} />
-                            <Text style={styles.cardDetailText} numberOfLines={1}>
+                            <Text style={[styles.cardDetailText, { color: theme.textMuted }]} numberOfLines={1}>
                               {activeAddressDetails.area}
                             </Text>
                           </View>
@@ -565,17 +574,17 @@ export default function ConfirmDestinationScreen() {
 
                 <View style={styles.chipsContainer}>
                   <View style={styles.chipsRow}>
-                    <View style={styles.chip}>
+                    <View style={[styles.chip, isDark && { backgroundColor: 'rgba(59,130,246,0.15)', borderColor: 'rgba(59,130,246,0.25)' }]}>
                       <Ionicons name="map-outline" size={13} color={theme.primary} />
-                      <Text style={styles.chipText} numberOfLines={1}>{city}</Text>
+                      <Text style={[styles.chipText, { color: theme.primary }]} numberOfLines={1}>{city}</Text>
                     </View>
-                    <View style={styles.chip}>
+                    <View style={[styles.chip, isDark && { backgroundColor: 'rgba(59,130,246,0.15)', borderColor: 'rgba(59,130,246,0.25)' }]}>
                       <Ionicons
                         name={activeHasCoordinates ? "navigate-circle-outline" : "alert-circle-outline"}
                         size={13}
                         color={theme.primary}
                       />
-                      <Text style={styles.chipText} numberOfLines={1}>
+                      <Text style={[styles.chipText, { color: theme.primary }]} numberOfLines={1}>
                         {activeHasCoordinates ? "Localização ok" : "Pendente"}
                       </Text>
                     </View>
@@ -640,14 +649,9 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: "white",
+    backgroundColor: "rgba(255,255,255,0.15)",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
   },
 
   // ─── ScrollView (idêntico ao padrão de melhor-rota) ─────────────────

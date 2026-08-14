@@ -12,7 +12,6 @@ import {
   View,
 } from "react-native";
 
-import { LinearGradient } from "expo-linear-gradient";
 
 import { BackButton } from "../src/components/BackButton";
 import { PrimaryButton } from "../src/components/PrimaryButton";

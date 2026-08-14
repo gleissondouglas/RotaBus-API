@@ -51,7 +51,7 @@ export function usePreventDoublePress<T extends unknown[]>(
         }
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
     [fn, delay],
   );
 }

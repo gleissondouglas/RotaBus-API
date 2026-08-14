@@ -9,11 +9,12 @@ import {
   Modal, 
   Animated, 
   ScrollView, 
-  Alert
+  Alert,
+  useColorScheme
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Location from "expo-location";
-import { FontAwesome6, Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 
 import { BackButton } from "../src/components/BackButton";
 import { PrimaryButton } from "../src/components/PrimaryButton";
@@ -57,6 +58,7 @@ export default function NavigatingScreen() {
   const params = useLocalSearchParams();
   const insets = useSafeAreaInsets();
   const theme = useThemeColors();
+  const isDark = useColorScheme() === 'dark';
 
   // Dados da rota passados pela tela anterior
   const walkTimeMinutes = String(params.walkTimeMinutes || "--");
@@ -571,25 +573,35 @@ export default function NavigatingScreen() {
       )}
 
       {/* Top Bar (Always Fixed) */}
-      <View style={[styles.topBar, { top: insets.top + 12 }]} pointerEvents="box-none">
-        <View style={styles.backButtonMini}>
+      <View style={[styles.topBar, { paddingTop: insets.top + 12, paddingBottom: 16 }]} pointerEvents="box-none">
+        <View style={StyleSheet.absoluteFill} pointerEvents="none">
+          <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={isDark ? 30 : 50} fallbackColor={theme.background} />
+          <LinearGradient
+            colors={[theme.background, isDark ? 'rgba(1, 16, 48, 0)' : 'rgba(241, 245, 249, 0)']}
+            locations={[0.6, 1]}
+            style={StyleSheet.absoluteFillObject}
+          />
+        </View>
+        <View style={styles.topBarInner} pointerEvents="box-none">
+          <View style={styles.backButtonMini}>
+            {(stage !== "on_bus" && stage !== "arrived") && (
+              <BackButton 
+                label="Sair" 
+                onPress={handleSair} 
+                accessibilityLabel="Sair da navegação"
+              />
+            )}
+          </View>
+
           {(stage !== "on_bus" && stage !== "arrived") && (
-            <BackButton 
-              label="Sair" 
-              onPress={handleSair} 
-              accessibilityLabel="Sair da navegação"
-            />
+            <View style={[styles.miniBadge, isDark ? { backgroundColor: "rgba(255,255,255,0.15)" } : { backgroundColor: "white" }]}>
+              {stage === "waiting_bus" && <View style={[styles.badgeDot, { backgroundColor: theme.primary }]} />}
+              <Text style={[styles.miniBadgeText, isDark && { color: theme.text }]}>
+                {stage === "waiting_bus" ? "No ponto" : `${walkTimeMinutes} min caminhando`}
+              </Text>
+            </View>
           )}
         </View>
-
-        {(stage !== "on_bus" && stage !== "arrived") && (
-          <View style={[styles.miniBadge, { backgroundColor: "white" }]}>
-            {stage === "waiting_bus" && <View style={[styles.badgeDot, { backgroundColor: theme.primary }]} />}
-            <Text style={styles.miniBadgeText}>
-              {stage === "waiting_bus" ? "No ponto" : `${walkTimeMinutes} min caminhando`}
-            </Text>
-          </View>
-        )}
       </View>
 
       {/* Instruction Card (Fixed during walking) */}
@@ -632,8 +644,8 @@ export default function NavigatingScreen() {
             contentContainerStyle={[
               styles.statusContentContainer,
               {
-                paddingTop: insets.top + ((stage === "on_bus" || stage === "arrived") ? 120 : 80),
-                paddingBottom: insets.bottom + 220
+                paddingTop: insets.top + 100,
+                paddingBottom: insets.bottom + 160
               }
             ]}
             showsVerticalScrollIndicator={false}
@@ -644,9 +656,9 @@ export default function NavigatingScreen() {
                 { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
               ]}
             >
-              <View style={[styles.largeStatusCardContent, { borderColor: theme.border }]}>
-                <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={50} fallbackColor={theme.card} />
-              <View style={[styles.largeStatusIconBox, { backgroundColor: (stage === "on_bus" || stage === "arrived") ? "rgba(16, 185, 129, 0.15)" : theme.primaryLight }]}>
+              <View style={[styles.largeStatusCardContent, isDark ? { backgroundColor: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.05)' } : { borderColor: theme.border }]}>
+                <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={isDark ? 20 : 50} fallbackColor={theme.card} />
+              <View style={[styles.largeStatusIconBox, { backgroundColor: (stage === "on_bus" || stage === "arrived") ? "rgba(16, 185, 129, 0.15)" : (isDark ? 'rgba(59,130,246,0.15)' : theme.primaryLight) }]}>
                  {stage === "waiting_bus" ? (
                    <AdaptiveIcon iosSymbol="bus" fallbackFamily="FontAwesome6" fallbackName="bus-simple" size={40} color={theme.primary} />
                  ) : (
@@ -672,8 +684,8 @@ export default function NavigatingScreen() {
                 </Text>
                 
                 {stage === "waiting_bus" && !!stopName && stopName !== "ponto indicado" && (
-                  <View style={styles.stopNamePill}>
-                    <Ionicons name="location" size={16} color={theme.primary} />
+                  <View style={[styles.stopNamePill, isDark && { backgroundColor: 'rgba(255,255,255,0.05)' }]}>
+                    <Ionicons name="location" size={16} color={isDark ? '#60A5FA' : theme.primary} />
                     <Text style={[styles.stopNameStatusText, { color: theme.text }]} numberOfLines={1}>Ponto: {stopName}</Text>
                   </View>
                 )}
@@ -689,13 +701,13 @@ export default function NavigatingScreen() {
 
                   return (
                     <View style={styles.infoCardsGrid}>
-                      <LiquidGlassView style={[styles.infoCard, { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={80} fallbackColor={theme.card}>
+                      <LiquidGlassView style={[styles.infoCard, isDark ? { backgroundColor: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.06)' } : { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={isDark ? 30 : 80} fallbackColor={theme.card}>
                         <Text style={[styles.infoCardLabel, { color: theme.textMuted }]}>LINHA {busLine}</Text>
                         <Text style={[styles.infoCardValue, { color: theme.text, fontSize: 18 }]} numberOfLines={2} adjustsFontSizeToFit>{lineDetails || busLine}</Text>
                       </LiquidGlassView>
-                      <LiquidGlassView style={[styles.infoCard, { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={80} fallbackColor={theme.card}>
+                      <LiquidGlassView style={[styles.infoCard, isDark ? { backgroundColor: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.06)' } : { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={isDark ? 30 : 80} fallbackColor={theme.card}>
                         <Text style={[styles.infoCardLabel, { color: theme.textMuted }]}>{chegaLabel}</Text>
-                        <Text style={[styles.infoCardValue, { color: theme.primary }]} numberOfLines={1} adjustsFontSizeToFit>{chegaValue}</Text>
+                        <Text style={[styles.infoCardValue, { color: isDark ? '#60A5FA' : theme.primary }]} numberOfLines={1} adjustsFontSizeToFit>{chegaValue}</Text>
                         {!!stopName && stopName !== "ponto indicado" && (
                           <Text style={[styles.infoCardSubValue, { color: theme.textMuted }]} numberOfLines={2}>{stopName}</Text>
                         )}
@@ -711,9 +723,16 @@ export default function NavigatingScreen() {
 
         {/* Fixed Actions for Status Stages */}
         {(stage === "waiting_bus" || stage === "on_bus" || stage === "arrived") && (
-          <Animated.View style={[styles.fixedStatusActionsShadow, { opacity: (stage === "on_bus" || stage === "arrived") ? buttonFadeAnim : fadeAnim }]}>
-            <View style={[styles.fixedStatusActionsContent, { paddingBottom: insets.bottom + 16 }]}>
-              <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={50} fallbackColor={theme.card} />
+          <Animated.View style={[styles.fixedStatusActionsShadow, { opacity: (stage === "on_bus" || stage === "arrived") ? buttonFadeAnim : fadeAnim }]} pointerEvents="box-none">
+            <View style={[styles.fixedStatusActionsContent, { paddingBottom: insets.bottom + 16 }]} pointerEvents="box-none">
+              <View style={StyleSheet.absoluteFill} pointerEvents="none">
+                <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={isDark ? 30 : 50} fallbackColor={theme.background} />
+                <LinearGradient
+                  colors={[isDark ? 'rgba(1, 16, 48, 0)' : 'rgba(241, 245, 249, 0)', theme.background]}
+                  locations={[0.1, 1]}
+                  style={StyleSheet.absoluteFillObject}
+                />
+              </View>
               <PrimaryButton title={getPrimaryButtonTitle()} onPress={handleStageTransition} style={styles.mainButton} />
             <Pressable 
               style={styles.secondaryActionBtn} 
@@ -750,7 +769,7 @@ export default function NavigatingScreen() {
               <View style={[styles.dragHandle, { backgroundColor: theme.border }]} />
 
             <View style={styles.bottomSheetHeader}>
-              <Text style={styles.bottomSheetLabel}>
+              <Text style={[styles.bottomSheetLabel, { color: theme.text }]}>
                 {(() => {
                   if (isWalkingOnly) return "Caminho até o destino";
                   const hasTransitAhead = allSteps.slice(globalStepIndex).some(s => s.type === "transit");
@@ -758,7 +777,7 @@ export default function NavigatingScreen() {
                 })()}
               </Text>
               {!!stopName && stopName !== "ponto indicado" && (
-                <Text style={styles.stopNameText} numberOfLines={1}>
+                <Text style={[styles.stopNameText, { color: theme.textMuted }]} numberOfLines={1}>
                   {(() => {
                     if (isWalkingOnly) return `Destino: ${stopName}`;
                     const hasTransitAhead = allSteps.slice(globalStepIndex).some(s => s.type === "transit");
@@ -785,13 +804,13 @@ export default function NavigatingScreen() {
 
               return (
                 <View style={styles.infoCardsGrid}>
-                  <LiquidGlassView style={[styles.infoCard, { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={80} fallbackColor={theme.card}>
+                  <LiquidGlassView style={[styles.infoCard, isDark ? { backgroundColor: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.06)' } : { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={isDark ? 30 : 80} fallbackColor={theme.card}>
                     <Text style={[styles.infoCardLabel, { color: theme.textMuted }]}>LINHA {busLine}</Text>
                     <Text style={[styles.infoCardValue, { color: theme.text, fontSize: 18 }]} numberOfLines={2} adjustsFontSizeToFit>{lineDetails || busLine}</Text>
                   </LiquidGlassView>
-                  <LiquidGlassView style={[styles.infoCard, { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={80} fallbackColor={theme.card}>
+                  <LiquidGlassView style={[styles.infoCard, isDark ? { backgroundColor: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.06)' } : { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={isDark ? 30 : 80} fallbackColor={theme.card}>
                     <Text style={[styles.infoCardLabel, { color: theme.textMuted }]}>{chegaLabel}</Text>
-                    <Text style={[styles.infoCardValue, { color: theme.primary }]} numberOfLines={1} adjustsFontSizeToFit>{chegaValue}</Text>
+                    <Text style={[styles.infoCardValue, { color: isDark ? '#60A5FA' : theme.primary }]} numberOfLines={1} adjustsFontSizeToFit>{chegaValue}</Text>
                     {!!stopName && stopName !== "ponto indicado" && (
                       <Text style={[styles.infoCardSubValue, { color: theme.textMuted }]} numberOfLines={2}>{stopName}</Text>
                     )}
@@ -838,7 +857,8 @@ export default function NavigatingScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  topBar: { position: "absolute", left: 16, right: 16, flexDirection: "row", justifyContent: "space-between", alignItems: "center", zIndex: 100 },
+  topBar: { position: "absolute", top: 0, left: 0, right: 0, zIndex: 100 },
+  topBarInner: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16 },
   backButtonMini: { minWidth: 80 },
   miniBadge: { flexDirection: "row", paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, alignItems: "center", elevation: 4, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
   miniBadgeText: { fontWeight: "800", fontSize: 14, color: "#011030" },
@@ -863,7 +883,7 @@ const styles = StyleSheet.create({
   actionArea: { gap: 8, alignItems: "center", width: "100%", zIndex: 2 },
   mainButton: { height: 56, borderRadius: 32 },
   ttsWrapper: { opacity: 0.9 },
-  statusContentContainer: { flexGrow: 1, paddingHorizontal: 20, zIndex: 2 },
+  statusContentContainer: { flexGrow: 1, paddingHorizontal: 20, zIndex: 2, justifyContent: "center" },
   largeStatusCardShadow: { shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 20 },
   largeStatusCardContent: { borderRadius: 32, borderWidth: 1, overflow: "hidden", paddingTop: 20, paddingBottom: 24, paddingHorizontal: 16 },
   largeStatusIconBox: { width: 72, height: 72, borderRadius: 24, alignItems: "center", justifyContent: "center", marginBottom: 20, alignSelf: "center" },

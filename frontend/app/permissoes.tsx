@@ -11,8 +11,6 @@ import { ScreenContainer } from "../src/components/ScreenContainer";
 import { locationService } from "../src/services/location.service";
 import { sessionService } from "../src/services/session.service";
 import { useThemeColors } from "../src/theme/colors";
-import { LinearGradient } from "expo-linear-gradient";
-import { LiquidGlassView } from "../src/components/LiquidGlassView";
 
 export default function PermissionsScreen() {
   const theme = useThemeColors();

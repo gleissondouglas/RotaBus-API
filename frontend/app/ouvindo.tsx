@@ -22,7 +22,6 @@ import Animated, {
   interpolate,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
 
 import { ScreenContainer } from "../src/components/ScreenContainer";
 import { speak, speakAndWait, startListening, stopListening, isSpeechRecognitionAvailable } from "../src/services/speech.service";

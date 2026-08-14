@@ -9,11 +9,11 @@ import {
   Text,
   View,
   LayoutChangeEvent,
+  useColorScheme,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, { FadeIn, FadeInDown, useAnimatedStyle, withSpring, withTiming, useSharedValue, withSequence } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
 
 import { ScreenContainer } from "../src/components/ScreenContainer";
 import {
@@ -110,6 +110,7 @@ export default function HomeScreen() {
   const params = useLocalSearchParams();
   const insets = useSafeAreaInsets();
   const theme = useThemeColors();
+  const isDark = useColorScheme() === 'dark';
 
   // Coordenadas passadas por parâmetro ou obtidas do serviço de localização
   const [originCoords, setOriginCoords] = useState({
@@ -132,7 +133,7 @@ export default function HomeScreen() {
       withTiming(1.10, { duration: 120 }), // Aumentado para 1.10 para inchar mais
       withSpring(1, { damping: 10, stiffness: 220 })
     );
-  }, [activeTab]);
+  }, [activeTab, pillScale]);
 
   const tabAnimatedStyle = useAnimatedStyle(() => {
     if (!activeMeasurement) {
@@ -149,13 +150,13 @@ export default function HomeScreen() {
   });
 
   const voiceTextStyle = useAnimatedStyle(() => ({
-    color: withTiming(activeTab === "voice" ? theme.primary : "#64748B", { duration: 250 }),
+    color: withTiming(activeTab === "voice" ? theme.primary : theme.textMuted, { duration: 250 }),
   }));
   const favoritesTextStyle = useAnimatedStyle(() => ({
-    color: withTiming(activeTab === "favorites" ? theme.primary : "#64748B", { duration: 250 }),
+    color: withTiming(activeTab === "favorites" ? theme.primary : theme.textMuted, { duration: 250 }),
   }));
   const settingsTextStyle = useAnimatedStyle(() => ({
-    color: withTiming(activeTab === "settings" ? theme.primary : "#64748B", { duration: 250 }),
+    color: withTiming(activeTab === "settings" ? theme.primary : theme.textMuted, { duration: 250 }),
   }));
 
   const handleTabLayout = (tab: string, event: LayoutChangeEvent) => {
@@ -603,8 +604,27 @@ export default function HomeScreen() {
         entering={FadeInDown.duration(400).delay(100)}
         style={[styles.topHeader, { paddingTop: Math.max(insets.top, 16), backgroundColor: "transparent" }]}
       >
-        <LiquidGlassView style={styles.tabsContainer} intensity={80} fallbackColor={theme.card}>
-          <Animated.View style={[styles.activeTabBackground, tabAnimatedStyle]} />
+        <LiquidGlassView
+          style={[
+            styles.tabsContainer,
+            isDark && {
+              borderColor: 'rgba(255,255,255,0.12)',
+              backgroundColor: 'rgba(255,255,255,0.06)',
+            },
+          ]}
+          intensity={isDark ? 40 : 80}
+          fallbackColor={theme.card}
+        >
+          <Animated.View
+            style={[
+              styles.activeTabBackground,
+              isDark && {
+                backgroundColor: 'rgba(255,255,255,0.12)',
+                shadowOpacity: 0.25,
+              },
+              tabAnimatedStyle,
+            ]}
+          />
           
           <Pressable 
             onLayout={(e) => handleTabLayout("voice", e)}
@@ -634,18 +654,18 @@ export default function HomeScreen() {
       <View style={styles.centerZone} pointerEvents={(activeTab === "favorites" || activeTab === "settings") ? "auto" : "none"}>
         {activeTab === "settings" ? (
           <View style={{ width: "100%", maxWidth: 380, marginTop: 20, gap: 12 }}>
-            <Pressable style={styles.settingsCard} onPress={handleSettings}>
+            <Pressable style={[styles.settingsCard, { backgroundColor: theme.card }]} onPress={handleSettings}>
               <AdaptiveIcon iosSymbol="gearshape" fallbackFamily="Ionicons" fallbackName="settings-outline" size={24} color={theme.text} />
               <View>
-                <Text style={styles.settingsCardText}>Minha Conta e App</Text>
-                <Text style={styles.settingsCardSub}>Sua senha, acessibilidade e perfil</Text>
+                <Text style={[styles.settingsCardText, { color: theme.text }]}>Minha Conta e App</Text>
+                <Text style={[styles.settingsCardSub, { color: theme.textMuted }]}>Sua senha, acessibilidade e perfil</Text>
               </View>
             </Pressable>
-            <Pressable style={styles.settingsCard} onPress={handleHelp}>
+            <Pressable style={[styles.settingsCard, { backgroundColor: theme.card }]} onPress={handleHelp}>
               <AdaptiveIcon iosSymbol="questionmark.circle" fallbackFamily="Ionicons" fallbackName="help-circle-outline" size={24} color={theme.text} />
               <View>
-                <Text style={styles.settingsCardText}>Central de Ajuda</Text>
-                <Text style={styles.settingsCardSub}>Aprenda a usar o RotaBus</Text>
+                <Text style={[styles.settingsCardText, { color: theme.text }]}>Central de Ajuda</Text>
+                <Text style={[styles.settingsCardSub, { color: theme.textMuted }]}>Aprenda a usar o RotaBus</Text>
               </View>
             </Pressable>
           </View>
@@ -667,27 +687,37 @@ export default function HomeScreen() {
             entering={FadeIn.duration(250)}
             style={styles.unifiedCard}
           >
-            <Text style={styles.messageLabel}>Assistente</Text>
-            <LiquidGlassView style={styles.assistantBubble} intensity={80} fallbackColor={theme.card}>
+            <Text style={[styles.messageLabel, { color: theme.textMuted }]}>Assistente</Text>
+            <LiquidGlassView
+              style={[
+                styles.assistantBubble,
+                isDark && {
+                  borderColor: 'rgba(255,255,255,0.10)',
+                  backgroundColor: 'rgba(255,255,255,0.05)',
+                },
+              ]}
+              intensity={isDark ? 30 : 80}
+              fallbackColor={theme.card}
+            >
               <VoicePromptText
                 text={promptText}
                 animated={promptAnimated && status === "speaking"}
                 align="left"
                 style={styles.promptTextWrapper}
-                textStyle={styles.assistantPromptText}
+                textStyle={[styles.assistantPromptText, { color: theme.text }]}
               />
 
               {/* Mensagem do usuário dentro do mesmo card */}
               {showUserMessage && (
                 <Animated.View
                   entering={FadeInDown.duration(300)}
-                  style={styles.userMessageInCard}
+                  style={[styles.userMessageInCard, { borderTopColor: theme.border }]}
                   testID={isTranscriptFinal ? "live-transcript-final" : "live-transcript-partial"}
                 >
-                  <Text style={styles.userTranscriptText}>
+                  <Text style={[styles.userTranscriptText, { color: theme.text }]}>
                     {transcript}
                   </Text>
-                  <Text style={styles.timestampText}>
+                  <Text style={[styles.timestampText, { color: theme.textMuted }]}>
                     {getCurrentTime()}
                   </Text>
                 </Animated.View>
@@ -819,7 +849,6 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   messageLabel: {
-    color: "#64748B",
     fontSize: 12,
     fontWeight: "800",
     marginBottom: 6,
@@ -847,7 +876,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
   },
   assistantPromptText: {
-    color: "#0F172A",
     fontSize: 26,
     lineHeight: 34,
     fontWeight: "800",
@@ -858,10 +886,8 @@ const styles = StyleSheet.create({
     marginTop: 20,
     paddingTop: 16,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "#E8ECF0",
   },
   userTranscriptText: {
-    color: "#011030",
     fontSize: 24,
     lineHeight: 32,
     fontWeight: "800",
@@ -869,7 +895,6 @@ const styles = StyleSheet.create({
     ...APPLE_FONT,
   },
   timestampText: {
-    color: "#8E99A4",
     fontSize: 14,
     fontWeight: "600",
     textAlign: "right",
@@ -910,11 +935,10 @@ const styles = StyleSheet.create({
   settingsCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "white",
     padding: 18,
     borderRadius: 16,
     gap: 16,
-    shadowColor: "#0F172A",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
     shadowRadius: 12,
@@ -923,11 +947,9 @@ const styles = StyleSheet.create({
   settingsCardText: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#0F172A",
   },
   settingsCardSub: {
     fontSize: 13,
-    color: "#64748B",
     marginTop: 2,
   },
 });
