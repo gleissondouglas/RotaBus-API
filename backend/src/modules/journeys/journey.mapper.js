@@ -423,7 +423,7 @@ function chooseBestJourney(candidates, timePreference = null) {
 
     // 2. Score de Conforto (Custo-Benefício) - Menor é melhor
     const getComfortScore = (journey) => {
-      let waitTimeMin = 0;
+      let waitTimeMin;
       const targetTimeMs = timePreference?.dateTime ? new Date(timePreference.dateTime).getTime() : Date.now();
 
       if (isArrival) {
@@ -460,6 +460,40 @@ function chooseBestJourney(candidates, timePreference = null) {
   })[0];
 }
 
+function assignRouteTags(candidates, bestJourney) {
+  if (!candidates || candidates.length === 0) return;
+
+  let minDuration = Infinity;
+  let minWalk = Infinity;
+
+  candidates.forEach((c) => {
+    const dur = c.summary?.totalDurationMin || 0;
+    const walk = c.summary?.totalWalkTimeMin || 0;
+    if (dur < minDuration) minDuration = dur;
+    if (walk < minWalk) minWalk = walk;
+  });
+
+  candidates.forEach((c) => {
+    if (c.routeIndex === bestJourney.routeIndex) {
+      c.summary.tag = "Recomendada";
+    } else if (
+      c.summary?.totalDurationMin === minDuration &&
+      minDuration < (bestJourney.summary?.totalDurationMin || 0)
+    ) {
+      c.summary.tag = "Mais rápida";
+    } else if (
+      c.summary?.totalWalkTimeMin === minWalk &&
+      minWalk < (bestJourney.summary?.totalWalkTimeMin || 0)
+    ) {
+      c.summary.tag = "Menos caminhada";
+    } else if (c.summary?.transfers === 0 && (bestJourney.summary?.transfers || 0) > 0) {
+      c.summary.tag = "Linha direta";
+    } else {
+      c.summary.tag = `Opção ${c.routeIndex + 1}`;
+    }
+  });
+}
+
 function mapGoogleRouteToJourney(googleResponse, origin, timePreference = null) {
   const routes = googleResponse?.routes || [];
 
@@ -476,6 +510,7 @@ function mapGoogleRouteToJourney(googleResponse, origin, timePreference = null) 
     .filter(Boolean);
 
   const bestJourney = chooseBestJourney(candidates, timePreference);
+  assignRouteTags(candidates, bestJourney);
 
   // Filtra as alternativas removendo a que foi escolhida como melhor
   const alternatives = candidates.filter((c) => c.routeIndex !== bestJourney.routeIndex);

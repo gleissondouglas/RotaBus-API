@@ -1,7 +1,7 @@
 import { BackgroundGradient } from "../src/components/BackgroundGradient";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState, useCallback, useEffect } from "react";
-import { ScrollView, StyleSheet, Text, View, useColorScheme } from "react-native";
+import { useState, useCallback, useEffect, useMemo } from "react";
+import { ScrollView, StyleSheet, Text, View, TouchableOpacity, useColorScheme } from "react-native";
 import { Ionicons, MaterialCommunityIcons, FontAwesome6 } from "@expo/vector-icons";
 import Animated, { FadeInUp, FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -23,7 +23,7 @@ import { trackingService } from "../src/services/tracking.service";
 import { isConnected } from "../src/utils/network";
 import { JourneyStep, JourneySummary, MapFocusMode } from "../src/types/journey.types";
 import { formatMinutesToFriendlyText } from "../src/utils/date-time";
-import { parseJsonParam } from "../src/utils/helpers";
+import { parseJsonParam, calculateDistance } from "../src/utils/helpers";
 
 
 function getTransitSteps(steps: JourneyStep[]) {
@@ -96,17 +96,48 @@ export default function BestRouteScreen() {
   const fullBackendMessage = String(params.message || "");
 
 
-  const summary = parseJsonParam<JourneySummary | null>(params.summary, null);
+  const summary = parseJsonParam<any>(params.summary, null);
   const alerts = parseJsonParam<string[]>(params.alerts, []);
   const steps = parseJsonParam<JourneyStep[]>(params.steps, []);
   const mapData = parseJsonParam<any>(params.map, undefined);
+  const rawAlternatives = useMemo(() => parseJsonParam<any[]>(params.alternatives, []), [params.alternatives]);
   const isDark = useColorScheme() === 'dark';
+
+  // Monta a lista completa de rotas selecionáveis
+  const allRoutes = useMemo(() => {
+    const main = {
+      tag: summary?.tag || "Recomendada",
+      summary,
+      steps,
+      map: mapData,
+      alerts,
+    };
+    if (!rawAlternatives || rawAlternatives.length === 0) return [main];
+    return [
+      main,
+      ...rawAlternatives.map((alt, i) => ({
+        tag: alt.summary?.tag || `Opção ${i + 2}`,
+        summary: alt.summary,
+        steps: alt.steps || [],
+        map: alt.map,
+        alerts: alt.alerts || [],
+      })),
+    ];
+  }, [summary, steps, mapData, alerts, rawAlternatives]);
+
+  const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
+
+  const currentRoute = allRoutes[selectedRouteIndex] || allRoutes[0];
+  const activeSummary = currentRoute.summary;
+  const activeSteps = currentRoute.steps || [];
+  const activeMapData = currentRoute.map || mapData;
+  const activeAlerts = currentRoute.alerts || [];
 
   const [isLoadingCommand, setIsLoadingCommand] = useState(false);
   const [liveBusPosition, setLiveBusPosition] = useState<{lat: number, lng: number, heading?: number} | null>(null);
   const [mapFocusMode, setMapFocusMode] = useState<MapFocusMode>('full_route');
 
-  const transitSteps = getTransitSteps(steps);
+  const transitSteps = getTransitSteps(activeSteps);
   const firstTransitStep = transitSteps[0];
   const isWalkingOnly = transitSteps.length === 0;
 
@@ -118,28 +149,47 @@ export default function BestRouteScreen() {
   const busLine =
     firstTransitStep?.type === "transit"
       ? firstTransitStep.line
-      : summary?.busLines?.[0] || "";
+      : activeSummary?.busLines?.[0] || "";
+
+  const direction =
+    firstTransitStep?.type === "transit"
+      ? (firstTransitStep.headsign || firstTransitStep.to || "")
+      : "";
 
   // Busca a posição comunitária do ônibus a cada 5 segundos
   useEffect(() => {
     if (isWalkingOnly || !busLine) return;
     
     const fetchBus = async () => {
-      const data = await trackingService.getBusPosition(busLine);
+      const data = await trackingService.getBusPosition(busLine, direction || undefined);
       if (data && data.lat && data.lng) {
         setLiveBusPosition({ lat: data.lat, lng: data.lng, heading: data.bearing });
+      } else {
+        setLiveBusPosition(null);
       }
     };
     
     fetchBus();
     const interval = setInterval(fetchBus, 5000);
     return () => clearInterval(interval);
-  }, [isWalkingOnly, busLine]);
+  }, [isWalkingOnly, busLine, direction]);
 
-  const leaveHomeText = summary?.leaveHomeText || "";
-  const beAtStopText = summary?.beAtStopText || "";
-  const initialWalkTimeMin = summary?.initialWalkTimeMin ?? 0;
-  const totalDurationMin = summary?.totalDurationMin ?? 0;
+  const liveBusDistanceText = useMemo(() => {
+    if (!liveBusPosition || !latitude || !longitude) return null;
+    const userLat = Number(latitude);
+    const userLng = Number(longitude);
+    if (!userLat || !userLng) return null;
+    const distMeters = calculateDistance(userLat, userLng, liveBusPosition.lat, liveBusPosition.lng);
+    if (distMeters < 1000) {
+      return `${Math.round(distMeters)}m de você`;
+    }
+    return `${(distMeters / 1000).toFixed(1)}km de você`;
+  }, [liveBusPosition, latitude, longitude]);
+
+  const leaveHomeText = activeSummary?.leaveHomeText || "";
+  const beAtStopText = activeSummary?.beAtStopText || "";
+  const initialWalkTimeMin = activeSummary?.initialWalkTimeMin ?? 0;
+  const totalDurationMin = activeSummary?.totalDurationMin ?? 0;
 
   const shortMessage = buildShortMessage({
     transitSteps,
@@ -153,8 +203,8 @@ export default function BestRouteScreen() {
 
   const baseVoiceSummary = buildVoiceSummary({
     busLine,
-    departureTime: summary?.beAtStopAt || summary?.leaveHomeAt || "",
-    arrivalTime: summary?.arrivalAtDestination || "",
+    departureTime: activeSummary?.beAtStopAt || activeSummary?.leaveHomeAt || "",
+    arrivalTime: activeSummary?.arrivalAtDestination || "",
   });
 
   const voiceSummary = isWalkingOnly
@@ -214,10 +264,10 @@ export default function BestRouteScreen() {
 
         message: fullBackendMessage,
         shortMessage,
-        summary: JSON.stringify(summary),
-        alerts: JSON.stringify(alerts),
-        steps: JSON.stringify(steps),
-        map: mapParam,
+        summary: JSON.stringify(activeSummary),
+        alerts: JSON.stringify(activeAlerts),
+        steps: JSON.stringify(activeSteps),
+        map: JSON.stringify(activeMapData),
         busLine: isWalkingOnly ? "" : busLine,
         stopName: isWalkingOnly ? destination : stopName,
         direction: isWalkingOnly
@@ -263,10 +313,65 @@ export default function BestRouteScreen() {
             <Text style={[styles.subtitle, { color: theme.textMuted }]} maxFontSizeMultiplier={1.1}>Para {destination}</Text>
           </View>
 
-          {mapData && (
+          {/* SELETOR DE MÚLTIPLAS ROTAS */}
+          {allRoutes.length > 1 && (
+            <View style={styles.routeSelectorWrapper}>
+              <View style={styles.routeSelectorHeader}>
+                <Ionicons name="git-branch-outline" size={18} color={theme.primary} />
+                <Text style={[styles.routeSelectorTitle, { color: theme.text }]}>
+                  Opções de Rota ({allRoutes.length})
+                </Text>
+              </View>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.routeSelectorScroll}
+              >
+                {allRoutes.map((r, idx) => {
+                  const isSelected = selectedRouteIndex === idx;
+                  const dur = r.summary?.totalDurationMin || 0;
+                  const lineNames = r.summary?.busLines?.join(", ") || (r.summary?.isWalkingOnly ? "A pé" : "Ônibus");
+                  return (
+                    <TouchableOpacity
+                      key={`route-opt-${idx}`}
+                      onPress={() => {
+                        setSelectedRouteIndex(idx);
+                        vibrationService.selection();
+                      }}
+                      style={[
+                        styles.routeCardOption,
+                        isSelected
+                          ? [styles.routeCardSelected, { borderColor: theme.primary }]
+                          : [styles.routeCardUnselected, isDark ? { backgroundColor: "rgba(255,255,255,0.06)" } : { backgroundColor: "rgba(255,255,255,0.7)" }],
+                      ]}
+                      activeOpacity={0.8}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Opção ${r.tag}, ${dur} minutos`}
+                    >
+                      <View style={[styles.routeCardTag, isSelected && { backgroundColor: theme.primary }]}>
+                        <Text style={[styles.routeCardTagText, isSelected && { color: "#FFFFFF" }]}>
+                          {r.tag}
+                        </Text>
+                      </View>
+                      <View style={styles.routeCardBody}>
+                        <Text style={[styles.routeCardDuration, { color: isSelected ? theme.primary : theme.text }]}>
+                          {dur} min
+                        </Text>
+                        <Text style={[styles.routeCardLines, { color: theme.textMuted }]} numberOfLines={1}>
+                          {lineNames}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          )}
+
+          {activeMapData && (
             <View style={styles.previewMapContainer}>
               <Map 
-                mapData={mapData} 
+                mapData={activeMapData} 
                 initialRegion={initialRegion} 
                 userLocation={{ latitude: Number(latitude), longitude: Number(longitude) }}
                 colors={theme} 
@@ -280,16 +385,27 @@ export default function BestRouteScreen() {
 
           {/* 2. CARD DE RESUMO PRINCIPAL */}
           <View style={[styles.summaryCard, { backgroundColor: "rgba(15, 23, 42, 0.75)" }]}>
-            {/* Badge */}
-            <View style={[styles.summaryBadge, isWalkingOnly && { backgroundColor: "rgba(59,130,246,0.15)" }]}>
-              {isWalkingOnly ? (
-                <FontAwesome6 name="person-walking" size={16} color="#3B82F6" />
-              ) : (
-                <Ionicons name="checkmark-circle" size={16} color="#34D399" />
+            {/* Badges do Topo */}
+            <View style={styles.topBadgesRow}>
+              <View style={[styles.summaryBadge, isWalkingOnly && { backgroundColor: "rgba(59,130,246,0.15)" }]}>
+                {isWalkingOnly ? (
+                  <FontAwesome6 name="person-walking" size={16} color="#3B82F6" />
+                ) : (
+                  <Ionicons name="checkmark-circle" size={16} color="#34D399" />
+                )}
+                <Text style={[styles.summaryBadgeText, isWalkingOnly && { color: "#3B82F6" }]}>
+                  {isWalkingOnly ? "Você pode ir a pé" : (currentRoute.tag || "Melhor rota encontrada")}
+                </Text>
+              </View>
+
+              {!isWalkingOnly && liveBusPosition && (
+                <View style={styles.liveBusBadgeContainer}>
+                  <View style={styles.livePulseDot} />
+                  <Text style={styles.liveBusBadgeText}>
+                    Ao vivo {liveBusDistanceText ? `(${liveBusDistanceText})` : ""}
+                  </Text>
+                </View>
               )}
-              <Text style={[styles.summaryBadgeText, isWalkingOnly && { color: "#3B82F6" }]}>
-                {isWalkingOnly ? "Você pode ir a pé" : "Melhor rota encontrada"}
-              </Text>
             </View>
 
             {/* Chips de indicadores */}
@@ -301,7 +417,7 @@ export default function BestRouteScreen() {
               {isWalkingOnly ? (
                 <View style={styles.chip}>
                   <MaterialCommunityIcons name="map-marker-distance" size={18} color="#FFF" />
-                  <Text style={styles.chipText}>{summary?.totalDistanceMeters || summary?.initialWalkDistanceMeters || 0}m</Text>
+                  <Text style={styles.chipText}>{activeSummary?.totalDistanceMeters || activeSummary?.initialWalkDistanceMeters || 0}m</Text>
                 </View>
               ) : (
                 <>
@@ -331,16 +447,16 @@ export default function BestRouteScreen() {
                       </View>
                     </View>
                   ) : null}
-                  {summary?.leaveHomeAt ? (
+                  {activeSummary?.leaveHomeAt ? (
                     <View style={styles.summaryDetailItem}>
                       <Text style={styles.summaryDetailLabel}>Saída</Text>
-                      <Text style={styles.summaryDetailValue}>{summary.leaveHomeAt}</Text>
+                      <Text style={styles.summaryDetailValue}>{activeSummary.leaveHomeAt}</Text>
                     </View>
                   ) : null}
-                  {summary?.arrivalAtDestination ? (
+                  {activeSummary?.arrivalAtDestination ? (
                     <View style={styles.summaryDetailItem}>
                       <Text style={styles.summaryDetailLabel}>Chegada</Text>
-                      <Text style={styles.summaryDetailValue}>{summary.arrivalAtDestination}</Text>
+                      <Text style={styles.summaryDetailValue}>{activeSummary.arrivalAtDestination}</Text>
                     </View>
                   ) : null}
                 </View>
@@ -363,7 +479,7 @@ export default function BestRouteScreen() {
             ]}>
               <RouteStep 
                 type="start"
-                time={summary?.leaveHomeAt || "Agora"}
+                time={activeSummary?.leaveHomeAt || "Agora"}
                 title="Saia do seu local"
                 description={leaveHomeText || "Comece agora."}
               />
@@ -372,7 +488,7 @@ export default function BestRouteScreen() {
                 <RouteStep
                   type="walk"
                   title={`Caminhe ${formatMinutesToFriendlyText(totalDurationMin)}`}
-                  description={`${summary?.totalDistanceMeters || summary?.initialWalkDistanceMeters || 0} metros até o destino`}
+                  description={`${activeSummary?.totalDistanceMeters || activeSummary?.initialWalkDistanceMeters || 0} metros até o destino`}
                 />
               )}
 
@@ -380,7 +496,7 @@ export default function BestRouteScreen() {
                 <RouteStep 
                   key={`step-${index}`}
                   type="bus"
-                  time={step.departureTime || (index === 0 ? summary?.beAtStopAt : "") || "--"}
+                  time={step.departureTime || (index === 0 ? activeSummary?.beAtStopAt : "") || "--"}
                   title={`Pegue o ônibus ${step.line}`}
                   description={step.lineName || step.headsign || ""}
                   highlight={getShortStopName(step.from)}
@@ -390,7 +506,7 @@ export default function BestRouteScreen() {
 
               <RouteStep 
                 type="finish"
-                time={summary?.arrivalAtDestination || "--"}
+                time={activeSummary?.arrivalAtDestination || "--"}
                 title="Chegada"
                 description={destination}
                 isLast={true}
@@ -482,6 +598,67 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
 
+  /* ─── 1.1 Seletor de Rotas Alternativas ─── */
+  routeSelectorWrapper: {
+    gap: 12,
+  },
+  routeSelectorHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  routeSelectorTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    letterSpacing: -0.2,
+  },
+  routeSelectorScroll: {
+    gap: 12,
+    paddingVertical: 4,
+  },
+  routeCardOption: {
+    width: 145,
+    borderRadius: 18,
+    padding: 12,
+    gap: 8,
+    borderWidth: 1.5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  routeCardSelected: {
+    backgroundColor: "rgba(59, 130, 246, 0.12)",
+  },
+  routeCardUnselected: {
+    borderColor: "rgba(255, 255, 255, 0.1)",
+  },
+  routeCardTag: {
+    alignSelf: "flex-start",
+    backgroundColor: "rgba(100, 116, 139, 0.2)",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  routeCardTagText: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#94A3B8",
+    textTransform: "uppercase",
+  },
+  routeCardBody: {
+    gap: 2,
+  },
+  routeCardDuration: {
+    fontSize: 19,
+    fontWeight: "900",
+  },
+  routeCardLines: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
+
   /* ─── 2. Card de resumo ─── */
   summaryCard: {
     borderRadius: 24,
@@ -492,6 +669,13 @@ const styles = StyleSheet.create({
     shadowRadius: 24,
     elevation: 8,
     gap: 16,
+  },
+  topBadgesRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    gap: 8,
   },
   summaryBadge: {
     flexDirection: "row",
@@ -507,6 +691,29 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "800",
     color: "#34D399",
+  },
+  liveBusBadgeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(34, 197, 94, 0.22)",
+    borderColor: "rgba(34, 197, 94, 0.45)",
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    alignSelf: "flex-start",
+    gap: 6,
+  },
+  livePulseDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#22C55E",
+  },
+  liveBusBadgeText: {
+    color: "#4ADE80",
+    fontSize: 12,
+    fontWeight: "800",
   },
   chipsRow: {
     flexDirection: "row",

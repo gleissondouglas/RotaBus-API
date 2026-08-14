@@ -2,13 +2,13 @@ const { recordPassengerLocation, getBusPosition } = require('./crowdsource.servi
 
 async function pingLocation(req, res, next) {
   try {
-    const { lineId, lat, lng, speed, bearing } = req.body;
+    const { lineId, direction, lat, lng, speed, bearing } = req.body;
     
     if (!lineId || !lat || !lng) {
       return res.status(400).json({ error: true, message: 'Dados incompletos (lineId, lat, lng são obrigatórios).' });
     }
 
-    const success = await recordPassengerLocation({ lineId, lat, lng, speed, bearing });
+    const success = await recordPassengerLocation({ lineId, direction, lat, lng, speed, bearing });
 
     return res.status(200).json({ success });
   } catch (error) {
@@ -19,12 +19,13 @@ async function pingLocation(req, res, next) {
 async function getBus(req, res, next) {
   try {
     const { lineId } = req.params;
+    const { direction } = req.query;
     
     if (!lineId) {
       return res.status(400).json({ error: true, message: 'ID da linha não fornecido.' });
     }
 
-    const data = await getBusPosition(lineId);
+    const data = await getBusPosition(lineId, direction);
     
     if (!data) {
       return res.status(404).json({ error: true, message: 'Nenhuma informação comunitária recente para este ônibus.' });

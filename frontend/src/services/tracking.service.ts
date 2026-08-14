@@ -5,12 +5,12 @@ import { API_BASE_URL } from "../config/api.config";
  * e também por consultar a posição dos ônibus.
  */
 export const trackingService = {
-  async pingLocation(lineId: string, lat: number, lng: number, heading?: number | null) {
+  async pingLocation(lineId: string, lat: number, lng: number, heading?: number | null, direction?: string) {
     try {
       const response = await fetch(`${API_BASE_URL}/tracking/ping`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lineId, lat, lng, bearing: heading })
+        body: JSON.stringify({ lineId, lat, lng, bearing: heading, direction })
       });
       return await response.json();
     } catch (e) {
@@ -19,9 +19,10 @@ export const trackingService = {
     }
   },
   
-  async getBusPosition(lineId: string) {
+  async getBusPosition(lineId: string, direction?: string) {
     try {
-      const response = await fetch(`${API_BASE_URL}/tracking/bus/${encodeURIComponent(lineId)}`);
+      const query = direction ? `?direction=${encodeURIComponent(direction)}` : "";
+      const response = await fetch(`${API_BASE_URL}/tracking/bus/${encodeURIComponent(lineId)}${query}`);
       if (!response.ok) return null;
       const data = await response.json();
       return data.success ? data.data : null;

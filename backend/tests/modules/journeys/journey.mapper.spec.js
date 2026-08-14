@@ -24,6 +24,7 @@ describe("journey.mapper", () => {
     
     expect(result.summary.beAtStopAt).toBe("11:30");
     expect(result.summary.leaveHomeAt).toBe("11:25");
+    expect(result.summary.tag).toBe("Recomendada");
   });
 
   test("deve mapear corretamente uma rota apenas de caminhada", () => {

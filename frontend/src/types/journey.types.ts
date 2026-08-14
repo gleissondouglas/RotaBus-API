@@ -143,6 +143,14 @@ export type JourneyResponse = {
   alerts: string[];
   steps: JourneyStep[];
   map?: MapData;
+  alternatives?: {
+    summary: JourneySummary & { tag?: string };
+    steps: JourneyStep[];
+    map?: MapData;
+    alerts?: string[];
+    speechText?: string;
+    routeIndex?: number;
+  }[];
   metadata?: {
     selectedRouteIndex: number;
     alternativesFound: number;

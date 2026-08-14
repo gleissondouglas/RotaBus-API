@@ -2,6 +2,9 @@ const js = require("@eslint/js");
 const prettierConfig = require("eslint-config-prettier");
 
 module.exports = [
+  {
+    ignores: ["src/generated/**", "node_modules/**", "coverage/**", "scripts/**"]
+  },
   js.configs.recommended,
   {
     languageOptions: {

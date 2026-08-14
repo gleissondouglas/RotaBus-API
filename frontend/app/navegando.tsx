@@ -156,11 +156,12 @@ export default function NavigatingScreen() {
     const currentLng = userLocation.longitude;
 
     // Rastreamento Comunitário (Waze) - Manda a posição a cada 10s quando está no ônibus
-    if (stage === "on_bus" && busLine) {
+    if (stage === "on_bus" && busLine && busLine !== "--") {
       const now = Date.now();
       if (now - lastPingAtRef.current > 10000) {
         lastPingAtRef.current = now;
-        trackingService.pingLocation(busLine, currentLat, currentLng, userLocation.heading)
+        const cleanDir = (direction && direction !== "--") ? direction : undefined;
+        trackingService.pingLocation(busLine, currentLat, currentLng, userLocation.heading, cleanDir)
           .catch(e => console.log('Ping invisível falhou:', e));
       }
     }
