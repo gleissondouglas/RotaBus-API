@@ -1,5 +1,5 @@
 /**
- * Utilitário de cache em memória para persistir respostas de API durante a sessão.
+ * Utilitário de cache persistente local (disco) para armazenar respostas de API.
  * Ajuda a economizar dados e melhorar a performance em buscas repetidas.
  */
 

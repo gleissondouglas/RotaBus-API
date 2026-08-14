@@ -41,11 +41,15 @@ app.use(cors(corsOptions));
 
 /**
  * Parsers de JSON:
- * Limite global conservador (1mb) para segurança.
- * O endpoint /journeys/transcribe recebe seu próprio limite de 50mb
- * (configurado nas rotas) para acomodar áudios em Base64.
+ * Limite global de 1mb para segurança geral.
+ * O endpoint /journeys/transcribe aceita até 50mb para suportar áudios em Base64.
  */
-app.use(express.json({ limit: "1mb" }));
+app.use((req, res, next) => {
+  if (req.path === "/journeys/transcribe") {
+    return express.json({ limit: "50mb" })(req, res, next);
+  }
+  return express.json({ limit: "1mb" })(req, res, next);
+});
 app.use(express.urlencoded({ limit: "1mb", extended: true }));
 
 /**
@@ -70,11 +74,11 @@ app.get("/", (req, res) => {
 const { getResetPasswordHtml } = require("./modules/auth/views/reset-password.view");
 
 app.get("/reset-password", (req, res) => {
-  const token = req.query.token;
-  if (!token) {
+  const token = typeof req.query.token === "string" ? req.query.token.trim() : "";
+  if (!token || !/^[a-fA-F0-9]{32,128}$/.test(token)) {
     return res.status(400).send("Token não fornecido ou inválido.");
   }
-  // Retorna o HTML injetando o token criptográfico
+  // Retorna o HTML com o token validado
   res.send(getResetPasswordHtml(token));
 });
 

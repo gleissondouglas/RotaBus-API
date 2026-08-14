@@ -35,7 +35,7 @@ async function planJourney(data: PlanJourneyRequest): Promise<JourneyResponse> {
   };
 
   // Tenta recuperar do cache para evitar cobranças duplicadas na API do Google
-  const cacheKey = `plan:${JSON.stringify(data.origin)}-${JSON.stringify(data.destination)}-${sessionId || ""}`;
+  const cacheKey = `plan:${JSON.stringify(data.origin)}-${JSON.stringify(data.destination)}-${data.timePreference ? JSON.stringify(data.timePreference) : (data.departureTime || "")}-${sessionId || ""}`;
   const cached = await cache.get<JourneyResponse>(cacheKey, ROUTE_CACHE_TTL);
   
   if (cached) {

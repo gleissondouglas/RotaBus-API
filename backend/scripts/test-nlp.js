@@ -1,34 +1,36 @@
-require('dotenv').config();
-const nlpProvider = require('../src/shared/providers/nlp.provider');
+require("dotenv").config();
+const {
+  cleanDestinationText,
+  applyLocalAliases,
+  guessQueryType,
+} = require("../src/modules/journeys/local-intelligence/local-intelligence.service");
 
 async function runTest() {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || apiKey === 'sua-chave-api-do-google-gemini') {
-    console.error("❌ ERRO: A variável GEMINI_API_KEY não foi configurada corretamente no seu arquivo .env.");
-    console.error("Crie um arquivo .env na pasta backend e insira sua chave do Google AI Studio.");
-    process.exit(1);
+  console.log("=================================================");
+  console.log("🧪 TESTANDO O MOTOR DE INTELIGÊNCIA LOCAL (UBERABA)");
+  console.log("=================================================\n");
+
+  const testPhrases = [
+    "Quero ir para o posto de saúde",
+    "Me leva pra UFTM",
+    "Preciso ir até a Rua Coronel Manoel Borges, 120",
+    "Bora pro Praça Shopping",
+    "Me leva até a Uniube",
+    "Hospital de Clínicas",
+  ];
+
+  for (const phrase of testPhrases) {
+    console.log(`🗣️ Entrada: "${phrase}"`);
+    const cleaned = cleanDestinationText(phrase);
+    const aliased = applyLocalAliases(cleaned);
+    const queryType = guessQueryType(aliased);
+
+    console.log(`   ├─ Texto Limpo: "${cleaned}"`);
+    console.log(`   ├─ Com Aliases: "${aliased}"`);
+    console.log(`   └─ Tipo Detectado: ${queryType}\n`);
   }
 
-  const text = "Quero ir pro posto de saúde amanhã bem cedinho umas 7 da manhã";
-  const coords = { lat: -19.7460, lng: -47.9320 }; // Uberaba
-  const timestamp = new Date().toISOString();
-
-  console.log("=========================================");
-  console.log("🧪 TESTANDO O PROVEDOR DE NLP (GEMINI)");
-  console.log("=========================================\n");
-  console.log(`🗣️ Texto de Entrada: "${text}"\n`);
-  
-  try {
-    console.log("⏳ Enviando para o Gemini...");
-    const result = await nlpProvider.parseUserIntent(text, coords, timestamp);
-    
-    console.log("✅ Sucesso! Resposta Estruturada:\n");
-    console.log(JSON.stringify(result, null, 2));
-    
-  } catch (error) {
-    console.error("❌ Ocorreu um erro ao chamar o Gemini:");
-    console.error(error.message);
-  }
+  console.log("✅ Teste do Motor de Inteligência Local concluído com sucesso!");
 }
 
 runTest();

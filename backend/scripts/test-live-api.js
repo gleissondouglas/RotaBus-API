@@ -1,5 +1,6 @@
 require('dotenv').config();
 const axios = require('axios');
+const hashProvider = require('../src/shared/providers/hash.provider');
 const tokenProvider = require('../src/shared/providers/token.provider');
 
 const prisma = require('../src/config/prisma');
@@ -8,7 +9,8 @@ async function testLiveApi() {
   console.log("Gerando Token JWT válido...");
   let user = await prisma.user.findFirst();
   if (!user) {
-    user = await prisma.user.create({ data: { name: 'Test', email: 'test@test.com', passwordHash: '123' }});
+    const passwordHash = await hashProvider.generateHash('SenhaForte123');
+    user = await prisma.user.create({ data: { name: 'Test', email: 'test@test.com', passwordHash }});
   }
   const token = tokenProvider.generateToken({ sub: user.id });
 

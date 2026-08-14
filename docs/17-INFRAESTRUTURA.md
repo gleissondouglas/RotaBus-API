@@ -30,11 +30,14 @@ O Expo App é distribuído utilizando a ferramenta nativa EAS (Expo Application 
 
 ### Backend `.env`
 - `PORT=3000`
+- `NODE_ENV="development" | "production"`
+- `APP_URL="http://localhost:3000"`
 - `DATABASE_URL="postgres://..."`
 - `JWT_SECRET="chave_super_secreta"`
-- `JWT_EXPIRES_IN="10h"`
-- `GOOGLE_ROUTES_API_KEY="AIza..."`
-- `GOOGLE_PLACES_API_KEY="AIza..."`
+- `REDIS_URL="redis://127.0.0.1:6379"`
+- `GOOGLE_MAPS_API_KEY="AIza..."`
+- `GOOGLE_MAPS_BACKEND_API_KEY="AIza..."` (opcional com restrição de IP)
+- `RESEND_API_KEY="re_..."` (opcional para emails transacionais)
 - `PERSISTENCE_DRIVER="postgres"` (ou "memory" local).
 
 ### Frontend `.env`

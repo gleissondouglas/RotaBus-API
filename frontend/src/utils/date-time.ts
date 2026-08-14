@@ -32,8 +32,8 @@ export function isOperationalTime(hour: number, minute: number): boolean {
 }
 
 /**
- * Formata uma data para o formato ISO 8601 com o offset correto do fuso horário de Brasília.
- * Exemplo: 2026-05-12T13:46:29-03:00
+ * Converte e formata uma data/hora no fuso horário de Brasília para string ISO 8601 (UTC).
+ * Exemplo: 2026-05-12T16:46:29.000Z
  */
 export function formatLocalDateTimeWithOffset(date?: Date | string | number) {
   const d = getNow(date);
@@ -53,8 +53,8 @@ export function getCurrentTimeText() {
 }
 
 /**
- * Constrói uma string ISO com offset a partir de strings de data e hora,
- * forçando a interpretação no fuso horário de Brasília.
+ * Constrói uma string ISO 8601 (UTC) a partir de strings de data e hora locais,
+ * interpretando os valores no fuso horário de Brasília.
  */
 export function buildLocalDateTimeFromInputs(
   dateText: string,

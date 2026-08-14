@@ -148,7 +148,7 @@ function getResetPasswordHtml(token) {
   </div>
 
   <script>
-    const token = "${token}";
+    const token = ${JSON.stringify(String(token)).replace(/</g, "\\u003c").replace(/>/g, "\\u003e")};
     const form = document.getElementById('reset-form');
     const passwordInput = document.getElementById('password');
     const confirmPasswordInput = document.getElementById('confirm-password');

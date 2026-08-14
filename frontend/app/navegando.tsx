@@ -39,14 +39,16 @@ interface Coords {
 
 /**
  * A NavigatingScreen é a tela de navegação guiada por GPS.
- * Ela acompanha o usuário desde a caminhada inicial até o embarque no ônibus.
+ * Ela acompanha o usuário passo a passo desde a caminhada inicial,
+ * espera no ponto, trajeto dentro do ônibus até a chegada ao destino final.
  */
 
 /**
  * Estágios da Navegação:
- * - 'walking': Usuário está caminhando até o ponto de ônibus.
- * - 'waiting_bus': Usuário chegou ao ponto e está aguardando o ônibus chegar.
- * - 'on_bus': Usuário confirmou que embarcou no ônibus.
+ * - 'walking': Usuário está caminhando (até o ponto de embarque, baldeação ou destino final).
+ * - 'waiting_bus': Usuário chegou ao ponto de ônibus e está aguardando o veículo.
+ * - 'on_bus': Usuário embarcou no ônibus e está em deslocamento.
+ * - 'arrived': Usuário chegou ao destino final da rota.
  */
 type NavigationStage =
   | "walking"

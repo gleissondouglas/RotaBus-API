@@ -102,18 +102,11 @@ async function forgotPasswordService(data) {
     resetLink,
   });
 
-  if (env.nodeEnv === "production") {
-    return genericResponse;
+  if (env.nodeEnv !== "production") {
+    console.log(`[Auth] Link de recuperação gerado para ${user.email}: ${resetLink}`);
   }
 
-  return {
-    ...genericResponse,
-
-    // Apenas para teste local/desenvolvimento.
-    // Em produção, o token deve ser enviado somente por email.
-    resetToken,
-    resetLink,
-  };
+  return genericResponse;
 }
 
 async function resetPasswordService(data) {

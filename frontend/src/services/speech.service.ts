@@ -185,7 +185,7 @@ async function speakInternal(text: string, mode: SpeakMode) {
 
       Speech.speak(text, {
         ...VOICE_CONFIG.localVoice,
-        rate: isSlowVoice ? 0.9 : VOICE_CONFIG.localVoice.rate,
+        rate: isSlowVoice ? 0.7 : VOICE_CONFIG.localVoice.rate,
         onStart: () => console.log("Iniciando voz local..."),
         onDone: settlePendingSpeechCompletion,
         onStopped: settlePendingSpeechCompletion,
@@ -197,7 +197,7 @@ async function speakInternal(text: string, mode: SpeakMode) {
 
   Speech.speak(text, {
     ...VOICE_CONFIG.localVoice,
-    rate: isSlowVoice ? 0.9 : VOICE_CONFIG.localVoice.rate,
+    rate: isSlowVoice ? 0.7 : VOICE_CONFIG.localVoice.rate,
     onStart: () => console.log("Iniciando voz local..."),
   });
 }
