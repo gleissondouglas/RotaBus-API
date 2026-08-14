@@ -1,7 +1,7 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../theme/colors';
+import { colors, useThemeColors } from '../theme/colors';
 
 interface JourneyStepProps {
   time?: string;
@@ -22,6 +22,9 @@ export const RouteStep = ({
   highlight, 
   highlightSecondary 
 }: JourneyStepProps) => {
+  const theme = useThemeColors();
+  const isDark = useColorScheme() === 'dark';
+
   const getIcon = () => {
     switch (type) {
       case 'bus': return <Ionicons name="bus" size={18} color={colors.white} />;
@@ -44,27 +47,27 @@ export const RouteStep = ({
     <View style={[styles.stepRow, isLast && { marginBottom: 0 }]}>
       {/* Timeline indicator */}
       <View style={styles.stepIndicator}>
-        {!isLast && <View style={styles.stepLine} />}
-        <View style={getDotStyle()}>
+        {!isLast && <View style={[styles.stepLine, isDark && { backgroundColor: theme.border }]} />}
+        <View style={[getDotStyle(), isDark && { borderColor: theme.card }]}>
           {getIcon()}
         </View>
       </View>
 
       {/* Content */}
       <View style={[styles.stepContent, isLast && { paddingBottom: 4 }]}>
-        {time ? <Text style={styles.stepTime} maxFontSizeMultiplier={1.3}>{time}</Text> : null}
-        <Text style={styles.stepTitle} maxFontSizeMultiplier={1.2}>{title}</Text>
+        {time ? <Text style={[styles.stepTime, isDark && { color: '#60A5FA' }]} maxFontSizeMultiplier={1.3}>{time}</Text> : null}
+        <Text style={[styles.stepTitle, { color: theme.text }]} maxFontSizeMultiplier={1.2}>{title}</Text>
         
         {type === 'bus' ? (
-          <View style={styles.busDetailsCard}>
+          <View style={[styles.busDetailsCard, isDark && { backgroundColor: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.05)' }]}>
             {highlight ? (
               <View style={styles.detailRow}>
                 <View style={styles.detailIconCircle}>
                   <Ionicons name="location" size={12} color={colors.primary} />
                 </View>
                 <View style={styles.detailTextCol}>
-                  <Text style={styles.detailLabel}>Ponto</Text>
-                  <Text style={styles.detailValue} maxFontSizeMultiplier={1.2}>{highlight}</Text>
+                  <Text style={[styles.detailLabel, { color: theme.textMuted }]}>Ponto</Text>
+                  <Text style={[styles.detailValue, { color: theme.text }]} maxFontSizeMultiplier={1.2}>{highlight}</Text>
                 </View>
               </View>
             ) : null}
@@ -74,15 +77,15 @@ export const RouteStep = ({
                   <Ionicons name="flag" size={12} color={colors.success} />
                 </View>
                 <View style={styles.detailTextCol}>
-                  <Text style={styles.detailLabel}>Desça em</Text>
-                  <Text style={styles.detailValue} maxFontSizeMultiplier={1.2}>{highlightSecondary}</Text>
+                  <Text style={[styles.detailLabel, { color: theme.textMuted }]}>Desça em</Text>
+                  <Text style={[styles.detailValue, { color: theme.text }]} maxFontSizeMultiplier={1.2}>{highlightSecondary}</Text>
                 </View>
               </View>
             ) : null}
           </View>
         ) : (
           description ? (
-            <Text style={styles.stepDescription} maxFontSizeMultiplier={1.1}>{description}</Text>
+            <Text style={[styles.stepDescription, { color: theme.textMuted }]} maxFontSizeMultiplier={1.1}>{description}</Text>
           ) : null
         )}
       </View>

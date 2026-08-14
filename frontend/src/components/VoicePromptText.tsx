@@ -7,6 +7,7 @@ import {
   type TextStyle,
   type ViewStyle,
 } from "react-native";
+import { useThemeColors } from "../theme/colors";
 import Animated, {
   FadeInDown,
   useAnimatedStyle,
@@ -39,6 +40,7 @@ interface AnimatedWordProps {
 
 function AnimatedWord({ word, index, textStyle }: AnimatedWordProps) {
   const opacity = useSharedValue(0);
+  const theme = useThemeColors();
 
   useEffect(() => {
     const delay = index * WORD_INTERVAL_MS;
@@ -55,7 +57,7 @@ function AnimatedWord({ word, index, textStyle }: AnimatedWordProps) {
   return (
     <Animated.Text
       entering={FadeInDown.delay(index * WORD_INTERVAL_MS).duration(260)}
-      style={[styles.word, textStyle, animStyle]}
+      style={[styles.word, { color: theme.text }, textStyle, animStyle]}
     >
       {word}{" "}
     </Animated.Text>
@@ -76,6 +78,7 @@ export function VoicePromptText({
   align = "center",
 }: VoicePromptTextProps) {
   const [words, setWords] = useState<string[]>([]);
+  const theme = useThemeColors();
 
   useEffect(() => {
     if (!text) {
@@ -94,7 +97,7 @@ export function VoicePromptText({
       <View style={[styles.container, align === "left" && styles.leftAligned, style]}>
         <Animated.Text
           entering={FadeInDown.duration(400)}
-          style={[styles.staticText, align === "left" && styles.leftText, textStyle]}
+          style={[styles.staticText, { color: theme.text }, align === "left" && styles.leftText, textStyle]}
         >
           {text}
         </Animated.Text>

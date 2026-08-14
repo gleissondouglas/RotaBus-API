@@ -13,7 +13,6 @@ import { locationService } from "../src/services/location.service";
 import { formatLocalDateTimeWithOffset } from "../src/utils/date-time";
 import { layout } from "../src/theme/layout";
 import { useThemeColors } from "../src/theme/colors";
-import { LinearGradient } from "expo-linear-gradient";
 
 
 export default function ProcessingScreen() {

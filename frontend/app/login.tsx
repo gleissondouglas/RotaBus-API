@@ -12,8 +12,6 @@ import { TextField } from "../src/components/TextField";
 import { authService } from "../src/services/auth.service";
 import { sessionService } from "../src/services/session.service";
 import { useThemeColors } from "../src/theme/colors";
-import { LinearGradient } from "expo-linear-gradient";
-import { LiquidGlassView } from "../src/components/LiquidGlassView";
 
 export default function LoginScreen() {
   const theme = useThemeColors();

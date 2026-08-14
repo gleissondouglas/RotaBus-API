@@ -12,8 +12,6 @@ import { completeOnboarding } from "../src/services/onboardingStorage";
 import { speak, stopSpeaking } from "../src/services/speech.service";
 import { layout } from "../src/theme/layout";
 import { useThemeColors } from "../src/theme/colors";
-import { LinearGradient } from "expo-linear-gradient";
-import { LiquidGlassView } from "../src/components/LiquidGlassView";
 
 export default function OnboardingScreen() {
   const theme = useThemeColors();

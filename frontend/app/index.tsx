@@ -18,7 +18,6 @@ import { sessionService } from "../src/services/session.service";
 import { speak, stopSpeaking } from "../src/services/speech.service";
 import { useThemeColors } from "../src/theme/colors";
 import { layout } from "../src/theme/layout";
-import { LinearGradient } from "expo-linear-gradient";
 
 const welcomeMessage =
   "Bem-vindo ao RotaBus. Encontre sua rota de ônibus falando para onde deseja ir.";

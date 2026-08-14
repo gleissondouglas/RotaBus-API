@@ -10,7 +10,7 @@ import Animated, {
   interpolate,
   FadeIn
 } from 'react-native-reanimated';
-import { colors } from '../theme/colors';
+import { useThemeColors } from '../theme/colors';
 import { layout } from '../theme/layout';
 
 export interface LoadingStep {
@@ -35,27 +35,28 @@ export const AssistantLoadingState: React.FC<AssistantLoadingStateProps> = ({
 }) => {
   const { height } = useWindowDimensions();
   const isSmallHeight = height < 740;
+  const theme = useThemeColors();
 
   return (
     <View style={styles.container}>
 
 
       <View style={[styles.header, { marginBottom: isSmallHeight ? 24 : 32 }]}>
-        <Text style={[styles.title, { fontSize: isSmallHeight ? layout.titleFontSizeSmall : layout.titleFontSize }]} maxFontSizeMultiplier={1.4}>{title}</Text>
-        {subtitle && <Text style={[styles.subtitle, { fontSize: isSmallHeight ? layout.subtitleFontSizeSmall : layout.subtitleFontSize }]} maxFontSizeMultiplier={1.3}>{subtitle}</Text>}
+        <Text style={[styles.title, { fontSize: isSmallHeight ? layout.titleFontSizeSmall : layout.titleFontSize, color: theme.text }]} maxFontSizeMultiplier={1.4}>{title}</Text>
+        {subtitle && <Text style={[styles.subtitle, { fontSize: isSmallHeight ? layout.subtitleFontSizeSmall : layout.subtitleFontSize, color: theme.textMuted }]} maxFontSizeMultiplier={1.3}>{subtitle}</Text>}
       </View>
 
       {transcript && (
-        <View style={styles.transcriptCard}>
-          <Text style={styles.transcriptLabel} maxFontSizeMultiplier={1.2}>
+        <View style={[styles.transcriptCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <Text style={[styles.transcriptLabel, { color: theme.textMuted }]} maxFontSizeMultiplier={1.2}>
             Você disse:
           </Text>
-          <Text style={styles.transcriptText} maxFontSizeMultiplier={1.3}>&quot;{transcript}&quot;</Text>
+          <Text style={[styles.transcriptText, { color: theme.primary }]} maxFontSizeMultiplier={1.3}>&quot;{transcript}&quot;</Text>
         </View>
       )}
 
       {steps && steps.length > 0 && (
-        <Animated.View entering={FadeIn.delay(400)} style={[styles.stepsCard, { padding: isSmallHeight ? 20 : 28 }]}>
+        <Animated.View entering={FadeIn.delay(400)} style={[styles.stepsCard, { padding: isSmallHeight ? 20 : 28, backgroundColor: theme.card, borderColor: theme.border }]}>
           {steps.map((step, index) => {
             const isLast = index === steps.length - 1;
             return (
@@ -63,27 +64,27 @@ export const AssistantLoadingState: React.FC<AssistantLoadingStateProps> = ({
                 <View style={styles.stepRow}>
                   <View style={styles.iconContainer}>
                     {step.status === 'completed' ? (
-                      <Ionicons name="checkmark-circle" size={26} color={colors.success} />
+                      <Ionicons name="checkmark-circle" size={26} color={theme.success} />
                     ) : step.status === 'loading' ? (
-                      <ActivityIndicator size="small" color={colors.primary} />
+                      <ActivityIndicator size="small" color={theme.primary} />
                     ) : (
-                      <View style={styles.pendingDot} />
+                      <View style={[styles.pendingDot, { backgroundColor: theme.border }]} />
                     )}
                   </View>
                   <Text
                     maxFontSizeMultiplier={1.2}
                     style={[
                       styles.stepText,
-                      { fontSize: isSmallHeight ? layout.cardSubtitleFontSizeSmall : layout.cardSubtitleFontSize },
-                      step.status === 'completed' && styles.stepTextCompleted,
-                      step.status === 'loading' && styles.stepTextActive,
+                      { fontSize: isSmallHeight ? layout.cardSubtitleFontSizeSmall : layout.cardSubtitleFontSize, color: theme.textMuted },
+                      step.status === 'completed' && { color: theme.success },
+                      step.status === 'loading' && { color: theme.primary, fontWeight: '800' },
                     ]}
                   >
                     {step.label}
                   </Text>
                 </View>
                 {!isLast && (
-                  <View style={[styles.stepLine, { backgroundColor: step.status === 'completed' ? colors.success : colors.border }]} />
+                  <View style={[styles.stepLine, { backgroundColor: step.status === 'completed' ? theme.success : theme.border }]} />
                 )}
               </View>
             );
@@ -108,12 +109,10 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: '900',
-    color: '#011030',
     textAlign: 'center',
     letterSpacing: -0.5,
   },
   subtitle: {
-    color: '#666',
     textAlign: 'center',
     lineHeight: 24,
     paddingHorizontal: 16,
@@ -123,15 +122,12 @@ const styles = StyleSheet.create({
     width: '100%',
     padding: 16,
     borderRadius: 16,
-    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: colors.border,
     marginBottom: 24,
   },
   transcriptLabel: {
     fontSize: 12,
     fontWeight: '800',
-    color: colors.textMuted,
     textTransform: 'uppercase',
     letterSpacing: 1,
     marginBottom: 4,
@@ -140,13 +136,11 @@ const styles = StyleSheet.create({
   transcriptText: {
     fontSize: 18,
     fontWeight: '700',
-    color: colors.primary,
     textAlign: 'center',
     fontStyle: 'italic',
   },
   stepsCard: {
     width: '100%',
-    backgroundColor: 'white',
     borderRadius: 24,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
@@ -154,7 +148,6 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 2,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.02)",
   },
   stepWrapper: {
     flexDirection: 'column',
@@ -167,7 +160,6 @@ const styles = StyleSheet.create({
   stepLine: {
     width: 2,
     height: 20,
-    backgroundColor: colors.border,
     marginLeft: 13, // align center with the 28px width icon container
     marginVertical: 4,
     borderRadius: 1,
@@ -182,18 +174,9 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: colors.border,
   },
   stepText: {
-    color: colors.textMuted,
     fontWeight: '600',
     flex: 1,
-  },
-  stepTextActive: {
-    color: colors.primary,
-    fontWeight: '800',
-  },
-  stepTextCompleted: {
-    color: colors.success,
   },
 });

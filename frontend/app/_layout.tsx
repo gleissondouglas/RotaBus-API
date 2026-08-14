@@ -51,7 +51,7 @@ function RootLayout() {
       />
 
       {/* Controla a barra de status do celular (hora, bateria, etc) */}
-      <StatusBar style="dark" />
+      <StatusBar style="auto" />
     </AccessibilityProvider>
   );
 }

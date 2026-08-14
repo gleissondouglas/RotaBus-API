@@ -1,7 +1,6 @@
 import { BackgroundGradient } from "../src/components/BackgroundGradient";
 import { LiquidGlassView } from "../src/components/LiquidGlassView";
 import { ScrollView, StyleSheet, Switch, Text, View } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeInUp } from "react-native-reanimated";
 
 import { BackButton } from "../src/components/BackButton";

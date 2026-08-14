@@ -12,7 +12,6 @@ import {
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Animated, { FadeInUp } from "react-native-reanimated";
-import { LinearGradient } from "expo-linear-gradient";
 
 import { BackButton } from "../src/components/BackButton";
 import { ListenOptionsButton } from "../src/components/ListenOptionsButton";

@@ -1,7 +1,7 @@
 import { BackgroundGradient } from "../src/components/BackgroundGradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState, useCallback, useEffect } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View, useColorScheme } from "react-native";
 import { Ionicons, MaterialCommunityIcons, FontAwesome6 } from "@expo/vector-icons";
 import Animated, { FadeInUp, FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -100,6 +100,7 @@ export default function BestRouteScreen() {
   const alerts = parseJsonParam<string[]>(params.alerts, []);
   const steps = parseJsonParam<JourneyStep[]>(params.steps, []);
   const mapData = parseJsonParam<any>(params.map, undefined);
+  const isDark = useColorScheme() === 'dark';
 
   const [isLoadingCommand, setIsLoadingCommand] = useState(false);
   const [liveBusPosition, setLiveBusPosition] = useState<{lat: number, lng: number, heading?: number} | null>(null);
@@ -354,7 +355,12 @@ export default function BestRouteScreen() {
               <Text style={[styles.stepsSectionTitle, { color: theme.text }]}>Passo a passo</Text>
             </View>
 
-            <View style={[styles.stepsList, { backgroundColor: "rgba(255, 255, 255, 0.3)", borderColor: "rgba(255, 255, 255, 0.5)" }]}>
+            <View style={[
+              styles.stepsList, 
+              isDark 
+                ? { backgroundColor: "rgba(255, 255, 255, 0.02)", borderColor: "rgba(255, 255, 255, 0.04)" }
+                : { backgroundColor: "rgba(255, 255, 255, 0.3)", borderColor: "rgba(255, 255, 255, 0.5)" }
+            ]}>
               <RouteStep 
                 type="start"
                 time={summary?.leaveHomeAt || "Agora"}
@@ -402,7 +408,7 @@ export default function BestRouteScreen() {
         <View style={[styles.bottomActionsContent, { paddingBottom: insets.bottom + 16 }]}>
           <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={50} fallbackColor={theme.card} />
           <LinearGradient
-            colors={['transparent', theme.background]}
+            colors={[isDark ? 'rgba(1, 16, 48, 0)' : 'rgba(241, 245, 249, 0)', theme.background]}
             locations={[0.2, 1]}
             style={StyleSheet.absoluteFillObject}
             pointerEvents="none"

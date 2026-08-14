@@ -2,7 +2,7 @@ import { router } from "expo-router";
 import { Pressable, StyleSheet, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import { colors } from "../theme/colors";
+import { useThemeColors } from "../theme/colors";
 
 type BackButtonProps = {
   label?: string;
@@ -11,6 +11,8 @@ type BackButtonProps = {
 };
 
 export function BackButton({ label = "Voltar", onPress, accessibilityLabel }: BackButtonProps) {
+  const theme = useThemeColors();
+
   function handlePress() {
     if (onPress) {
       onPress();
@@ -27,8 +29,8 @@ export function BackButton({ label = "Voltar", onPress, accessibilityLabel }: Ba
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel || label}
     >
-      <Ionicons name="chevron-back" size={24} color={colors.text} />
-      <Text style={styles.text}>{label}</Text>
+      <Ionicons name="chevron-back" size={24} color={theme.text} />
+      <Text style={[styles.text, { color: theme.text }]}>{label}</Text>
     </Pressable>
   );
 }
@@ -46,6 +48,5 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 18,
     fontWeight: "700",
-    color: colors.text,
   },
 });

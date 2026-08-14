@@ -11,7 +11,6 @@ import { ScreenContainer } from "../src/components/ScreenContainer";
 import { TextField } from "../src/components/TextField";
 import { authService } from "../src/services/auth.service";
 import { useThemeColors } from "../src/theme/colors";
-import { LinearGradient } from "expo-linear-gradient";
 
 export default function ForgotPasswordScreen() {
   const theme = useThemeColors();
