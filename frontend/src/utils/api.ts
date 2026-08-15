@@ -44,7 +44,12 @@ export async function request<T>(url: string, options: RequestOptions = {}): Pro
       throw new Error("Sessão expirada.");
     }
 
-    const result = await response.json();
+    let result: any = null;
+    try {
+      result = await response.json();
+    } catch {
+      result = null;
+    }
 
     if (!response.ok) {
       throw new Error(result?.message || result?.error || `Erro na requisição (${response.status})`);
