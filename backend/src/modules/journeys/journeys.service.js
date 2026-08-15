@@ -22,12 +22,12 @@ const localIntelligenceService = require("./local-intelligence/local-intelligenc
 function cleanDestinationText(text) {
   return text
     .toLowerCase()
-    .replace(/^(me leva|me leve|me leva ao|me leva à|me leva a|me leve ao|me leve à|me leve a)\s+/i, "")
+    .replace(/^(me leva ao|me leva à|me leva a|me leve ao|me leve à|me leve a|me leva|me leve)\s+/i, "")
     .replace(/^(quero ir para o|quero ir para a|quero ir para|quero ir ao|quero ir à|quero ir a)\s+/i, "")
-    .replace(/^(vou ao|vou à|vou para o|vou para a|vou para|vou a)\s+/i, "")
-    .replace(/^(ir ao|ir à|ir para o|ir para a|ir para|ir a)\s+/i, "")
-    .replace(/^(preciso ir ao|preciso ir à|preciso ir para|preciso chegar ao|preciso chegar à)\s+/i, "")
-    .replace(/^(leva ao|leva à|leva para|leve ao|leve à|leve para)\s+/i, "")
+    .replace(/^(vou para o|vou para a|vou para|vou ao|vou à|vou a)\s+/i, "")
+    .replace(/^(ir para o|ir para a|ir para|ir ao|ir à|ir a)\s+/i, "")
+    .replace(/^(preciso ir para o|preciso ir para a|preciso ir para|preciso ir ao|preciso ir à|preciso chegar ao|preciso chegar à)\s+/i, "")
+    .replace(/^(leva para o|leva para a|leva para|leva ao|leva à|leve para o|leve para a|leve para|leve ao|leve à)\s+/i, "")
     .replace(/^(para o|para a|para)\s+/i, "")
     .trim()
     || text.trim();
