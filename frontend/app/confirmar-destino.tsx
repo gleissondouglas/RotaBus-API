@@ -442,13 +442,13 @@ export default function ConfirmDestinationScreen() {
         </View>
       </View>
 
-      {/* SCROLL — idêntico ao de melhor-rota */}
+      {/* SCROLL */}
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.scrollContent,
           {
-            paddingTop: insets.top + 60,
+            paddingTop: insets.top + (isSmallHeight ? 64 : 82),
             paddingBottom: insets.bottom + 112,
           },
         ]}
@@ -458,8 +458,8 @@ export default function ConfirmDestinationScreen() {
           style={{ flex: 1 }}
         >
 
-          {/* Título + subtítulo — alinhado à esquerda */}
-          <View style={[styles.header, { paddingHorizontal: screenHorizontalPadding }]}>
+          {/* Título + subtítulo — centralizado com mais respiro no topo */}
+          <View style={[styles.header, { paddingHorizontal: screenHorizontalPadding, marginTop: isSmallHeight ? 8 : 16 }]}>
             <Text style={[styles.title, { color: theme.text }]} maxFontSizeMultiplier={1.2}>
               {showSuggestions ? "Destinos encontrados" : "Destino encontrado"}
             </Text>
@@ -679,27 +679,29 @@ const styles = StyleSheet.create({
   // ─── ScrollView (idêntico ao padrão de melhor-rota) ─────────────────
   scrollContent: {
     flexGrow: 1,
+    justifyContent: "center",
   },
   content: {
     paddingHorizontal: 20,
     gap: 12,
   },
 
-  // ─── Header à esquerda (igual melhor-rota) ──────────────────────────
+  // ─── Header centralizado ─────────────────────────────────────────────
   header: {
-    alignItems: "flex-start",
-    marginTop: 8,
-    marginBottom: 12,
+    alignItems: "center",
+    marginBottom: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "900",
     letterSpacing: -0.5,
+    textAlign: "center",
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "600",
-    marginTop: 2,
+    marginTop: 4,
+    textAlign: "center",
   },
 
   // ─── VoiceVisualizer ────────────────────────────────────────────────
