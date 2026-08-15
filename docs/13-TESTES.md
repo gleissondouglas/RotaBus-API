@@ -9,6 +9,7 @@ Foco total em arquivos que tomam decisão lógica sem depender do Banco ou APIs.
 - **Alvos Frontend:** Parsers de Voz (`voiceIntentParser.ts`), Parsers de tempo, e testes isolados das lógicas visuais puras.
 
 Mocks (`jest.fn()`) são amplamente utilizados para anular as injeções externas de repositórios ao testar os Services.
+**Atualização:** Foi adicionada cobertura extensiva de serviços sensíveis como `journeys.service.js` e utilitários isolados (`date-time`, `speech.service`), blindando o backend e o front com simulações completas do ecossistema Google e nativo (evitando custos acidentais de quotas em CI/CD).
 
 ## 2. Testes de Integração (Integration Tests)
 

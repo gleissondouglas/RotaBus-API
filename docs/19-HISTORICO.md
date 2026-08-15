@@ -41,3 +41,8 @@ Este documento registra as principais escolhas técnicas do projeto e os motivos
 - **Contexto:** Usuários acionavam a navegação acidentalmente apenas para ver onde o ponto ficava, ativando o consumo massivo de bateria pelo GPS real-time (`watchPositionAsync`). Além disso, clicavam em "Cheguei ao Ponto" da própria casa.
 - **Decisão:** Inserção de um mapa "Preview" estático na tela de Melhor Rota, e Adição de "Distance Validation" com alertas nativos nos botões de transição.
 - **Justificativa:** Previne anomalias lógicas (o usuário não consegue avançar etapas se estiver a mais de 150m do alvo) e protege a bateria do usuário final (o rastreio só inicia se ele realmente for viajar).
+
+## ADR-009: Cache de Rotas Escalonável via Redis e Aprimoramento de UX
+- **Contexto:** O cache de rotas rodava num `Map` em memória global do Node.js (`route-cache.js`), inviabilizando instâncias múltiplas (load balancer) de compartilharem dados. Na UI, a seleção das múltiplas opções de rotas era rígida e o STT conflituava com o TalkBack/VoiceOver em mudanças de tela.
+- **Decisão:** Substituição da memória local por `ioredis` para rotas com TTL (Time-to-Live) de 2 minutos (120s). No frontend, implementação de `useAutoSpeakOnce`, auto-scroll de cards de rotas e nomes inteligentes de rotas ("Mais rápida", "Menos trocas").
+- **Justificativa:** Garantir o reaproveitamento de rotas e economia de chamadas da API do Google, não importando para qual container backend o request é roteado. UX aprimorada atende o público alvo primário mitigando a frustração da repetição de fala do robô e centralizando o card focado (auto-scroll) na tela para deficientes visuais limitados.

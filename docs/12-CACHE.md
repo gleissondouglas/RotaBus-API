@@ -2,20 +2,20 @@
 
 Para mitigar a latência na orquestração conversacional e reduzir abruptamente custos da camada externa (Google), o projeto implementa cache hierárquico nos locais vitais.
 
-## 1. Arquitetura do Route Cache (Em Memória)
+## 1. Arquitetura do Route Cache (Redis)
 
-O módulo de Journeys invoca o arquivo base `route-cache.js`.
+O módulo de Journeys invoca o arquivo base `route-cache.js`, que agora utiliza o **Redis (`ioredis`)** no lugar do armazenamento em memória para suportar instâncias múltiplas (Load Balancing).
 
 ### Princípio de Funcionamento
 1. O usuário requisita a rota X -> Y.
 2. O Backend encripta um hash consistente (MD5 ou equivalente simples) unindo a coordenada Origem, Destino e Hora prevista.
-3. Se existir um Hit na memória RAM (`Map`), o Backend bypassa totalmente a camada do Service provider (Sem rede externa e banco) e devolve a resposta inteira (já decorada e formatada) em microssegundos (O(1)).
-4. Se houver Miss, prossegue a requisição do Google Routes, preenche o Map e despacha a resposta.
+3. Se existir um Hit no cluster Redis, o Backend bypassa totalmente a camada do Service provider (Sem rede externa e banco) e devolve a resposta inteira (já decorada e formatada).
+4. Se houver Miss, prossegue a requisição do Google Routes, preenche o Redis e despacha a resposta.
 
 ### Tempo de Vida (TTL) e Invalidação
-- O TTL é definido como **2 minutos**.
+- O TTL é definido de forma global como **120 segundos (2 minutos)**, diretamente configurado no Redis (`EX`).
 - Roteamento de transporte público é altamente dinâmico; atrasar mais que 2 minutos arrisca fornecer instrução de um ônibus que acabou de passar.
-- Invalidação Eager: Após o expirar, a chave se deleta silenciosamente para liberar memória da RAM do Node (Garbage Collection optimization).
+- Invalidação Eager: O próprio cluster Redis expira e destrói as chaves automaticamente de forma escalável e performática.
 
 ## 2. Desempenho e Latência Almejada
 

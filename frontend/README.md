@@ -59,6 +59,7 @@ Em vez de mostrar apenas dados complexos ou mapas difíceis de interpretar.
 - Sessão salva no dispositivo;
 - Tela inicial com busca por voz (microfone) ou digitação;
 - Telas de navegação 100% baseadas em toque (Touch) com botões grandes e acessíveis;
+- Exibição de múltiplas opções de rotas com nomes inteligentes ("Mais rápida", "Menos trocas") e carrossel dinâmico (auto-scroll);
 - Tela para escolher horário da viagem:
   - sair agora;
   - sair em outro horário;
@@ -304,13 +305,14 @@ Atualmente, o app já possui o fluxo principal de mobilidade funcionando com:
 
 - login;
 - sessão salva;
-- busca de destino;
+- busca de destino (digitação ou voz);
 - escolha de horário;
 - envio de localização;
 - integração com backend;
-- exibição de rota;
-- mensagens acessíveis com data e horário;
-- suporte inicial a voz e acessibilidade.
+- exibição de múltiplas rotas inteligentes em carrossel auto-scroll;
+- mensagens acessíveis com data, horário e TTS não conflitante com leitores de tela (`useAutoSpeakOnce`);
+- testes automatizados baseados em mocks (Jest);
+- suporte híbrido completo (Voz + Toque).
 
 ---
 

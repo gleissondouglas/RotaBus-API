@@ -30,6 +30,7 @@ O projeto também possui cadastro de usuários, login com JWT, rotas protegidas,
 - Recuperação de senha com token temporário
 - Integração com Google Routes API
 - Consulta de rotas de transporte público
+- Cache distribuído de rotas com Redis (`ioredis`) para performance extrema
 - Suporte a horário de partida
 - Suporte a horário de chegada
 - Mapeamento da resposta do Google para uma resposta mais amigável
@@ -44,10 +45,12 @@ O projeto também possui cadastro de usuários, login com JWT, rotas protegidas,
 - Express
 - PostgreSQL
 - Prisma ORM
+- Redis (`ioredis`)
 - JWT
 - bcrypt
 - Axios
 - Google Routes API
+- Jest (Testes)
 - Dotenv
 - Nodemon
 
