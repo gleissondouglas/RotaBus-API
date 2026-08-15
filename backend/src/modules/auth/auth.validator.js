@@ -8,37 +8,6 @@ class ValidationError extends Error {
   }
 }
 
-// Schemas base para reutilização
-const emailSchema = z
-  .string({
-    invalid_type_error: "Email deve ser um texto válido.",
-    required_error: "Email é obrigatório.",
-  })
-  .trim()
-  .toLowerCase()
-  .min(1, "Email não pode estar vazio.")
-  .max(254, "Email muito longo.")
-  .email("Informe um email válido.");
-
-const passwordSchema = z
-  .string({
-    invalid_type_error: "Senha deve ser um texto válido.",
-    required_error: "Senha é obrigatória.",
-  })
-  .trim()
-  .min(
-    6,
-    "A nova senha deve ter entre 6 e 128 caracteres, contendo pelo menos uma letra e um número.",
-  )
-  .max(
-    128,
-    "A nova senha deve ter entre 6 e 128 caracteres, contendo pelo menos uma letra e um número.",
-  )
-  .regex(
-    /^(?=.*[A-Za-z])(?=.*\d).{6,}$/,
-    "A nova senha deve ter entre 6 e 128 caracteres, contendo pelo menos uma letra e um número.",
-  );
-
 const loginSchema = z.object({
   email: z
     .string({

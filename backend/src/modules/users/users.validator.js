@@ -8,9 +8,6 @@ class ValidationError extends Error {
   }
 }
 
-// Schemas base para reutilização
-const emailSchema = z.string().trim().toLowerCase().max(254).email("Informe um email válido.");
-
 const nameSchema = z
   .string({
     required_error: "O nome é obrigatório e deve ser um texto válido.",
@@ -21,23 +18,6 @@ const nameSchema = z
   .min(3, "O nome deve ter pelo menos 3 caracteres.")
   .max(100, "O nome deve ter no máximo 100 caracteres.")
   .regex(/^[a-zA-ZÀ-ÿ\s'-]+$/, "O nome contém caracteres inválidos.");
-
-const passwordSchema = z
-  .string()
-  .trim()
-  .min(6, "A senha deve ter pelo menos 6 caracteres.")
-  .max(128, "A senha deve ter no máximo 128 caracteres.")
-  .regex(/^(?=.*[A-Za-z])(?=.*\d).{6,}$/, "A senha deve conter pelo menos uma letra e um número.");
-
-const changePasswordBaseSchema = z
-  .string()
-  .trim()
-  .min(6, "A nova senha deve ter pelo menos 6 caracteres.")
-  .max(128, "A nova senha deve ter no máximo 128 caracteres.")
-  .regex(
-    /^(?=.*[A-Za-z])(?=.*\d).{6,}$/,
-    "A nova senha deve conter pelo menos uma letra e um número.",
-  );
 
 const createUserSchema = z.object({
   name: z
@@ -101,16 +81,6 @@ const changePasswordSchema = z
 const updateProfileSchema = z.object({
   name: nameSchema,
 });
-
-function validateName(name) {
-  const result = nameSchema.safeParse(name);
-  if (!result.success) {
-    // Mantendo a compatibilidade de lançar o primeiro erro encontrado
-    const firstError = result.error.issues[0].message;
-    throw new ValidationError(firstError);
-  }
-  return result.data;
-}
 
 function validateCreateUserInput(data) {
   const result = createUserSchema.safeParse(data);

@@ -39,37 +39,6 @@ const dateTimeSchema = z
     },
   );
 
-const coordinateSchema = z.object({
-  lat: z
-    .number({
-      invalid_type_error: "Latitude deve ser um número.",
-      required_error: "Latitude é obrigatória.",
-    })
-    .min(-90, "A latitude deve estar entre -90 e 90.")
-    .max(90, "A latitude deve estar entre -90 e 90."),
-  lng: z
-    .number({
-      invalid_type_error: "Longitude deve ser um número.",
-      required_error: "Longitude é obrigatória.",
-    })
-    .min(-180, "A longitude deve estar entre -180 e 180.")
-    .max(180, "A longitude deve estar entre -180 e 180."),
-});
-
-const destinationSchema = z.object({
-  text: z
-    .string({
-      required_error: "O destino deve conter um texto válido.",
-      invalid_type_error: "O destino deve conter um texto válido.",
-    })
-    .trim()
-    .transform((t) => t.replace(/\s+/g, " "))
-    .refine((t) => t.length >= 2, "O texto do destino deve ter pelo menos 2 caracteres.")
-    .refine((t) => t.length <= 200, "O texto do destino é muito longo."),
-  lat: z.number().min(-90).max(90).optional(),
-  lng: z.number().min(-180).max(180).optional(),
-});
-
 const timePreferenceSchema = z.object({
   type: z.enum(["DEPARTURE", "ARRIVAL"], {
     error_map: () => ({ message: "O tipo de horário deve ser DEPARTURE ou ARRIVAL." }),

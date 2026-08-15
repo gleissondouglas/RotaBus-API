@@ -101,7 +101,6 @@ async function searchPlaces(query, origin) {
   } catch (error) {
     if (error.response) {
       const status = error.response.status;
-      const data = error.response.data;
 
       console.error(`[GooglePlaces] Erro da API Google (${status})`);
 

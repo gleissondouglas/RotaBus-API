@@ -1,5 +1,4 @@
 const {
-  APP_TIME_ZONE,
   getMinutesFromDuration,
   formatTimeFromDateTime,
   formatRelativeDateTime,
@@ -11,8 +10,6 @@ const {
 } = require("../../shared/utils/date");
 
 const {
-  getShortStopName,
-  getSecondsFromDuration,
   stripHtmlTags,
 } = require("./utils/mapper-helpers");
 

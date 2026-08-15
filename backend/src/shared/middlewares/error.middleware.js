@@ -1,6 +1,6 @@
 const { captureException } = require("../../config/sentry");
 
-function errorMiddleware(error, req, res, next) {
+function errorMiddleware(error, req, res, _next) {
   const statusCode = error.statusCode || 500;
   const message = error.message || "Erro interno do servidor";
 

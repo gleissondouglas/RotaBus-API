@@ -43,7 +43,7 @@ function cleanDestinationText(text) {
  * @param {{ lat: number, lng: number }} params.origin - Coordenadas atuais do GPS
  * @returns {Promise<Object>} O destino formatado e opções.
  */
-async function resolveDestinationService({ text, origin }, session = null) {
+async function resolveDestinationService({ text, origin }, _session = null) {
   const validatedData = validateResolveDestinationInput({ text, origin });
 
   // Sem NLP: o texto vai direto ao Google Places.

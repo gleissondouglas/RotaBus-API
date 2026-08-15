@@ -139,7 +139,7 @@ function guessQueryType(text) {
 /**
  * Verifica se um resultado é apenas a cidade de forma genérica.
  */
-function checkIfGenericCity(name, address) {
+function checkIfGenericCity(name, _address) {
   if (!name) return false;
   const lowerName = name.toLowerCase();
   return GENERIC_CITY_TERMS.some((term) => lowerName === term);

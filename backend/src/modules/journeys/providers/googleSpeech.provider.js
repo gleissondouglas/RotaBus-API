@@ -81,7 +81,10 @@ async function transcribe(audioBase64, mimeType) {
     }
   }
 
-  console.error("[GoogleSpeechProvider] Erro crítico na API do Google Speech.");
+  console.error(
+    "[GoogleSpeechProvider] Erro crítico na API do Google Speech.",
+    lastError ? lastError.message : "",
+  );
   throw new Error("Falha na comunicação com o serviço de transcrição.");
 }
 
