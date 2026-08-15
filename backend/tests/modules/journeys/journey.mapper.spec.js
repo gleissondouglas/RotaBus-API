@@ -47,4 +47,25 @@ describe("journey.mapper", () => {
     // O mapper calcula 5 min antes para sair de casa -> 11:25.
     expect(result.summary.leaveHomeAt).toBe("11:25");
   });
+
+  test("deve selecionar e retornar no máximo as 3 melhores rotas quando houver múltiplas alternativas", () => {
+    // Simula resposta do Google com 6 rotas
+    const multiRoutesFixture = {
+      routes: [
+        transitSimpleFixture.routes[0],
+        transitSimpleFixture.routes[0],
+        transitSimpleFixture.routes[0],
+        transitSimpleFixture.routes[0],
+        transitSimpleFixture.routes[0],
+        transitSimpleFixture.routes[0],
+      ]
+    };
+
+    const result = mapGoogleRouteToJourney(multiRoutesFixture, origin, timePreference);
+    
+    // Rota principal (Recomendada) + no máximo 2 alternativas = 3 rotas no total
+    expect(result.summary.tag).toBe("Recomendada");
+    expect(result.alternatives.length).toBeLessThanOrEqual(2);
+    expect(result.metadata.alternativesFound).toBeLessThanOrEqual(3);
+  });
 });

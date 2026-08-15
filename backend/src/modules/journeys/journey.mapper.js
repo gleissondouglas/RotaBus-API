@@ -388,7 +388,7 @@ function mapSingleRouteToJourney(route, origin, timePreference = null, routeInde
   };
 }
 
-function chooseBestJourney(candidates, timePreference = null) {
+function sortJourneysByScore(candidates, timePreference = null) {
   const validCandidates = candidates.filter(Boolean);
 
   if (validCandidates.length === 0) {
@@ -454,7 +454,12 @@ function chooseBestJourney(candidates, timePreference = null) {
     }
 
     return scoreA - scoreB;
-  })[0];
+  });
+}
+
+function chooseBestJourney(candidates, timePreference = null) {
+  const sorted = sortJourneysByScore(candidates, timePreference);
+  return sorted[0];
 }
 
 function assignRouteTags(candidates, bestJourney) {
@@ -506,11 +511,15 @@ function mapGoogleRouteToJourney(googleResponse, origin, timePreference = null) 
     .map((route, index) => mapSingleRouteToJourney(route, origin, timePreference, index))
     .filter(Boolean);
 
-  const bestJourney = chooseBestJourney(candidates, timePreference);
-  assignRouteTags(candidates, bestJourney);
+  // Ordena todas as rotas pelo score de conforto do servidor e seleciona no máximo as 3 melhores
+  const sortedCandidates = sortJourneysByScore(candidates, timePreference);
+  const top3Candidates = sortedCandidates.slice(0, 3);
 
-  // Filtra as alternativas removendo a que foi escolhida como melhor
-  const alternatives = candidates.filter((c) => c.routeIndex !== bestJourney.routeIndex);
+  const bestJourney = top3Candidates[0];
+  assignRouteTags(top3Candidates, bestJourney);
+
+  // Filtra as alternativas mantendo apenas as outras (no máximo 2) melhores rotas
+  const alternatives = top3Candidates.filter((c) => c.routeIndex !== bestJourney.routeIndex);
 
   return {
     summary: bestJourney.summary,
@@ -532,7 +541,7 @@ function mapGoogleRouteToJourney(googleResponse, origin, timePreference = null) 
     })),
     metadata: {
       selectedRouteIndex: bestJourney.routeIndex,
-      alternativesFound: routes.length,
+      alternativesFound: top3Candidates.length,
     },
   };
 }

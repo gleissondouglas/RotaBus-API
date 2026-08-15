@@ -114,7 +114,7 @@ export default function BestRouteScreen() {
     if (!rawAlternatives || rawAlternatives.length === 0) return [main];
     return [
       main,
-      ...rawAlternatives.map((alt, i) => ({
+      ...rawAlternatives.slice(0, 2).map((alt, i) => ({
         tag: alt.summary?.tag || `Opção ${i + 2}`,
         summary: alt.summary,
         steps: alt.steps || [],
