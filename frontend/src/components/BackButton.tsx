@@ -52,7 +52,9 @@ export function BackButton({ label = "Voltar", onPress, accessibilityLabel }: Ba
 }
 
 const styles = StyleSheet.create({
-  button: {},
+  button: {
+    alignSelf: "flex-start",
+  },
   glassPill: {
     flexDirection: "row",
     alignItems: "center",

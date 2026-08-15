@@ -18,6 +18,7 @@ import { usePreventDoublePress } from "../src/hooks/usePreventDoublePress";
 import { LiquidGlassView } from "../src/components/LiquidGlassView";
 import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
 import { BackgroundGradient } from "../src/components/BackgroundGradient";
+import { useAutoSpeakOnce } from "../src/hooks/useAutoSpeakOnce";
 
 import { BackButton } from "../src/components/BackButton";
 import { PrimaryButton } from "../src/components/PrimaryButton";
@@ -59,6 +60,13 @@ export default function ChooseTimeScreen() {
   const destinationLng = String(params.destinationLng || "");
   const selectedDestination = String(params.selectedDestination || "");
   const sessionId = String(params.sessionId || "");
+  const isVoiceSearch = String(params.isVoiceSearch || "false");
+
+  useAutoSpeakOnce(
+    `choose-time-${sessionId || "manual"}-${destination}`,
+    `Quando você quer ir? Escolha o horário da viagem até ${destination}.`,
+    isVoiceSearch === "true"
+  );
 
 
   const [mode, setMode] = useState<TimeMode>("NOW");
@@ -143,6 +151,7 @@ export default function ChooseTimeScreen() {
       sessionId,
       timeType: type,
       dateTime,
+      isVoiceSearch,
     };
   }
 

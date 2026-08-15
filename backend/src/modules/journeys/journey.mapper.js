@@ -457,10 +457,12 @@ function sortJourneysByScore(candidates, timePreference = null) {
   });
 }
 
+/*
 function chooseBestJourney(candidates, timePreference = null) {
   const sorted = sortJourneysByScore(candidates, timePreference);
   return sorted[0];
 }
+*/
 
 function assignRouteTags(candidates, bestJourney) {
   if (!candidates || candidates.length === 0) return;

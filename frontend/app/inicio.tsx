@@ -206,7 +206,7 @@ export default function HomeScreen() {
   /**
    * Envia o texto para o Backend para geocodificação e busca de rotas.
    */
-  const processTranscription = useCallback(async (text: string) => {
+  const processTranscription = useCallback(async (text: string, isVoice: boolean = false) => {
     const destinationText = text.trim();
 
     if (!destinationText || isLikelyNoiseTranscript(destinationText)) {
@@ -263,6 +263,7 @@ export default function HomeScreen() {
               actions: response.actions ? JSON.stringify(response.actions) : "",
               sessionId: response.metadata?.sessionId || "",
               interactionMode: "text",
+              isVoiceSearch: isVoice ? "true" : "false",
             },
           });
         } else {
@@ -291,7 +292,7 @@ export default function HomeScreen() {
       const cleanedText = cleanVoiceTranscript(intent.text);
       setTranscript(cleanedText || intent.text);
       setIsTranscriptFinal(true);
-      void processTranscription(cleanedText || intent.text);
+      void processTranscription(cleanedText || intent.text, true);
       return;
     }
 
@@ -466,7 +467,7 @@ export default function HomeScreen() {
     setTranscript(text);
     setIsTranscriptFinal(true);
     setErrorMessage("");
-    void processTranscription(text);
+    void processTranscription(text, false);
   }, [params.searchText, processTranscription]);
 
   useFocusEffect(
@@ -674,7 +675,7 @@ export default function HomeScreen() {
             setActiveTab("voice");
             setTranscript(text);
             setIsTranscriptFinal(true);
-            void processTranscription(text);
+            void processTranscription(text, false);
           }} />
         ) : (
           <>
