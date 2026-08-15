@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, Pressable, Alert } from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator, Pressable, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { userService, UserFavorite, SearchHistoryItem } from "../services/user.service";
 import { useThemeColors } from "../theme/colors";
@@ -38,7 +38,7 @@ export function FavoritesAndHistoryView({ onSelectDestination }: Props) {
     try {
       await userService.deleteFavorite(id);
       setFavorites(prev => prev.filter(f => f.id !== id));
-    } catch (err) {
+    } catch {
       Alert.alert("Erro", "Não foi possível remover o favorito.");
     }
   }
@@ -50,7 +50,7 @@ export function FavoritesAndHistoryView({ onSelectDestination }: Props) {
         try {
           await userService.clearHistory();
           setHistory([]);
-        } catch (err) {
+        } catch {
           Alert.alert("Erro", "Não foi possível limpar o histórico.");
         }
       }}

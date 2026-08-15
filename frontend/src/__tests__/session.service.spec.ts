@@ -1,6 +1,6 @@
 import { sessionService } from "../services/session.service";
 import { appStorage } from "../services/storage.service";
-import { AuthResponse, AuthUser } from "../types/auth.types";
+import { AuthResponse } from "../types/auth.types";
 
 jest.mock("../services/storage.service", () => ({
   appStorage: {

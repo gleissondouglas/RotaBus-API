@@ -16,7 +16,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
 
-import { BackButton } from "../src/components/BackButton";
 import { PrimaryButton } from "../src/components/PrimaryButton";
 import { ListenOptionsButton } from "../src/components/ListenOptionsButton";
 import { useThemeColors } from "../src/theme/colors";
@@ -262,7 +261,7 @@ export default function NavigatingScreen() {
         }
       }
     }
-  }, [userLocation, stage, globalStepIndex, currentStepIndex, currentGlobalStep, allSteps, destinationMarker, isWalkingOnly, speakControlled, busLine]);
+  }, [userLocation, stage, globalStepIndex, currentStepIndex, currentGlobalStep, allSteps, destinationMarker, isWalkingOnly, speakControlled, busLine, direction]);
 
   useEffect(() => {
     if (stage === "waiting_bus" || stage === "on_bus" || stage === "arrived") {

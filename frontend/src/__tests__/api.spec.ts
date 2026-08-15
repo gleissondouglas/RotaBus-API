@@ -1,7 +1,6 @@
 import { request } from "../utils/api";
 import { sessionService } from "../services/session.service";
 import { Alert } from "react-native";
-import { router } from "expo-router";
 
 jest.mock("../services/session.service", () => ({
   sessionService: {

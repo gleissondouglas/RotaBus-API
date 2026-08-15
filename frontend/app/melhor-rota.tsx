@@ -21,7 +21,7 @@ import { vibrationService } from "../src/services/vibration.service";
 import { speak } from "../src/services/speech.service";
 import { trackingService } from "../src/services/tracking.service";
 import { isConnected } from "../src/utils/network";
-import { JourneyStep, JourneySummary, MapFocusMode } from "../src/types/journey.types";
+import { JourneyStep, MapFocusMode } from "../src/types/journey.types";
 import { formatMinutesToFriendlyText } from "../src/utils/date-time";
 import { parseJsonParam, calculateDistance } from "../src/utils/helpers";
 
@@ -88,7 +88,6 @@ export default function BestRouteScreen() {
   
   const latitude = String(params.latitude || "");
   const longitude = String(params.longitude || "");
-  const mapParam = String(params.map || "");
   const destination = String(params.destination || "seu destino");
   const destinationLat = String(params.destinationLat || "");
   const destinationLng = String(params.destinationLng || "");

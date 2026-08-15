@@ -1,7 +1,6 @@
 import { journeyService } from "../services/journey.service";
 import { sessionService } from "../services/session.service";
 import { cache } from "../utils/cache";
-import { withRetry } from "../utils/network";
 import { request } from "../utils/api";
 
 jest.mock("../services/session.service", () => ({

@@ -31,10 +31,6 @@ const WEEKDAYS: Record<string, number> = {
   "sabado": 6
 };
 
-function pad(v: number | string) {
-  return String(v).padStart(2, "0");
-}
-
 function parseNumber(word: string | undefined): number | undefined {
   if (!word) return undefined;
   if (/^\d+$/.test(word)) return parseInt(word, 10);
