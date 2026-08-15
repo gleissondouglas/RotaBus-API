@@ -316,6 +316,7 @@ export default function ListeningScreen() {
             actions: response.actions ? JSON.stringify(response.actions) : "",
             sessionId: response.metadata?.sessionId || "",
             interactionMode: "text",
+            isVoiceSearch: "true",
           },
         });
       } else {

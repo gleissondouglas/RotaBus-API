@@ -230,6 +230,7 @@ export default function ConfirmDestinationScreen() {
   const address = getSingleParam(params.address);
   const city = getSingleParam(params.city, "Uberaba - MG");
   const backendMode = getSingleParam(params.mode);
+  const isVoiceSearch = getSingleParam(params.isVoiceSearch, "false");
 
   const [sessionId] = useState(getSingleParam(params.sessionId));
   const [displayData] = useState<any>(
@@ -306,9 +307,10 @@ export default function ConfirmDestinationScreen() {
   })();
   useAutoSpeakOnce(
     showSuggestions
-      ? `confirm-dest-suggestions-${options.length}`
-      : `confirm-dest-${activeDestinationName}`,
+      ? `confirm-dest-suggestions-${sessionId}-${options.length}`
+      : `confirm-dest-${sessionId}-${activeDestinationName}`,
     destinationSpeechText,
+    isVoiceSearch === "true"
   );
 
   const navigateWithSelectedDestination = useCallback(
@@ -348,6 +350,7 @@ export default function ConfirmDestinationScreen() {
           destinationLng: String(destLng),
           selectedDestination: JSON.stringify(selected),
           sessionId,
+          isVoiceSearch,
         },
       });
     },

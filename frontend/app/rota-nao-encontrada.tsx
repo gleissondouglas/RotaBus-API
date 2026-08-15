@@ -5,7 +5,7 @@ import { BackButton } from "../src/components/BackButton";
 import { ListenOptionsButton } from "../src/components/ListenOptionsButton";
 import { PrimaryButton } from "../src/components/PrimaryButton";
 import { ScreenContainer } from "../src/components/ScreenContainer";
-import { useAutoSpeak } from "../src/hooks/useAutoSpeak";
+import { useAutoSpeakOnce } from "../src/hooks/useAutoSpeakOnce";
 import { useThemeColors } from "../src/theme/colors";
 import { LiquidGlassView } from "../src/components/LiquidGlassView";
 import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
@@ -19,6 +19,7 @@ export default function RouteNotFoundScreen() {
   const longitude = String(params.longitude || "");
   const destination = String(params.destination || "");
   const message = String(params.message || "Não encontramos uma rota disponível para esse destino no momento.");
+  const isVoiceSearch = String(params.isVoiceSearch || "false");
 
   const isDailyLimit = message.toLowerCase().includes("limite") || message.toLowerCase().includes("requisições");
 
@@ -26,7 +27,7 @@ export default function RouteNotFoundScreen() {
     ? "O limite de buscas para hoje foi atingido. Por favor, tente novamente amanhã ou mais tarde."
     : `Não consegui encontrar uma rota para ${destination}. ${message}`;
 
-  useAutoSpeak(screenMessage);
+  useAutoSpeakOnce(`not-found-${destination}`, screenMessage, isVoiceSearch === "true");
 
   function handleGoHome() {
     router.replace({

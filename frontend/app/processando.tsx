@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
 import { AssistantLoadingState, LoadingStep } from "../src/components/AssistantLoadingState";
 import { LiquidGlassView } from "../src/components/LiquidGlassView";
-import { useAutoSpeak } from "../src/hooks/useAutoSpeak";
+import { useAutoSpeakOnce } from "../src/hooks/useAutoSpeakOnce";
 import { journeyService } from "../src/services/journey.service";
 import { locationService } from "../src/services/location.service";
 import { formatLocalDateTimeWithOffset } from "../src/utils/date-time";
@@ -33,7 +33,7 @@ export default function ProcessingScreen() {
   const destinationLng = String(params.destinationLng || "");
   const selectedDestination = String(params.selectedDestination || "");
   const sessionId = String(params.sessionId || "");
-
+  const isVoiceSearch = String(params.isVoiceSearch || "false");
 
   const timeType: "DEPARTURE" | "ARRIVAL" = params.timeType === "ARRIVAL" ? "ARRIVAL" : "DEPARTURE";
   const dateTime = useMemo(
@@ -58,7 +58,7 @@ export default function ProcessingScreen() {
 
   const screenMessage = `Estamos encontrando o melhor caminho até ${destination}. Aguarde um momento enquanto verifico os ônibus disponíveis.`;
 
-  useAutoSpeak(screenMessage);
+  useAutoSpeakOnce(`processing-${sessionId || "manual"}`, screenMessage, isVoiceSearch === "true");
 
   const getFreshCurrentLocation = useCallback(async () => {
     const hasPermission = await locationService.requestLocationPermission();
@@ -83,6 +83,7 @@ export default function ProcessingScreen() {
               longitude: longitudeParam,
               destination,
               message: "Não recebemos o destino necessário para buscar a rota.",
+              isVoiceSearch,
             },
           });
           return;
@@ -160,6 +161,7 @@ export default function ProcessingScreen() {
             conversationState: journey.conversationState || "",
             actions: journey.actions ? JSON.stringify(journey.actions) : "",
             sessionId: journey.metadata?.sessionId || sessionId,
+            isVoiceSearch,
           },
         });
       } catch (error) {
@@ -172,6 +174,7 @@ export default function ProcessingScreen() {
             longitude: longitudeParam,
             destination,
             message: error instanceof Error ? error.message : "Não encontramos uma rota disponível.",
+            isVoiceSearch,
           },
         });
       }

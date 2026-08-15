@@ -6,7 +6,7 @@ import { useAccessibility } from "../contexts/AccessibilityContext";
 
 const spokenKeys = new Set<string>();
 
-export function useAutoSpeakOnce(key: string, message: string) {
+export function useAutoSpeakOnce(key: string, message: string, forceSpeak: boolean = false) {
   const { autoRead } = useAccessibility();
   const [isSpeaking, setIsSpeaking] = useState(false);
 
@@ -14,7 +14,7 @@ export function useAutoSpeakOnce(key: string, message: string) {
     useCallback(() => {
       let isMounted = true;
 
-      if (!autoRead || !message.trim()) {
+      if ((!autoRead && !forceSpeak) || !message.trim()) {
         return;
       }
 
@@ -25,15 +25,20 @@ export function useAutoSpeakOnce(key: string, message: string) {
       spokenKeys.add(key);
       setIsSpeaking(true);
 
-      speakAndWait(message).finally(() => {
-        if (isMounted) setIsSpeaking(false);
-      });
+      const timeoutId = setTimeout(() => {
+        if (isMounted) {
+          speakAndWait(message).finally(() => {
+            if (isMounted) setIsSpeaking(false);
+          });
+        }
+      }, 350);
 
       return () => {
         isMounted = false;
+        clearTimeout(timeoutId);
         stopSpeaking();
       };
-    }, [key, message, autoRead]),
+    }, [key, message, autoRead, forceSpeak]),
   );
 
   return { isSpeaking };
