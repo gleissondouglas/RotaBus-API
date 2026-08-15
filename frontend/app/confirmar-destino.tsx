@@ -116,11 +116,11 @@ const CarouselCardItem = ({
           styles.destCard,
           { minHeight: cardMinHeight },
           isCurrent && styles.destCardActive,
-          theme.background === '#0F172A' && {
-            backgroundColor: 'rgba(255,255,255,0.06)',
-            borderColor: 'rgba(255,255,255,0.10)',
+          isDark && {
+            backgroundColor: isCurrent ? 'rgba(30, 41, 59, 0.95)' : 'rgba(30, 41, 59, 0.75)',
+            borderColor: isCurrent ? '#3B82F6' : 'rgba(255, 255, 255, 0.12)',
           },
-          (pressed || isActionDisabled) && { opacity: 0.7, transform: [{ scale: 0.99 }] },
+          (pressed || isActionDisabled) && { opacity: 0.8, transform: [{ scale: 0.99 }] },
         ]}
         disabled={isActionDisabled}
         onPress={() => handleSelectSuggestion(option, index)}
@@ -128,59 +128,57 @@ const CarouselCardItem = ({
         accessibilityLabel={`Selecionar ${index + 1}: ${option.name}, ${option.address}`}
       >
         <View style={styles.cardContent}>
-            {/* Contador */}
-            <View style={styles.cardTopRow}>
-              <View
-                style={[
-                  styles.numberBadge,
-                  { backgroundColor: isCurrent ? theme.primary : theme.primaryLight },
-                ]}
-              >
-                <Text style={[styles.numberBadgeText, { color: isCurrent ? "#fff" : theme.primary }]}>
-                  {index + 1}
+          {/* Contador */}
+          <View style={styles.cardTopRow}>
+            <View
+              style={[
+                styles.numberBadge,
+                { backgroundColor: isCurrent ? theme.primary : (isDark ? 'rgba(59,130,246,0.2)' : theme.primaryLight) },
+              ]}
+            >
+              <Text style={[styles.numberBadgeText, { color: isCurrent ? "#fff" : theme.primary }]}>
+                {index + 1}
+              </Text>
+            </View>
+            <Text style={[styles.cardCountText, { color: theme.textMuted }]}>
+              Opção {index + 1} de {optionsLength}
+            </Text>
+            {isCurrent && (
+              <Ionicons name="checkmark-circle" size={22} color={theme.primary} />
+            )}
+          </View>
+
+          {/* Centro do Card: Ícone + nome + detalhes diretos */}
+          <View style={styles.cardBody}>
+            <View style={styles.cardPlaceRow}>
+              <DestinationCategoryIcon category={optionCategory} />
+              <View style={styles.placeTextBox}>
+                <Text style={[styles.placeName, { color: theme.text }]} numberOfLines={2}>
+                  {option.name}
+                </Text>
+                <Text style={[styles.placeType, { color: theme.textMuted }]}>
+                  {getDestinationCategoryLabel(optionCategory)}
                 </Text>
               </View>
-              <Text style={[styles.cardCountText, { color: theme.textMuted }]}>
-                Opção {index + 1} de {optionsLength}
-              </Text>
-              {isCurrent && (
-                <Ionicons name="checkmark-circle" size={22} color={theme.primary} />
+            </View>
+
+            <View style={styles.cardDetails}>
+              <View style={styles.cardDetailRow}>
+                <Ionicons name="location-outline" size={18} color={theme.primary} />
+                <Text style={[styles.cardDetailText, { color: theme.textMuted }]} numberOfLines={2}>
+                  {addressDetails.main}
+                </Text>
+              </View>
+              {!!addressDetails.area && (
+                <View style={styles.cardDetailRow}>
+                  <Ionicons name="business-outline" size={18} color={theme.primary} />
+                  <Text style={[styles.cardDetailText, { color: theme.textMuted }]} numberOfLines={1}>
+                    {addressDetails.area}
+                  </Text>
+                </View>
               )}
             </View>
-
-            {/* Centro do Card: Ícone + nome + detalhes */}
-            <View style={{ flex: 1, justifyContent: "center" }}>
-              <View style={[styles.infoBox, theme.background === '#0F172A' && { backgroundColor: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.10)' }]}>
-                <View style={styles.cardPlaceRow}>
-                  <DestinationCategoryIcon category={optionCategory} />
-                  <View style={styles.placeTextBox}>
-                    <Text style={[styles.placeName, { color: theme.text }]} numberOfLines={2}>
-                      {option.name}
-                    </Text>
-                    <Text style={[styles.placeType, { color: theme.textMuted }]}>
-                      {getDestinationCategoryLabel(optionCategory)}
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={styles.cardDetails}>
-                  <View style={styles.cardDetailRow}>
-                    <Ionicons name="location-outline" size={16} color={theme.primary} />
-                    <Text style={[styles.cardDetailText, { color: theme.textMuted }]} numberOfLines={2}>
-                      {addressDetails.main}
-                    </Text>
-                  </View>
-                  {!!addressDetails.area && (
-                    <View style={styles.cardDetailRow}>
-                      <Ionicons name="business-outline" size={16} color={theme.primary} />
-                      <Text style={[styles.cardDetailText, { color: theme.textMuted }]} numberOfLines={1}>
-                        {addressDetails.area}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              </View>
-            </View>
+          </View>
 
           {/* Chips */}
           <View style={styles.chipsContainer}>
@@ -457,11 +455,11 @@ export default function ConfirmDestinationScreen() {
       >
         <Animated.View 
           entering={FadeIn.duration(400)} 
-          style={[styles.content, { flex: 1 }]}
+          style={{ flex: 1 }}
         >
 
-          {/* Título + subtítulo — alinhado à esquerda, igual à rota pronta */}
-          <View style={styles.header}>
+          {/* Título + subtítulo — alinhado à esquerda */}
+          <View style={[styles.header, { paddingHorizontal: screenHorizontalPadding }]}>
             <Text style={[styles.title, { color: theme.text }]} maxFontSizeMultiplier={1.2}>
               {showSuggestions ? "Destinos encontrados" : "Destino encontrado"}
             </Text>
@@ -473,14 +471,17 @@ export default function ConfirmDestinationScreen() {
           </View>
 
           {isChoosingSuggestion ? (
-            /* ── CARROSSEL ── */
-            <View style={[styles.carouselWrapper, { flex: 1 }]}>
+            /* ── CARROSSEL (Edge-to-Edge sem cortes laterais) ── */
+            <View style={styles.carouselWrapper}>
               <Animated.ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 snapToInterval={carouselCardWidth + 12}
                 decelerationRate="fast"
-                contentContainerStyle={styles.carouselContent}
+                contentContainerStyle={[
+                  styles.carouselContent,
+                  { paddingHorizontal: screenHorizontalPadding }
+                ]}
                 onScroll={scrollHandler}
                 scrollEventThrottle={16}
                 onMomentumScrollEnd={(event) => {
@@ -528,61 +529,59 @@ export default function ConfirmDestinationScreen() {
               )}
             </View>
           ) : (
-            /* ── CARD ÚNICO — mesmo estilo compactSummary da rota pronta ── */
+            /* ── CARD ÚNICO (Design limpo sem caixas aninhadas) ── */
             <Animated.View
               entering={FadeInUp.delay(150).duration(400)}
               style={[
                 styles.destCard, 
                 { minHeight: cardMinHeight, width: carouselCardWidth, alignSelf: "center" },
                 isDark && {
-                  backgroundColor: 'rgba(255,255,255,0.06)',
-                  borderColor: 'rgba(255,255,255,0.10)',
+                  backgroundColor: 'rgba(30, 41, 59, 0.85)',
+                  borderColor: 'rgba(255, 255, 255, 0.12)',
                 },
               ]}
             >
               <View style={styles.cardContent}>
-                  {/* Centro do Card Único: Ícone + nome + detalhes */}
-                  <View style={{ flex: 1, justifyContent: "center" }}>
-                    <View style={[styles.infoBox, isDark && { backgroundColor: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.10)' }]}>
-                      <View style={styles.cardPlaceRow}>
-                        <DestinationCategoryIcon category={activeDestinationCategory} />
-                        <View style={styles.placeTextBox}>
-                          <Text style={[styles.placeName, { color: theme.text }]} numberOfLines={2}>
-                            {activeDestinationName}
-                          </Text>
-                          <Text style={[styles.placeType, { color: theme.textMuted }]}>
-                            {getDestinationCategoryLabel(activeDestinationCategory)}
-                          </Text>
-                        </View>
-                      </View>
-
-                      <View style={styles.cardDetails}>
-                        <View style={styles.cardDetailRow}>
-                          <Ionicons name="location-outline" size={16} color={theme.primary} />
-                          <Text style={[styles.cardDetailText, { color: theme.textMuted }]} numberOfLines={2}>
-                            {activeAddressDetails.main}
-                          </Text>
-                        </View>
-                        {!!activeAddressDetails.area && (
-                          <View style={styles.cardDetailRow}>
-                            <Ionicons name="business-outline" size={16} color={theme.primary} />
-                            <Text style={[styles.cardDetailText, { color: theme.textMuted }]} numberOfLines={1}>
-                              {activeAddressDetails.area}
-                            </Text>
-                          </View>
-                        )}
-                      </View>
+                {/* Centro do Card Único: Ícone + nome + detalhes */}
+                <View style={styles.cardBody}>
+                  <View style={styles.cardPlaceRow}>
+                    <DestinationCategoryIcon category={activeDestinationCategory} />
+                    <View style={styles.placeTextBox}>
+                      <Text style={[styles.placeName, { color: theme.text }]} numberOfLines={2}>
+                        {activeDestinationName}
+                      </Text>
+                      <Text style={[styles.placeType, { color: theme.textMuted }]}>
+                        {getDestinationCategoryLabel(activeDestinationCategory)}
+                      </Text>
                     </View>
+                  </View>
 
-                    {!selectedSuggestion && confidence === "medium" && (
-                      <View style={[styles.statusBox, styles.statusBoxWarning, { marginTop: 12 }]}>
-                        <Ionicons name="alert-circle" size={18} color={theme.warning} />
-                        <Text style={[styles.statusDesc, { color: theme.warning, marginLeft: 8 }]}>
-                          Confira o endereço com atenção.
+                  <View style={styles.cardDetails}>
+                    <View style={styles.cardDetailRow}>
+                      <Ionicons name="location-outline" size={18} color={theme.primary} />
+                      <Text style={[styles.cardDetailText, { color: theme.textMuted }]} numberOfLines={2}>
+                        {activeAddressDetails.main}
+                      </Text>
+                    </View>
+                    {!!activeAddressDetails.area && (
+                      <View style={styles.cardDetailRow}>
+                        <Ionicons name="business-outline" size={18} color={theme.primary} />
+                        <Text style={[styles.cardDetailText, { color: theme.textMuted }]} numberOfLines={1}>
+                          {activeAddressDetails.area}
                         </Text>
                       </View>
                     )}
                   </View>
+                </View>
+
+                {!selectedSuggestion && confidence === "medium" && (
+                  <View style={[styles.statusBox, styles.statusBoxWarning, { marginTop: 12 }]}>
+                    <Ionicons name="alert-circle" size={18} color={theme.warning} />
+                    <Text style={[styles.statusDesc, { color: theme.warning, marginLeft: 8 }]}>
+                      Confira o endereço com atenção.
+                    </Text>
+                  </View>
+                )}
 
                 <View style={styles.chipsContainer}>
                   <View style={styles.chipsRow}>
@@ -732,31 +731,37 @@ const styles = StyleSheet.create({
   },
 
   destCard: {
-    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    backgroundColor: "rgba(255, 255, 255, 0.88)",
     borderRadius: 28,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.9)",
+    padding: 22,
+    borderWidth: 1.5,
+    borderColor: "rgba(255, 255, 255, 0.95)",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.08,
     shadowRadius: 16,
     elevation: 4,
-    gap: 16,
+    justifyContent: "space-between",
   },
   destCardActive: {
     shadowColor: "#2563EB",
     shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.20,
     shadowRadius: 20,
     elevation: 8,
-    borderColor: "rgba(37,99,235,0.3)",
-    backgroundColor: "rgba(255, 255, 255, 0.85)",
+    borderColor: "#3B82F6",
+    backgroundColor: "#FFFFFF",
   },
 
   cardContent: {
     flex: 1,
     justifyContent: "space-between",
+  },
+  cardBody: {
+    flex: 1,
+    justifyContent: "center",
+    gap: 20,
+    paddingVertical: 8,
   },
   chipsContainer: {
     paddingTop: 16,
@@ -790,7 +795,7 @@ const styles = StyleSheet.create({
   cardPlaceRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 9,
+    gap: 12,
   },
   placeIconBox: {
     width: 44,
@@ -818,16 +823,8 @@ const styles = StyleSheet.create({
   },
 
   // ─── Detalhes de endereço ────────────────────────────────────────────
-  infoBox: {
-    backgroundColor: "rgba(255, 255, 255, 0.6)",
-    borderRadius: 20,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.8)",
-    gap: 20,
-  },
   cardDetails: {
-    gap: 16,
+    gap: 14,
   },
   cardDetailRow: {
     flexDirection: "row",
