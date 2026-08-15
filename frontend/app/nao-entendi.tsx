@@ -6,6 +6,7 @@ import { PrimaryButton } from "../src/components/PrimaryButton";
 import { ScreenContainer } from "../src/components/ScreenContainer";
 import { VoiceOrb } from "../src/components/VoiceOrb";
 import { useThemeColors } from "../src/theme/colors";
+import { BackgroundGradient } from "../src/components/BackgroundGradient";
 import { LiquidGlassView } from "../src/components/LiquidGlassView";
 
 export default function DidNotUnderstandScreen() {
@@ -48,55 +49,61 @@ export default function DidNotUnderstandScreen() {
   }
 
   return (
-    <ScreenContainer>
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.content}>
-          <View style={styles.orbContainer}>
-            <VoiceOrb state="error" size={100} />
-          </View>
+    <View style={styles.screen}>
+      <BackgroundGradient />
+      <ScreenContainer backgroundColor="transparent">
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.content}>
+            <View style={styles.orbContainer}>
+              <VoiceOrb state="error" size={100} />
+            </View>
 
-          <View style={styles.header}>
-            <Text style={[styles.title, { color: theme.text }]}>Não consegui entender</Text>
-            <Text style={[styles.subtitle, { color: theme.textMuted }]}>
-              Por favor, tente falar novamente o nome do lugar ou o endereço completo.
-            </Text>
-          </View>
-
-          <View style={[styles.cardShadow]}>
-            <View style={[styles.cardContent, { borderColor: theme.danger }]}>
-              <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={30} fallbackColor="rgba(239, 68, 68, 0.1)" />
-              <Text style={[styles.cardText, { color: theme.danger }]}>
-                Se preferir, você também pode digitar o destino usando o teclado.
+            <View style={styles.header}>
+              <Text style={[styles.title, { color: theme.text }]}>Não consegui entender</Text>
+              <Text style={[styles.subtitle, { color: theme.textMuted }]}>
+                Por favor, tente falar novamente o nome do lugar ou o endereço completo.
               </Text>
             </View>
+
+            <View style={[styles.cardShadow]}>
+              <View style={[styles.cardContent, { borderColor: theme.danger }]}>
+                <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={30} fallbackColor="rgba(239, 68, 68, 0.1)" />
+                <Text style={[styles.cardText, { color: theme.danger }]}>
+                  Se preferir, você também pode digitar o destino usando o teclado.
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.actions}>
+              <PrimaryButton title="Tentar falar de novo" onPress={handleTryAgain} />
+
+              <ListenOptionsButton textToSpeak={screenMessage} />
+
+              <Pressable
+                style={styles.secondaryButton}
+                onPress={handleTypeDestination}
+              >
+                <Text style={[styles.secondaryButtonText, { color: theme.primary }]}>Digitar destino</Text>
+              </Pressable>
+
+              <Pressable style={styles.homeButton} onPress={handleGoHome}>
+                <Text style={[styles.homeButtonText, { color: theme.textMuted }]}>Voltar ao início</Text>
+              </Pressable>
+            </View>
           </View>
-
-          <View style={styles.actions}>
-            <PrimaryButton title="Tentar falar de novo" onPress={handleTryAgain} />
-
-            <ListenOptionsButton textToSpeak={screenMessage} />
-
-            <Pressable
-              style={styles.secondaryButton}
-              onPress={handleTypeDestination}
-            >
-              <Text style={[styles.secondaryButtonText, { color: theme.primary }]}>Digitar destino</Text>
-            </Pressable>
-
-            <Pressable style={styles.homeButton} onPress={handleGoHome}>
-              <Text style={[styles.homeButtonText, { color: theme.textMuted }]}>Voltar ao início</Text>
-            </Pressable>
-          </View>
-        </View>
-      </ScrollView>
-    </ScreenContainer>
+        </ScrollView>
+      </ScreenContainer>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 40,

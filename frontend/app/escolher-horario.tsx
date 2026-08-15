@@ -11,12 +11,13 @@ import {
   Modal,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
-import Animated, { FadeInUp, FadeIn, ZoomIn, withSpring, withTiming } from "react-native-reanimated";
+import { Ionicons } from "@expo/vector-icons";
+import Animated, { FadeInUp, withSpring, withTiming } from "react-native-reanimated";
 import { usePreventDoublePress } from "../src/hooks/usePreventDoublePress";
 
 import { LiquidGlassView } from "../src/components/LiquidGlassView";
 import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
+import { BackgroundGradient } from "../src/components/BackgroundGradient";
 
 import { BackButton } from "../src/components/BackButton";
 import { PrimaryButton } from "../src/components/PrimaryButton";
@@ -232,7 +233,8 @@ export default function ChooseTimeScreen() {
 
 
   return (
-    <View style={[styles.screen, { backgroundColor: theme.background }]}>
+    <View style={styles.screen}>
+      <BackgroundGradient />
       <LiquidGlassView
         style={[styles.fixedHeaderBackground, { height: insets.top + 60 }]}
         intensity={60}

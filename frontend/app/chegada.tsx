@@ -5,6 +5,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { ListenOptionsButton } from "../src/components/ListenOptionsButton";
 import { PrimaryButton } from "../src/components/PrimaryButton";
 import { ScreenContainer } from "../src/components/ScreenContainer";
+import { BackgroundGradient } from "../src/components/BackgroundGradient";
 import { useThemeColors } from "../src/theme/colors";
 import { useAutoSpeak } from "../src/hooks/useAutoSpeak";
 import { formatBusWaitingTimeToFriendlyTextShort } from "../src/utils/date-time";
@@ -35,11 +36,13 @@ export default function ArrivalScreen() {
   }
 
   return (
-    <ScreenContainer withPadding={false} style={{ backgroundColor: "#F6F8FA" }}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
+    <View style={styles.screen}>
+      <BackgroundGradient />
+      <ScreenContainer withPadding={false} backgroundColor="transparent">
+        <ScrollView 
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
         <View style={styles.header}>
           <View style={[styles.successBadge, { backgroundColor: "#DCFCE7" }]}>
             <Ionicons name="checkmark-circle" size={56} color="#10B981" />
@@ -120,10 +123,14 @@ export default function ArrivalScreen() {
         </View>
       </ScrollView>
     </ScreenContainer>
+  </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 40,

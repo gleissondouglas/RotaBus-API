@@ -1,6 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { StyleSheet, Text, View, ScrollView, Pressable } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { BackButton } from "../src/components/BackButton";
 import { ListenOptionsButton } from "../src/components/ListenOptionsButton";
@@ -10,6 +9,7 @@ import { useAutoSpeak } from "../src/hooks/useAutoSpeak";
 import { useThemeColors } from "../src/theme/colors";
 import { LiquidGlassView } from "../src/components/LiquidGlassView";
 import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
+import { BackgroundGradient } from "../src/components/BackgroundGradient";
 
 export default function RouteNotFoundScreen() {
   const params = useLocalSearchParams();
@@ -43,11 +43,13 @@ export default function RouteNotFoundScreen() {
   }
 
   return (
-    <ScreenContainer>
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+    <View style={styles.screen}>
+      <BackgroundGradient />
+      <ScreenContainer backgroundColor="transparent">
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
         <BackButton label="Início" onPress={handleGoHome} />
 
         <View style={styles.content}>
@@ -108,10 +110,14 @@ export default function RouteNotFoundScreen() {
         </View>
       </ScrollView>
     </ScreenContainer>
+  </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 40,
