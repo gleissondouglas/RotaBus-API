@@ -1,7 +1,7 @@
 import { BackgroundGradient } from "../src/components/BackgroundGradient";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState, useCallback, useEffect, useMemo } from "react";
-import { ScrollView, StyleSheet, Text, View, TouchableOpacity, useColorScheme } from "react-native";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { ScrollView, StyleSheet, Text, View, TouchableOpacity, useColorScheme, useWindowDimensions } from "react-native";
 import { Ionicons, MaterialCommunityIcons, FontAwesome6 } from "@expo/vector-icons";
 import Animated, { FadeInUp, FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -9,6 +9,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BackButton } from "../src/components/BackButton";
 import { ListenOptionsButton } from "../src/components/ListenOptionsButton";
 import { PrimaryButton } from "../src/components/PrimaryButton";
+import { useAutoSpeakOnce } from "../src/hooks/useAutoSpeakOnce";
+import { useAccessibility } from "../src/contexts/AccessibilityContext";
 import { RouteStep } from "../src/components/RouteStep";
 import Map from "../src/components/Map";
 import { LiquidGlassView } from "../src/components/LiquidGlassView";
@@ -69,19 +71,30 @@ function buildVoiceSummary({
   busLine,
   departureTime,
   arrivalTime,
+  routeCount,
 }: {
   busLine: string;
   departureTime: string;
   arrivalTime: string;
+  routeCount?: number;
 }) {
   const linePart = busLine ? `Você vai pegar a linha ${busLine}. ` : "";
   const departurePart = departureTime ? `O ônibus sai ${departureTime.replace("às ", "às ")}. ` : "";
   const arrivalPart = arrivalTime ? `A chegada prevista é às ${arrivalTime}. ` : "";
   
+  if (routeCount && routeCount > 1) {
+    return `Encontrei ${routeCount} opções de rota. A recomendada é pegar a linha ${busLine}. Selecione a opção desejada na tela e clique em iniciar navegação.`;
+  }
+  
   return `Encontrei uma rota. ${linePart}${departurePart}${arrivalPart}Quer iniciar a navegação?`;
 }
 
 export default function BestRouteScreen() {
+  const { autoRead } = useAccessibility();
+  const isInitialMount = useRef(true);
+  const routeScrollViewRef = useRef<ScrollView>(null);
+  const { width } = useWindowDimensions();
+
   const params = useLocalSearchParams();
   const theme = useThemeColors();
   const insets = useSafeAreaInsets();
@@ -114,13 +127,32 @@ export default function BestRouteScreen() {
     if (!rawAlternatives || rawAlternatives.length === 0) return [main];
     return [
       main,
-      ...rawAlternatives.slice(0, 2).map((alt, i) => ({
-        tag: alt.summary?.tag || `Opção ${i + 2}`,
-        summary: alt.summary,
-        steps: alt.steps || [],
-        map: alt.map,
-        alerts: alt.alerts || [],
-      })),
+      ...rawAlternatives.slice(0, 2).map((alt, i) => {
+        let altTag = "Alternativa";
+        
+        // Comparações lógicas para dar um nome inteligente:
+        if (alt.summary?.isWalkingOnly && !main.summary?.isWalkingOnly) {
+          altTag = "Ir a pé";
+        } else if (alt.summary?.totalDurationMin < main.summary?.totalDurationMin) {
+          altTag = "Mais rápida";
+        } else if (
+           alt.summary?.busLines?.length > 0 && 
+           main.summary?.busLines?.length > 0 && 
+           alt.summary.busLines.length < main.summary.busLines.length
+        ) {
+          altTag = "Menos trocas";
+        } else {
+          altTag = `Alternativa ${i + 1}`;
+        }
+
+        return {
+          tag: alt.summary?.tag || altTag,
+          summary: alt.summary,
+          steps: alt.steps || [],
+          map: alt.map,
+          alerts: alt.alerts || [],
+        };
+      }),
     ];
   }, [summary, steps, mapData, alerts, rawAlternatives]);
 
@@ -199,11 +231,13 @@ export default function BestRouteScreen() {
 
   const speechTextParam = String(params.speechText || "");
   const sessionIdParam = String(params.sessionId || "");
+  const isVoiceSearch = String(params.isVoiceSearch || "false");
 
   const baseVoiceSummary = buildVoiceSummary({
     busLine,
     departureTime: activeSummary?.beAtStopAt || activeSummary?.leaveHomeAt || "",
     arrivalTime: activeSummary?.arrivalAtDestination || "",
+    routeCount: allRoutes.length,
   });
 
   const voiceSummary = isWalkingOnly
@@ -211,6 +245,69 @@ export default function BestRouteScreen() {
     : baseVoiceSummary;
 
   const voiceText = speechTextParam || voiceSummary;
+
+  useAutoSpeakOnce(
+    `best-route-${sessionIdParam || "manual"}-${destination}`,
+    voiceText,
+    isVoiceSearch === "true"
+  );
+
+  const lastSpokenRouteIndex = useRef(selectedRouteIndex);
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    
+    // Evita falar novamente se a aba não mudou de verdade (protege contra re-renders)
+    if (lastSpokenRouteIndex.current === selectedRouteIndex) {
+      return;
+    }
+    lastSpokenRouteIndex.current = selectedRouteIndex;
+    
+    if (autoRead || isVoiceSearch === "true") {
+      const r = allRoutes[selectedRouteIndex];
+      const dur = r.summary?.totalDurationMin || 0;
+      const isWalking = r.summary?.isWalkingOnly;
+      const lines = r.summary?.busLines?.join(" e ") || (isWalking ? "a pé" : "ônibus");
+      
+      let tagPrefix = "";
+      if (r.tag === "Recomendada" || r.tag === "Mais rápida" || r.tag === "Menos trocas") {
+        tagPrefix = "Rota ";
+      } else if (r.tag === "Ir a pé") {
+        tagPrefix = "Opção ";
+      }
+      
+      const tagText = `${tagPrefix}${r.tag}`;
+      
+      let textToSpeak = `${tagText} selecionada. `;
+      if (isWalking) {
+        textToSpeak += `Caminhada de ${dur} minutos.`;
+      } else {
+        textToSpeak += `Duração de ${dur} minutos, usando as linhas ${lines}.`;
+      }
+      
+      speak(textToSpeak);
+    }
+  }, [selectedRouteIndex, allRoutes, autoRead, isVoiceSearch]);
+
+  // Auto-scroll para centralizar o card da rota selecionada
+  useEffect(() => {
+    if (allRoutes.length > 1 && routeScrollViewRef.current) {
+      const ITEM_WIDTH = 145;
+      const GAP = 12;
+      const PADDING_HORIZONTAL = 20;
+
+      const itemX = (ITEM_WIDTH + GAP) * selectedRouteIndex;
+      const centerOffset = itemX - (width / 2) + (ITEM_WIDTH / 2) + PADDING_HORIZONTAL;
+
+      routeScrollViewRef.current.scrollTo({
+        x: Math.max(0, centerOffset),
+        animated: true,
+      });
+    }
+  }, [selectedRouteIndex, allRoutes.length, width]);
 
   const initialRegion = {
     latitude: Number(latitude) || -19.7472,
@@ -292,7 +389,7 @@ export default function BestRouteScreen() {
       {/* Top Bar (Floating Glass Pill) */}
       <View style={[styles.topBar, { top: insets.top + 8 }]} pointerEvents="box-none">
         <View style={styles.topBarInner} pointerEvents="box-none">
-          <BackButton label="Início" onPress={isLoadingCommand ? undefined : handleGoHome} accessibilityLabel="Voltar para a tela inicial" />
+          <BackButton label="Voltar" accessibilityLabel="Voltar para a tela anterior" />
         </View>
       </View>
 
@@ -324,6 +421,7 @@ export default function BestRouteScreen() {
               </View>
               <ScrollView
                 horizontal
+                ref={routeScrollViewRef}
                 showsHorizontalScrollIndicator={false}
                 style={styles.routeSelectorScrollView}
                 contentContainerStyle={styles.routeSelectorScroll}
