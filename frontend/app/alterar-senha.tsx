@@ -10,14 +10,14 @@ import {
   Text,
   View,
 } from "react-native";
-
+import Animated, { FadeInUp } from "react-native-reanimated";
 
 import { BackButton } from "../src/components/BackButton";
 import { PrimaryButton } from "../src/components/PrimaryButton";
 import { ScreenContainer } from "../src/components/ScreenContainer";
 import { TextField } from "../src/components/TextField";
 import { userService } from "../src/services/user.service";
-import { colors, useThemeColors } from "../src/theme/colors";
+import { useThemeColors } from "../src/theme/colors";
 
 export default function ChangePasswordScreen() {
   const theme = useThemeColors();
@@ -57,91 +57,98 @@ export default function ChangePasswordScreen() {
   return (
     <View style={{ flex: 1 }}>
       <BackgroundGradient />
-      <ScreenContainer backgroundColor="transparent">
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      >
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
+      <ScreenContainer withPadding={false} backgroundColor="transparent">
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
         >
-          <BackButton />
-
-          <View style={styles.content}>
-            <Text style={styles.title}>Alterar senha</Text>
-            <Text style={styles.subtitle}>
-              Mantenha sua conta segura trocando sua senha periodicamente.
-            </Text>
-
-            <View style={styles.form}>
-              <TextField
-                label="Senha atual"
-                placeholder="Digite sua senha atual"
-                value={currentPassword}
-                onChangeText={setCurrentPassword}
-                secureTextEntry
-              />
-
-              <TextField
-                label="Nova senha"
-                placeholder="Digite a nova senha"
-                value={newPassword}
-                onChangeText={setNewPassword}
-                secureTextEntry
-              />
-
-              <TextField
-                label="Confirmar nova senha"
-                placeholder="Repita a nova senha"
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry
-              />
-
-              <View style={styles.buttonWrapper}>
-                <PrimaryButton
-                  title="Alterar senha"
-                  onPress={handleSave}
-                  isLoading={loading}
-                />
-              </View>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+          >
+            <View style={styles.topBar}>
+              <BackButton />
             </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+
+            <Animated.View entering={FadeInUp.duration(600)} style={styles.content}>
+              <Text style={[styles.title, { color: theme.text }]}>Alterar senha</Text>
+              <Text style={[styles.subtitle, { color: theme.textMuted }]}>
+                Mantenha sua conta segura trocando sua senha periodicamente.
+              </Text>
+
+              <View style={styles.form}>
+                <TextField
+                  label="Senha atual"
+                  placeholder="Digite sua senha atual"
+                  value={currentPassword}
+                  onChangeText={setCurrentPassword}
+                  secureTextEntry
+                />
+
+                <TextField
+                  label="Nova senha"
+                  placeholder="Digite a nova senha"
+                  value={newPassword}
+                  onChangeText={setNewPassword}
+                  secureTextEntry
+                />
+
+                <TextField
+                  label="Confirmar nova senha"
+                  placeholder="Repita a nova senha"
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  secureTextEntry
+                />
+
+                <View style={styles.buttonWrapper}>
+                  <PrimaryButton
+                    title="Alterar senha"
+                    onPress={handleSave}
+                    isLoading={loading}
+                  />
+                </View>
+              </View>
+            </Animated.View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </ScreenContainer>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  topBar: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 40,
   },
   content: {
     flex: 1,
-    paddingTop: 20,
+    paddingTop: 32,
+    paddingHorizontal: 20,
     gap: 16,
   },
   title: {
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: "900",
-    color: colors.text,
     textAlign: "center",
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 16,
-    color: colors.textMuted,
     textAlign: "center",
     lineHeight: 24,
-    marginBottom: 20,
+    fontWeight: "500",
+    marginBottom: 8,
   },
   form: {
     gap: 20,
   },
   buttonWrapper: {
-    marginTop: 10,
+    marginTop: 8,
   },
 });

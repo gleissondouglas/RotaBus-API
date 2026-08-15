@@ -575,41 +575,67 @@ export default function NavigatingScreen() {
         <BackgroundGradient />
       )}
 
-      {/* Top Bar (Always Fixed) */}
-      <View style={[styles.topBar, { paddingTop: insets.top + 12, paddingBottom: 16 }]} pointerEvents="box-none">
-        <View style={StyleSheet.absoluteFill} pointerEvents="none">
-          <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={isDark ? 30 : 50} fallbackColor={theme.background} />
-          <LinearGradient
-            colors={[theme.background, isDark ? 'rgba(1, 16, 48, 0)' : 'rgba(241, 245, 249, 0)']}
-            locations={[0.6, 1]}
-            style={StyleSheet.absoluteFillObject}
-          />
-        </View>
+      {/* Top Bar (Floating Glass Pills over Map) */}
+      <View style={[styles.topBar, { top: insets.top + 8 }]} pointerEvents="box-none">
         <View style={styles.topBarInner} pointerEvents="box-none">
-          <View style={styles.backButtonMini}>
-            {(stage !== "on_bus" && stage !== "arrived") && (
-              <BackButton 
-                label="Sair" 
-                onPress={handleSair} 
-                accessibilityLabel="Sair da navegação"
-              />
-            )}
-          </View>
+          {(stage !== "on_bus" && stage !== "arrived") ? (
+            <Pressable 
+              onPress={handleSair}
+              accessibilityRole="button"
+              accessibilityLabel="Voltar e sair da navegação"
+              style={({ pressed }) => [pressed && { opacity: 0.7 }]}
+            >
+              <LiquidGlassView 
+                style={[
+                  styles.glassPill, 
+                  isDark 
+                    ? { backgroundColor: "rgba(15, 23, 42, 0.5)", borderColor: "rgba(255, 255, 255, 0.15)" } 
+                    : { backgroundColor: "rgba(255, 255, 255, 0.75)", borderColor: "rgba(255, 255, 255, 0.85)" }
+                ]} 
+                intensity={isDark ? 40 : 80} 
+                fallbackColor={theme.card}
+              >
+                <Ionicons name="chevron-back" size={18} color={theme.text} />
+                <Text style={[styles.glassPillText, { color: theme.text }]}>Voltar</Text>
+              </LiquidGlassView>
+            </Pressable>
+          ) : (
+            <View />
+          )}
 
           {(stage !== "on_bus" && stage !== "arrived") && (
-            <View style={[styles.miniBadge, isDark ? { backgroundColor: "rgba(255,255,255,0.15)" } : { backgroundColor: "white" }]}>
-              {stage === "waiting_bus" && <View style={[styles.badgeDot, { backgroundColor: theme.primary }]} />}
-              <Text style={[styles.miniBadgeText, isDark && { color: theme.text }]}>
+            <LiquidGlassView 
+              style={[
+                styles.glassPill, 
+                isDark 
+                  ? { backgroundColor: "rgba(15, 23, 42, 0.5)", borderColor: "rgba(255, 255, 255, 0.15)" } 
+                  : { backgroundColor: "rgba(255, 255, 255, 0.75)", borderColor: "rgba(255, 255, 255, 0.85)" }
+              ]} 
+              intensity={isDark ? 40 : 80} 
+              fallbackColor={theme.card}
+            >
+              {stage === "waiting_bus" ? (
+                <View style={[styles.badgeDot, { backgroundColor: theme.primary }]} />
+              ) : (
+                <AdaptiveIcon
+                  iosSymbol="figure.walk"
+                  fallbackFamily="FontAwesome6"
+                  fallbackName="person-walking"
+                  size={14}
+                  color={isDark ? '#60A5FA' : theme.primary}
+                />
+              )}
+              <Text style={[styles.glassPillText, { color: theme.text }]}>
                 {stage === "waiting_bus" ? "No ponto" : `${walkTimeMinutes} min caminhando`}
               </Text>
-            </View>
+            </LiquidGlassView>
           )}
         </View>
       </View>
 
       {/* Instruction Card (Fixed during walking) */}
       {(stage === "walking") && (
-        <View style={[styles.instructionCardContainer, { top: insets.top + 65 }]} pointerEvents="box-none">
+        <View style={[styles.instructionCardContainer, { top: insets.top + 62 }]} pointerEvents="box-none">
           {!!formattedInstruction.warning && (
             <View style={styles.warningPill}>
               <Ionicons name="warning" size={16} color="#B45309" />
@@ -618,23 +644,31 @@ export default function NavigatingScreen() {
           )}
 
           <Pressable onPress={() => speakControlled(formattedInstruction.speechText, true)}>
-            <View style={[styles.instructionCardShadow]}>
-              <View style={[styles.instructionCardContent, { borderColor: theme.border }]}>
-                <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={50} fallbackColor={theme.card} />
-                <View style={[styles.iconCircle, { backgroundColor: theme.primaryLight }]}>
+            <View style={styles.instructionCardShadow}>
+              <LiquidGlassView 
+                style={[
+                  styles.instructionCardContent, 
+                  isDark 
+                    ? { backgroundColor: "rgba(15, 23, 42, 0.55)", borderColor: "rgba(255, 255, 255, 0.12)" } 
+                    : { backgroundColor: "rgba(255, 255, 255, 0.75)", borderColor: "rgba(255, 255, 255, 0.85)" }
+                ]} 
+                intensity={isDark ? 40 : 80} 
+                fallbackColor={theme.card}
+              >
+                <View style={[styles.iconCircle, { backgroundColor: isDark ? 'rgba(59, 130, 246, 0.2)' : theme.primaryLight }]}>
                   <AdaptiveIcon 
                     iosSymbol={formattedInstruction.maneuver?.includes("LEFT") ? "arrow.left" : formattedInstruction.maneuver?.includes("RIGHT") ? "arrow.right" : "arrow.up"}
                     fallbackFamily="FontAwesome6"
                     fallbackName={formattedInstruction.maneuver?.includes("LEFT") ? "arrow-left" : formattedInstruction.maneuver?.includes("RIGHT") ? "arrow-right" : "arrow-up"} 
                     size={18} 
-                    color={theme.primary} 
+                    color={isDark ? '#60A5FA' : theme.primary} 
                   />
                 </View>
                 <View style={styles.instructionTextContent}>
                   <Text style={[styles.instructionTitle, { color: theme.text }]} numberOfLines={1}>{formattedInstruction.displayTitle}</Text>
                   <Text style={[styles.instructionSubtitle, { color: theme.textMuted }]}>{formattedInstruction.displaySubtitle}</Text>
                 </View>
-              </View>
+              </LiquidGlassView>
             </View>
           </Pressable>
         </View>
@@ -766,10 +800,10 @@ export default function NavigatingScreen() {
           <View style={[styles.bottomCardShadow, { bottom: 0 }]} pointerEvents="box-none">
             <View 
               onLayout={(e) => setBottomCardHeight(e.nativeEvent.layout.height)}
-              style={[styles.bottomCardContent, { paddingBottom: insets.bottom + 16 }]}
+              style={[styles.bottomCardContent, { paddingBottom: Math.max(insets.bottom, 12) + 4 }]}
             >
-              <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={50} fallbackColor={theme.card} />
-              <View style={[styles.dragHandle, { backgroundColor: theme.border }]} />
+              <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={isDark ? 40 : 80} fallbackColor={theme.card} />
+              <View style={[styles.dragHandle, { backgroundColor: isDark ? 'rgba(255,255,255,0.2)' : theme.border }]} />
 
             <View style={styles.bottomSheetHeader}>
               <Text style={[styles.bottomSheetLabel, { color: theme.text }]}>
@@ -792,7 +826,7 @@ export default function NavigatingScreen() {
 
             {showBusArrivalWarning && (
               <View style={styles.arrivalWarningBox}>
-                <Ionicons name="alert-circle" size={18} color="#bd2a09" />
+                <Ionicons name="alert-circle" size={16} color="#bd2a09" />
                 <Text style={styles.arrivalWarningText}>O ônibus pode chegar antes de você.</Text>
               </View>
             )}
@@ -807,15 +841,15 @@ export default function NavigatingScreen() {
 
               return (
                 <View style={styles.infoCardsGrid}>
-                  <LiquidGlassView style={[styles.infoCard, isDark ? { backgroundColor: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.06)' } : { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={isDark ? 30 : 80} fallbackColor={theme.card}>
+                  <LiquidGlassView style={[styles.infoCard, isDark ? { backgroundColor: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.08)' } : { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={isDark ? 30 : 80} fallbackColor={theme.card}>
                     <Text style={[styles.infoCardLabel, { color: theme.textMuted }]}>LINHA {busLine}</Text>
-                    <Text style={[styles.infoCardValue, { color: theme.text, fontSize: 18 }]} numberOfLines={2} adjustsFontSizeToFit>{lineDetails || busLine}</Text>
+                    <Text style={[styles.infoCardValue, { color: theme.text, fontSize: 16 }]} numberOfLines={1} adjustsFontSizeToFit>{lineDetails || busLine}</Text>
                   </LiquidGlassView>
-                  <LiquidGlassView style={[styles.infoCard, isDark ? { backgroundColor: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.06)' } : { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={isDark ? 30 : 80} fallbackColor={theme.card}>
+                  <LiquidGlassView style={[styles.infoCard, isDark ? { backgroundColor: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.08)' } : { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={isDark ? 30 : 80} fallbackColor={theme.card}>
                     <Text style={[styles.infoCardLabel, { color: theme.textMuted }]}>{chegaLabel}</Text>
-                    <Text style={[styles.infoCardValue, { color: isDark ? '#60A5FA' : theme.primary }]} numberOfLines={1} adjustsFontSizeToFit>{chegaValue}</Text>
+                    <Text style={[styles.infoCardValue, { color: isDark ? '#60A5FA' : theme.primary, fontSize: 18 }]} numberOfLines={1} adjustsFontSizeToFit>{chegaValue}</Text>
                     {!!stopName && stopName !== "ponto indicado" && (
-                      <Text style={[styles.infoCardSubValue, { color: theme.textMuted }]} numberOfLines={2}>{stopName}</Text>
+                      <Text style={[styles.infoCardSubValue, { color: theme.textMuted }]} numberOfLines={1}>{stopName}</Text>
                     )}
                   </LiquidGlassView>
                 </View>
@@ -860,31 +894,43 @@ export default function NavigatingScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  topBar: { position: "absolute", top: 0, left: 0, right: 0, zIndex: 100 },
+  topBar: { position: "absolute", left: 0, right: 0, zIndex: 100 },
   topBarInner: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16 },
-  backButtonMini: { minWidth: 80 },
-  miniBadge: { flexDirection: "row", paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, alignItems: "center", elevation: 4, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
-  miniBadgeText: { fontWeight: "800", fontSize: 14, color: "#011030" },
-  badgeDot: { width: 8, height: 8, borderRadius: 4, marginRight: 8 },
+  glassPill: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    paddingHorizontal: 14, 
+    paddingVertical: 9, 
+    borderRadius: 22, 
+    borderWidth: 1, 
+    gap: 6, 
+    shadowColor: "#000", 
+    shadowOffset: { width: 0, height: 4 }, 
+    shadowOpacity: 0.15, 
+    shadowRadius: 8, 
+    elevation: 6 
+  },
+  glassPillText: { fontWeight: "800", fontSize: 14, letterSpacing: -0.2 },
+  badgeDot: { width: 8, height: 8, borderRadius: 4 },
   instructionCardContainer: { position: "absolute", left: 16, right: 16, zIndex: 90, gap: 8 },
   instructionCardShadow: { shadowColor: "#000", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 10 },
-  instructionCardContent: { flexDirection: "row", paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, alignItems: "center", borderWidth: 1, overflow: "hidden" },
-  iconCircle: { width: 38, height: 38, borderRadius: 12, alignItems: "center", justifyContent: "center", marginRight: 12, zIndex: 2 },
-  instructionTextContent: { flex: 1, zIndex: 2 },
+  instructionCardContent: { flexDirection: "row", paddingHorizontal: 16, paddingVertical: 12, borderRadius: 22, alignItems: "center", borderWidth: 1 },
+  iconCircle: { width: 38, height: 38, borderRadius: 12, alignItems: "center", justifyContent: "center", marginRight: 12 },
+  instructionTextContent: { flex: 1 },
   instructionTitle: { fontSize: 16, fontWeight: "900", letterSpacing: -0.3, lineHeight: 22 },
   instructionSubtitle: { fontSize: 15, fontWeight: "700", marginTop: 1 },
   warningPill: { flexDirection: "row", alignSelf: "flex-start", backgroundColor: "#FEF3C7", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, gap: 6, alignItems: "center", borderWidth: 1, borderColor: "#FDE68A" },
   warningPillText: { fontSize: 13, fontWeight: "800", color: "#B45309" },
   bottomCardShadow: { position: "absolute", left: 0, right: 0, elevation: 20, shadowColor: "#000", shadowOffset: { width: 0, height: -10 }, shadowOpacity: 0.1, shadowRadius: 20 },
-  bottomCardContent: { borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingHorizontal: 24, paddingTop: 12, overflow: "hidden", borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.02)" },
-  dragHandle: { width: 40, height: 4, borderRadius: 2, alignSelf: "center", marginBottom: 8, zIndex: 2 },
-  bottomSheetHeader: { marginBottom: 16, alignItems: 'center', zIndex: 2 },
-  bottomSheetLabel: { fontSize: 13, fontWeight: "800", textTransform: "uppercase", letterSpacing: 0.5 },
-  stopNameText: { fontSize: 16, fontWeight: "700", marginTop: 4 },
-  arrivalWarningBox: { flexDirection: "row", backgroundColor: "rgba(254, 243, 199, 0.4)", padding: 12, borderRadius: 16, alignItems: "center", gap: 8, marginBottom: 16, borderWidth: 1, borderColor: "rgba(253, 230, 138, 0.5)", zIndex: 2 },
-  arrivalWarningText: { fontSize: 14, fontWeight: "700", color: "#B45309", flex: 1 },
-  actionArea: { gap: 8, alignItems: "center", width: "100%", zIndex: 2 },
-  mainButton: { height: 56, borderRadius: 32 },
+  bottomCardContent: { borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 18, paddingTop: 8, overflow: "hidden", borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.02)" },
+  dragHandle: { width: 36, height: 3.5, borderRadius: 2, alignSelf: "center", marginBottom: 6, zIndex: 2 },
+  bottomSheetHeader: { marginBottom: 8, alignItems: 'center', zIndex: 2 },
+  bottomSheetLabel: { fontSize: 12, fontWeight: "800", textTransform: "uppercase", letterSpacing: 0.5 },
+  stopNameText: { fontSize: 14, fontWeight: "700", marginTop: 2 },
+  arrivalWarningBox: { flexDirection: "row", backgroundColor: "rgba(254, 243, 199, 0.4)", padding: 8, borderRadius: 12, alignItems: "center", gap: 6, marginBottom: 8, borderWidth: 1, borderColor: "rgba(253, 230, 138, 0.5)", zIndex: 2 },
+  arrivalWarningText: { fontSize: 13, fontWeight: "700", color: "#B45309", flex: 1 },
+  actionArea: { gap: 6, alignItems: "center", width: "100%", zIndex: 2 },
+  mainButton: { height: 50, borderRadius: 25 },
   ttsWrapper: { opacity: 0.9 },
   statusContentContainer: { flexGrow: 1, paddingHorizontal: 20, zIndex: 2, justifyContent: "center" },
   largeStatusCardShadow: { shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 20 },
@@ -896,11 +942,11 @@ const styles = StyleSheet.create({
   stopNameStatusText: { fontSize: 15, fontWeight: "700", flexShrink: 1 },
   largeStatusSubtitle: { fontSize: 17, fontWeight: "500", textAlign: "center", color: "#64748B", lineHeight: 24, paddingHorizontal: 16 },
   helperText: { fontSize: 15, fontWeight: "600", textAlign: "center", color: "#94A3B8" },
-  infoCardsGrid: { flexDirection: "row", gap: 12, marginBottom: 20 },
-  infoCard: { flex: 1, paddingVertical: 16, paddingHorizontal: 12, borderRadius: 24, alignItems: "flex-start", borderWidth: 1 },
-  infoCardLabel: { fontSize: 13, fontWeight: "700", textTransform: "uppercase", marginBottom: 6, letterSpacing: 0.5 },
-  infoCardValue: { fontSize: 22, fontWeight: "900", letterSpacing: -0.5 },
-  infoCardSubValue: { fontSize: 13, fontWeight: "600", marginTop: 4 },
+  infoCardsGrid: { flexDirection: "row", gap: 8, marginBottom: 8 },
+  infoCard: { flex: 1, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 18, alignItems: "flex-start", borderWidth: 1 },
+  infoCardLabel: { fontSize: 11, fontWeight: "700", textTransform: "uppercase", marginBottom: 2, letterSpacing: 0.5 },
+  infoCardValue: { fontSize: 18, fontWeight: "900", letterSpacing: -0.5 },
+  infoCardSubValue: { fontSize: 12, fontWeight: "600", marginTop: 2 },
   fixedStatusActionsShadow: { position: "absolute", bottom: 0, left: 0, right: 0, shadowColor: "#000", shadowOffset: { width: 0, height: -8 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 10 },
   fixedStatusActionsContent: { paddingHorizontal: 24, paddingTop: 16, borderTopLeftRadius: 32, borderTopRightRadius: 32, gap: 12, overflow: "hidden", borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.02)" },
   secondaryActionBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 8 },

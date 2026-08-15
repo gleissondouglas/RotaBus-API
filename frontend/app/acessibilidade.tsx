@@ -41,8 +41,8 @@ export default function AccessibilityScreen() {
 
         <Animated.View entering={FadeInUp.duration(600)} style={styles.content}>
           <View style={styles.textHeader}>
-            <Text style={styles.title}>Acessibilidade</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.title, { color: theme.text }]}>Acessibilidade</Text>
+            <Text style={[styles.subtitle, { color: theme.textMuted }]}>
               Ajuste o app para ficar mais fácil de usar de acordo com suas necessidades.
             </Text>
           </View>
@@ -50,8 +50,8 @@ export default function AccessibilityScreen() {
           <LiquidGlassView style={[styles.card, { backgroundColor: "transparent" }]} intensity={80} fallbackColor={theme.card}>
             <View style={styles.option}>
               <View style={styles.optionTextBox}>
-                <Text style={styles.optionTitle}>Texto maior</Text>
-                <Text style={styles.optionDescription}>
+                <Text style={[styles.optionTitle, { color: theme.text }]}>Texto maior</Text>
+                <Text style={[styles.optionDescription, { color: theme.textMuted }]}>
                   Aumenta o tamanho das letras no app para facilitar a leitura.
                 </Text>
               </View>
@@ -63,12 +63,12 @@ export default function AccessibilityScreen() {
               />
             </View>
 
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
             <View style={styles.option}>
               <View style={styles.optionTextBox}>
-                <Text style={styles.optionTitle}>Voz mais lenta</Text>
-                <Text style={styles.optionDescription}>
+                <Text style={[styles.optionTitle, { color: theme.text }]}>Voz mais lenta</Text>
+                <Text style={[styles.optionDescription, { color: theme.textMuted }]}>
                   Faz a assistente falar com mais calma e clareza.
                 </Text>
               </View>
@@ -80,12 +80,12 @@ export default function AccessibilityScreen() {
               />
             </View>
 
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
             <View style={styles.option}>
               <View style={styles.optionTextBox}>
-                <Text style={styles.optionTitle}>Alto contraste</Text>
-                <Text style={styles.optionDescription}>
+                <Text style={[styles.optionTitle, { color: theme.text }]}>Alto contraste</Text>
+                <Text style={[styles.optionDescription, { color: theme.textMuted }]}>
                   Melhora a visualização com cores mais fortes.
                 </Text>
               </View>
@@ -97,14 +97,14 @@ export default function AccessibilityScreen() {
               />
             </View>
 
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
             <View style={styles.option}>
               <View style={styles.optionTextBox}>
-                <Text style={styles.optionTitle}>
+                <Text style={[styles.optionTitle, { color: theme.text }]}>
                   Leitura automática
                 </Text>
-                <Text style={styles.optionDescription}>
+                <Text style={[styles.optionDescription, { color: theme.textMuted }]}>
                   A assistente narra as telas ao entrar nelas.
                 </Text>
               </View>
@@ -116,12 +116,12 @@ export default function AccessibilityScreen() {
               />
             </View>
 
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
             <View style={styles.option}>
               <View style={styles.optionTextBox}>
-                <Text style={styles.optionTitle}>Vibração</Text>
-                <Text style={styles.optionDescription}>
+                <Text style={[styles.optionTitle, { color: theme.text }]}>Vibração</Text>
+                <Text style={[styles.optionDescription, { color: theme.textMuted }]}>
                   Usa vibração para avisos e confirmações.
                 </Text>
               </View>
@@ -135,7 +135,7 @@ export default function AccessibilityScreen() {
           </LiquidGlassView>
 
           <View style={styles.footer}>
-            <Text style={styles.note}>
+            <Text style={[styles.note, { color: theme.textMuted }]}>
               Suas preferências são salvas automaticamente.
             </Text>
 
@@ -175,14 +175,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 34,
     fontWeight: "900",
-    color: "#000",
     textAlign: "center",
     letterSpacing: -0.5,
   },
 
   subtitle: {
     fontSize: 17,
-    color: "#666",
     textAlign: "center",
     fontWeight: "500",
     lineHeight: 24,
@@ -191,7 +189,6 @@ const styles = StyleSheet.create({
   card: {
     padding: 24,
     borderRadius: 32,
-    backgroundColor: "rgba(255, 255, 255, 0.4)",
     borderWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.6)",
   },
@@ -210,20 +207,17 @@ const styles = StyleSheet.create({
   optionTitle: {
     fontSize: 18,
     fontWeight: "800",
-    color: "#000",
   },
 
   optionDescription: {
     marginTop: 4,
     fontSize: 14,
-    color: "#666",
     fontWeight: "500",
     lineHeight: 20,
   },
 
   divider: {
     height: 1,
-    backgroundColor: "#F0F0F0",
   },
 
   footer: {
@@ -233,7 +227,6 @@ const styles = StyleSheet.create({
 
   note: {
     fontSize: 14,
-    color: "#94A3B8",
     textAlign: "center",
     fontWeight: "600",
   },

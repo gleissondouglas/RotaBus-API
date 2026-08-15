@@ -1,13 +1,16 @@
+import { BackgroundGradient } from "../src/components/BackgroundGradient";
+import { LiquidGlassView } from "../src/components/LiquidGlassView";
 import { router, useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import Animated, { FadeInUp } from "react-native-reanimated";
 
+import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
 import { BackButton } from "../src/components/BackButton";
 import { ListenOptionsButton } from "../src/components/ListenOptionsButton";
 import { PrimaryButton } from "../src/components/PrimaryButton";
 import { ScreenContainer } from "../src/components/ScreenContainer";
 import { useAutoSpeakOnce } from "../src/hooks/useAutoSpeakOnce";
 import { useThemeColors } from "../src/theme/colors";
-import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
 
 export default function HelpScreen() {
   const params = useLocalSearchParams();
@@ -24,150 +27,170 @@ export default function HelpScreen() {
   function handleSpeakDestination() {
     router.push({
       pathname: "/inicio",
-      params: {
-        latitude,
-        longitude,
-      },
+      params: { latitude, longitude },
     });
   }
 
   function handleTypeDestination() {
     router.push({
       pathname: "/digitar-destino",
-      params: {
-        latitude,
-        longitude,
-      },
+      params: { latitude, longitude },
     });
   }
 
   function handleSettings() {
     router.push({
       pathname: "/configuracoes",
-      params: {
-        latitude,
-        longitude,
-      },
+      params: { latitude, longitude },
     });
   }
 
   return (
-    <ScreenContainer>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        <BackButton />
-
-        <View style={styles.content}>
-          <Text style={[styles.title, { color: theme.text }]}>Ajuda</Text>
-
-          <Text style={[styles.subtitle, { color: theme.textMuted }]}>
-            Veja como usar o RotaBus de forma simples.
-          </Text>
-
-          <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-            <View style={[styles.iconContainer, { backgroundColor: theme.background }]}>
-              <AdaptiveIcon iosSymbol="mic" fallbackFamily="Ionicons" fallbackName="mic-outline" size={28} color={theme.primary} />
-            </View>
-
-            <View style={styles.cardTextBox}>
-              <Text style={[styles.cardTitle, { color: theme.text }]}>Falar destino</Text>
-              <Text style={[styles.cardDescription, { color: theme.textMuted }]}>
-                Mantenha o botão de voz pressionado e diga para onde você quer
-                ir.
-              </Text>
-            </View>
+    <View style={{ flex: 1 }}>
+      <BackgroundGradient />
+      <ScreenContainer withPadding={false} backgroundColor="transparent">
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          <View style={styles.topBar}>
+            <BackButton />
           </View>
 
-          <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-            <View style={[styles.iconContainer, { backgroundColor: theme.background }]}>
-              <AdaptiveIcon iosSymbol="keyboard" fallbackFamily="Ionicons" fallbackName="create-outline" size={28} color={theme.primary} />
-            </View>
-
-            <View style={styles.cardTextBox}>
-              <Text style={[styles.cardTitle, { color: theme.text }]}>Digitar destino</Text>
-              <Text style={[styles.cardDescription, { color: theme.textMuted }]}>
-                Se preferir, você pode escrever o local desejado.
+          <Animated.View entering={FadeInUp.duration(600)} style={styles.content}>
+            <View style={styles.textHeader}>
+              <Text style={[styles.title, { color: theme.text }]}>Ajuda</Text>
+              <Text style={[styles.subtitle, { color: theme.textMuted }]}>
+                Veja como usar o RotaBus de forma simples.
               </Text>
             </View>
-          </View>
 
-          <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-            <View style={[styles.iconContainer, { backgroundColor: theme.background }]}>
-              <AdaptiveIcon iosSymbol="bus" fallbackFamily="Ionicons" fallbackName="bus-outline" size={28} color={theme.primary} />
+            <LiquidGlassView
+              style={[styles.section, { borderColor: "rgba(255, 255, 255, 0.6)" }]}
+              intensity={80}
+              fallbackColor={theme.card}
+            >
+              <View style={styles.option}>
+                <View style={[styles.iconContainer, { backgroundColor: theme.primaryLight }]}>
+                  <AdaptiveIcon iosSymbol="mic" fallbackFamily="Ionicons" fallbackName="mic-outline" size={24} color={theme.primary} />
+                </View>
+                <View style={styles.cardTextBox}>
+                  <Text style={[styles.cardTitle, { color: theme.text }]}>Falar destino</Text>
+                  <Text style={[styles.cardDescription, { color: theme.textMuted }]}>
+                    Mantenha o botão de voz pressionado e diga para onde você quer ir.
+                  </Text>
+                </View>
+              </View>
+
+              <View style={[styles.divider, { backgroundColor: theme.border }]} />
+
+              <View style={styles.option}>
+                <View style={[styles.iconContainer, { backgroundColor: theme.primaryLight }]}>
+                  <AdaptiveIcon iosSymbol="keyboard" fallbackFamily="Ionicons" fallbackName="create-outline" size={24} color={theme.primary} />
+                </View>
+                <View style={styles.cardTextBox}>
+                  <Text style={[styles.cardTitle, { color: theme.text }]}>Digitar destino</Text>
+                  <Text style={[styles.cardDescription, { color: theme.textMuted }]}>
+                    Se preferir, você pode escrever o local desejado.
+                  </Text>
+                </View>
+              </View>
+
+              <View style={[styles.divider, { backgroundColor: theme.border }]} />
+
+              <View style={styles.option}>
+                <View style={[styles.iconContainer, { backgroundColor: theme.primaryLight }]}>
+                  <AdaptiveIcon iosSymbol="bus" fallbackFamily="Ionicons" fallbackName="bus-outline" size={24} color={theme.primary} />
+                </View>
+                <View style={styles.cardTextBox}>
+                  <Text style={[styles.cardTitle, { color: theme.text }]}>Ir até o ponto</Text>
+                  <Text style={[styles.cardDescription, { color: theme.textMuted }]}>
+                    O RotaBus mostra o ponto de ônibus mais próximo e guia você até lá.
+                  </Text>
+                </View>
+              </View>
+            </LiquidGlassView>
+
+            <View style={styles.actions}>
+              <PrimaryButton title="Falar destino" onPress={handleSpeakDestination} />
+
+              <ListenOptionsButton textToSpeak={screenMessage} />
+
+              <Pressable style={styles.secondaryButton} onPress={handleTypeDestination}>
+                <Text style={[styles.secondaryButtonText, { color: theme.primary }]}>Digitar destino</Text>
+              </Pressable>
+
+              <Pressable style={styles.secondaryButton} onPress={handleSettings}>
+                <Text style={[styles.secondaryButtonText, { color: theme.primary }]}>Configurações</Text>
+              </Pressable>
             </View>
-
-            <View style={styles.cardTextBox}>
-              <Text style={[styles.cardTitle, { color: theme.text }]}>Ir até o ponto</Text>
-              <Text style={[styles.cardDescription, { color: theme.textMuted }]}>
-                O RotaBus mostra o ponto de ônibus mais próximo e guia você até
-                lá.
-              </Text>
-            </View>
-          </View>
-
-          <PrimaryButton
-            title="Falar destino"
-            onPress={handleSpeakDestination}
-          />
-
-          <ListenOptionsButton textToSpeak={screenMessage} />
-
-          <Pressable
-            style={styles.secondaryButton}
-            onPress={handleTypeDestination}
-          >
-            <Text style={[styles.secondaryButtonText, { color: theme.primary }]}>Digitar destino</Text>
-          </Pressable>
-
-          <Pressable style={styles.secondaryButton} onPress={handleSettings}>
-            <Text style={[styles.secondaryButtonText, { color: theme.primary }]}>Configurações</Text>
-          </Pressable>
-        </View>
-      </ScrollView>
-    </ScreenContainer>
+          </Animated.View>
+        </ScrollView>
+      </ScreenContainer>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  topBar: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
+
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 32,
+    paddingBottom: 40,
   },
 
   content: {
     flex: 1,
-    justifyContent: "center",
-    gap: 12,
+    gap: 20,
+    paddingHorizontal: 20,
+    marginTop: 8,
+  },
+
+  textHeader: {
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 4,
   },
 
   title: {
-    fontSize: 30,
+    fontSize: 34,
     fontWeight: "900",
     textAlign: "center",
+    letterSpacing: -0.5,
   },
 
   subtitle: {
-    fontSize: 15,
+    fontSize: 16,
     textAlign: "center",
-    lineHeight: 22,
-    marginBottom: 6,
+    fontWeight: "500",
+    lineHeight: 24,
   },
 
-  card: {
+  section: {
+    padding: 24,
+    borderRadius: 32,
+    borderWidth: 1,
+  },
+
+  option: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    padding: 14,
-    borderRadius: 18,
-    borderWidth: 1,
+    gap: 16,
+    paddingVertical: 12,
+  },
+
+  divider: {
+    height: 1,
+    marginVertical: 4,
   },
 
   iconContainer: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -177,14 +200,20 @@ const styles = StyleSheet.create({
   },
 
   cardTitle: {
-    fontSize: 16,
-    fontWeight: "800",
+    fontSize: 17,
+    fontWeight: "700",
   },
 
   cardDescription: {
-    marginTop: 3,
-    fontSize: 13,
-    lineHeight: 19,
+    marginTop: 2,
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "500",
+  },
+
+  actions: {
+    gap: 16,
+    alignItems: "center",
   },
 
   secondaryButton: {

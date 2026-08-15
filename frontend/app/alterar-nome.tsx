@@ -11,7 +11,7 @@ import {
   Text,
   View,
 } from "react-native";
-
+import Animated, { FadeInUp } from "react-native-reanimated";
 
 import { BackButton } from "../src/components/BackButton";
 import { PrimaryButton } from "../src/components/PrimaryButton";
@@ -19,7 +19,7 @@ import { ScreenContainer } from "../src/components/ScreenContainer";
 import { TextField } from "../src/components/TextField";
 import { userService } from "../src/services/user.service";
 import { sessionService } from "../src/services/session.service";
-import { colors, useThemeColors } from "../src/theme/colors";
+import { useThemeColors } from "../src/theme/colors";
 
 export default function EditNameScreen() {
   const theme = useThemeColors();
@@ -72,43 +72,45 @@ export default function EditNameScreen() {
   return (
     <View style={{ flex: 1 }}>
       <BackgroundGradient />
-      <ScreenContainer backgroundColor="transparent">
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      >
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
+      <ScreenContainer withPadding={false} backgroundColor="transparent">
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
         >
-          <BackButton />
-
-          <View style={styles.content}>
-            <Text style={styles.title}>Alterar nome</Text>
-            <Text style={styles.subtitle}>
-              Como você gostaria que o RotaBus chamasse você?
-            </Text>
-
-            <View style={styles.form}>
-              <TextField
-                label="Seu nome"
-                placeholder="Ex: Maria Oliveira"
-                value={name}
-                onChangeText={setName}
-                autoCapitalize="words"
-              />
-
-              <View style={styles.buttonWrapper}>
-                <PrimaryButton
-                  title="Salvar alteração"
-                  onPress={handleSave}
-                  isLoading={loading}
-                />
-              </View>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+          >
+            <View style={styles.topBar}>
+              <BackButton />
             </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+
+            <Animated.View entering={FadeInUp.duration(600)} style={styles.content}>
+              <Text style={[styles.title, { color: theme.text }]}>Alterar nome</Text>
+              <Text style={[styles.subtitle, { color: theme.textMuted }]}>
+                Como você gostaria que o RotaBus chamasse você?
+              </Text>
+
+              <View style={styles.form}>
+                <TextField
+                  label="Seu nome"
+                  placeholder="Ex: Maria Oliveira"
+                  value={name}
+                  onChangeText={setName}
+                  autoCapitalize="words"
+                />
+
+                <View style={styles.buttonWrapper}>
+                  <PrimaryButton
+                    title="Salvar alteração"
+                    onPress={handleSave}
+                    isLoading={loading}
+                  />
+                </View>
+              </View>
+            </Animated.View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </ScreenContainer>
     </View>
   );
@@ -120,32 +122,37 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  topBar: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 40,
   },
   content: {
     flex: 1,
-    paddingTop: 40,
+    paddingTop: 32,
+    paddingHorizontal: 20,
     gap: 16,
   },
   title: {
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: "900",
-    color: colors.text,
     textAlign: "center",
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 16,
-    color: colors.textMuted,
     textAlign: "center",
     lineHeight: 24,
-    marginBottom: 24,
+    fontWeight: "500",
+    marginBottom: 8,
   },
   form: {
     gap: 24,
   },
   buttonWrapper: {
-    marginTop: 16,
+    marginTop: 8,
   },
 });
