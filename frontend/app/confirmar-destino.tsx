@@ -418,7 +418,6 @@ export default function ConfirmDestinationScreen() {
           <BackButton label="Voltar" accessibilityLabel="Voltar para a tela anterior" />
           <Pressable
             style={({ pressed }) => [
-              styles.helpButtonPressable,
               pressed && { opacity: 0.7, transform: [{ scale: 0.98 }] }
             ]}
             onPress={handleHelp}
@@ -435,7 +434,7 @@ export default function ConfirmDestinationScreen() {
               intensity={isDark ? 40 : 80}
               fallbackColor={theme.card}
             >
-              <AdaptiveIcon iosSymbol="questionmark.circle.fill" fallbackFamily="Ionicons" fallbackName="help-circle" size={18} color={theme.primary} />
+              <Ionicons name="help-circle" size={18} color={theme.primary} />
               <Text style={[styles.glassPillText, { color: theme.text }]}>Ajuda</Text>
             </LiquidGlassView>
           </Pressable>
@@ -652,21 +651,20 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
-  },
-  helpButtonPressable: {
-    alignSelf: "flex-start",
+    height: 40,
   },
   glassPill: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    height: 40,
     paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 22,
+    borderRadius: 20,
     borderWidth: 1,
     gap: 6,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.12,
     shadowRadius: 8,
     elevation: 4,
   },
