@@ -372,6 +372,7 @@ export default function BestRouteScreen() {
           {activeMapData && (
             <View style={styles.previewMapContainer}>
               <Map 
+                key={`map-route-${selectedRouteIndex}`}
                 mapData={activeMapData} 
                 initialRegion={initialRegion} 
                 userLocation={{ latitude: Number(latitude), longitude: Number(longitude) }}
@@ -495,7 +496,7 @@ export default function BestRouteScreen() {
 
               {!isWalkingOnly && transitSteps.map((step, index) => (
                 <RouteStep 
-                  key={`step-${index}`}
+                  key={`step-${selectedRouteIndex}-${index}`}
                   type="bus"
                   time={step.departureTime || (index === 0 ? activeSummary?.beAtStopAt : "") || "--"}
                   title={`Pegue o ônibus ${step.line}`}

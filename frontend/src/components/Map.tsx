@@ -184,19 +184,26 @@ const Map: React.FC<MapProps> = ({
       }
     }
     
-    // Aplica o ajuste de visão (fitToCoordinates) com um padding para não cortar os ícones
-    if (coordinatesToFit.length >= 1) {
-      const uniqueCoords = coordinatesToFit.filter((c, i, self) => i === self.findIndex(t => t.latitude === c.latitude && t.longitude === c.longitude));
+    // Aplica o ajuste de visão (fitToCoordinates) com proteção para coordenadas inválidas (NaN)
+    const isValidCoord = (c: any) => c && typeof c.latitude === 'number' && !isNaN(c.latitude) && isFinite(c.latitude) && typeof c.longitude === 'number' && !isNaN(c.longitude) && isFinite(c.longitude);
+    const validCoords = coordinatesToFit.filter(isValidCoord);
+
+    if (validCoords.length >= 1) {
+      const uniqueCoords = validCoords.filter((c, i, self) => i === self.findIndex(t => t.latitude === c.latitude && t.longitude === c.longitude));
       fitTimer = setTimeout(() => {
-        if (uniqueCoords.length === 1) {
-          mapRef.current?.animateToRegion({ ...uniqueCoords[0], latitudeDelta: 0.003, longitudeDelta: 0.003 }, 1000);
-        } else if (uniqueCoords.length > 1) {
-          mapRef.current?.fitToCoordinates(uniqueCoords, { 
-            edgePadding: { top: 60, right: 20, bottom: controlsBottomOffset + 20, left: 20 }, 
-            animated: true 
-          });
+        try {
+          if (uniqueCoords.length === 1) {
+            mapRef.current?.animateToRegion({ ...uniqueCoords[0], latitudeDelta: 0.003, longitudeDelta: 0.003 }, 1000);
+          } else if (uniqueCoords.length > 1) {
+            mapRef.current?.fitToCoordinates(uniqueCoords, { 
+              edgePadding: { top: 60, right: 20, bottom: controlsBottomOffset + 20, left: 20 }, 
+              animated: true 
+            });
+          }
+        } catch (err) {
+          console.warn("[Map] Falha ao ajustar visão:", err);
         }
-      }, 1000);
+      }, 500);
     }
 
     return () => {
@@ -294,16 +301,20 @@ const Map: React.FC<MapProps> = ({
 
     return mapData.markers
       .filter(m => {
+        if (!m) return false;
+        const lat = Number(m.lat);
+        const lng = Number(m.lng);
+        if (isNaN(lat) || !isFinite(lat) || isNaN(lng) || !isFinite(lng)) return false;
         if (m.type === 'user') return false;
         if (focusMode === 'full_route') return true;
         return m.type === 'boarding_stop';
       })
-      .map(marker => ({
-        id: marker.id,
+      .map((marker, idx) => ({
+        id: `${marker.id || 'marker'}-${idx}`,
         latitude: Number(marker.lat),
         longitude: Number(marker.lng),
-        title: marker.title,
-        description: marker.description,
+        title: marker.title || '',
+        description: marker.description || '',
         type: marker.type,
         pinColor: getMarkerColor(marker.type),
       }));
