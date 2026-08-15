@@ -711,73 +711,38 @@ O token puro não é salvo no banco. Apenas o hash do token é armazenado.
 
 ---
 
-## ⚙️ Variáveis de ambiente
+## ⚙️ Ambiente de Desenvolvimento (Engenharia)
 
-Crie um arquivo `.env` na raiz do projeto:
+*Nota: Projeto de natureza pessoal/fechada. As instruções abaixo documentam o workflow do desenvolvedor para a infraestrutura do backend.*
 
-```env
-PORT=3000
+### 1. Dependências Base
 
-DATABASE_URL="postgresql://usuario:senha@127.0.0.1:5432/rotabus_api?schema=public"
-
-GOOGLE_MAPS_API_KEY=sua_chave_google
-
-JWT_SECRET=sua_chave_jwt
-
-NODE_ENV=development
-```
-
-> O arquivo `.env` não deve ser enviado para o GitHub.
-
----
-
-## ▶️ Como rodar o projeto
-
-### 1. Clone o repositório
-
-```bash
-git clone https://github.com/gleissondouglas/RotaBus-API.git
-```
-
-### 2. Entre na pasta do projeto
-
-```bash
-cd RotaBus-API
-```
-
-### 3. Instale as dependências
+O projeto utiliza `npm` para gestão de pacotes e `prisma` para modelagem do banco relacional.
 
 ```bash
 npm install
 ```
 
-### 4. Configure o `.env`
+### 2. Infraestrutura
 
-Crie o arquivo `.env` com as variáveis necessárias.
+- Banco de dados relacional (PostgreSQL)
+- Cluster de In-memory Cache (Redis)
 
-### 5. Rode as migrations do Prisma
+Ambos configurados através das variáveis no arquivo `.env` (ex: `DATABASE_URL` e `REDIS_URL`).
+
+### 3. Migrations e Prisma
+
+Para sincronizar o esquema do banco com o código:
 
 ```bash
 npx prisma migrate dev
-```
-
-### 6. Gere o Prisma Client
-
-```bash
 npx prisma generate
 ```
 
-### 7. Inicie o servidor
+### 4. Execução e Testes
 
-```bash
-npm run dev
-```
-
-Servidor rodando em:
-
-```text
-http://localhost:3000
-```
+- **Ambiente Dev:** `npm run dev` (com nodemon ativado)
+- **Suíte de Testes (Mocks e Jest):** `npm run test`
 
 ---
 

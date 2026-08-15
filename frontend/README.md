@@ -191,59 +191,31 @@ Tela para futuras configurações de conta e preferências do usuário.
 
 ---
 
-## Como rodar o projeto
+## Ambiente de Desenvolvimento (Engenharia)
 
-### 1. Clonar o repositório
+*Nota: Projeto de natureza pessoal/fechada. As instruções abaixo documentam o workflow do desenvolvedor para rodar o app localmente.*
 
-```bash
-git clone https://github.com/SEU-USUARIO/rotaBus-front.git
-```
-
-### 2. Entrar na pasta do projeto
-
-```bash
-cd rotaBus-front
-```
-
-### 3. Instalar dependências
+### 1. Dependências
 
 ```bash
 npm install
 ```
 
-### 4. Configurar a URL da API
+### 2. Variáveis de Ambiente
 
-Crie ou edite o arquivo:
-
-```txt
-src/config/api.config.ts
-```
-
-Exemplo:
-
+Arquivo configurado em `src/config/api.config.ts`:
 ```ts
-export const API_BASE_URL = "http://SEU_IP_DA_MAQUINA:3000";
+export const API_BASE_URL = "http://IP_DA_MAQUINA:3000";
 ```
+*(Importante em testes mobile nativos, pois `localhost` resolverá para o próprio aparelho e não para o backend).*
 
-Exemplo em rede local:
+### 3. Build & Run
 
-```ts
-export const API_BASE_URL = "http://192.168.0.204:3000";
-```
-
-> Observação: ao testar no celular físico, não use `localhost`, porque no celular `localhost` aponta para o próprio celular, não para o computador.
-
-### 5. Rodar o app
-
+O projeto utiliza o **Expo** para aceleração do desenvolvimento:
 ```bash
 npx expo start
 ```
-
-Ou limpando o cache:
-
-```bash
-npx expo start -c
-```
+*(Flag `-c` pode ser utilizada para purgar o cache do Metro Bundler).*
 
 ---
 

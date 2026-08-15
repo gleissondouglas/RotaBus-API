@@ -20,9 +20,9 @@ Este repositório principal orquestra todo o projeto e é dividido em duas grand
 
 ---
 
-## 📚 Documentação (Wiki Local)
+## 📚 Documentação e Decisões Arquiteturais
 
-Todo o ecossistema é extensamente documentado. Se você for contribuir ou analisar a arquitetura, leia nossa pasta [`/docs`](./docs):
+Todo o ecossistema é extensamente documentado para fins de portfólio e histórico de desenvolvimento. Para explorar a arquitetura e as soluções técnicas adotadas, leia a pasta [`/docs`](./docs):
 
 - **[00 - Visão Geral](./docs/00-VISAO-GERAL.md)**
 - **[08 - A Abordagem Sem-IA e Inteligência Local](./docs/08-IA.md)**
@@ -31,27 +31,17 @@ Todo o ecossistema é extensamente documentado. Se você for contribuir ou anali
 
 ---
 
-## 🚀 Como Iniciar (Ambiente Local)
+## 🚀 Ambiente de Execução (Local)
 
-Cada diretório possui suas dependências e variáveis de ambiente independentes (veja os arquivos `.env.example` em cada um).
+*Nota: Este é um projeto pessoal/fechado e as instruções abaixo servem apenas como documentação do ambiente de engenharia estabelecido.*
 
-1. Instale as dependências:
-   ```bash
-   cd backend && npm install
-   cd ../frontend && npm install
-   ```
+Cada diretório possui suas dependências e variáveis de ambiente independentes (`.env`). O sistema funciona sob dois servidores simultâneos:
 
-2. Rode os servidores locais:
-   **Backend:** Precisa do Redis e Postgres em execução.
-   ```bash
-   cd backend
-   npm run dev
-   ```
+1. **Backend (`/backend`)**:
+   - Requer Redis (cache) e PostgreSQL em execução local.
+   - Inicializado via `npm run dev`.
 
-   **Frontend:**
-   ```bash
-   cd frontend
-   npm run ios # (ou android)
-   ```
+2. **Frontend (`/frontend`)**:
+   - Inicializado via `npx expo start` (iOS/Android).
 
 *(Veja os arquivos README específicos dentro de `/backend` e `/frontend` para mais detalhes de testes e execução).*
