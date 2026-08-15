@@ -325,6 +325,7 @@ export default function BestRouteScreen() {
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
+                style={styles.routeSelectorScrollView}
                 contentContainerStyle={styles.routeSelectorScroll}
               >
                 {allRoutes.map((r, idx) => {
@@ -575,18 +576,20 @@ const styles = StyleSheet.create({
 
   /* ─── 1. Cabeçalho e Mapa ─── */
   header: {
-    alignItems: "flex-start",
+    alignItems: "center",
     marginBottom: 0,
   },
   title: {
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: "900",
     letterSpacing: -0.5,
+    textAlign: "center",
   },
   subtitle: {
     fontSize: 17,
     fontWeight: "600",
     marginTop: 4,
+    textAlign: "center",
   },
   previewMapContainer: {
     height: 220,
@@ -615,7 +618,11 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: -0.2,
   },
+  routeSelectorScrollView: {
+    marginHorizontal: -20,
+  },
   routeSelectorScroll: {
+    paddingHorizontal: 20,
     gap: 12,
     paddingVertical: 4,
   },
