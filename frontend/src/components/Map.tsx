@@ -1,8 +1,8 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { StyleSheet, View, Platform, TouchableOpacity, Text, useColorScheme } from 'react-native';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE, Callout } from 'react-native-maps';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { MapData, MapMarker, MapPolyline, MapFocusMode } from '../types/journey.types';
+import { MapData, MapMarker, MapFocusMode } from '../types/journey.types';
 import { decodePolyline } from '../utils/polyline';
 import { useThemeColors } from '../theme/colors';
 
@@ -83,7 +83,7 @@ const Map: React.FC<MapProps> = ({
 }) => {
   const mapRef = useRef<MapView>(null);
   // Estado para saber se o mapa deve "travar" a câmera no usuário
-  const [isFollowingUser, setIsFollowingUser] = React.useState(isNavigating);
+  const [isFollowingUser, setIsFollowingUser] = useState(isNavigating);
   const colorScheme = useColorScheme();
   const theme = useThemeColors();
 
@@ -204,6 +204,111 @@ const Map: React.FC<MapProps> = ({
     };
   }, [mapData, userLocation, focusMode, controlsBottomOffset, currentStepIndex, walkSteps, isFollowingUser, isNavigating]);
 
+  const renderedGeneralPolylines = useMemo(() => {
+    if ((walkSteps && walkSteps.length > 0) && focusMode !== 'full_route') {
+      return [];
+    }
+    if (!mapData?.polylines) return [];
+
+    return mapData.polylines
+      .filter(p => focusMode === 'full_route' || p.type === 'walk')
+      .map(polyline => {
+        const coords = decodePolyline(polyline.encodedPolyline);
+        if (coords.length < 2) return null;
+        const isWalk = polyline.type === 'walk';
+        return {
+          id: polyline.id,
+          coords,
+          strokeColor: isWalk ? theme.primary : '#22C55E',
+          strokeWidth: isWalk ? 8 : 6,
+          lineDashPattern: isWalk ? [1, 10] : undefined,
+          zIndex: isWalk ? 2 : 1,
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+  }, [mapData?.polylines, walkSteps, focusMode, theme.primary]);
+
+  const renderedWalkStepPolylines = useMemo(() => {
+    if (focusMode !== 'walking_to_stop' || !walkSteps || walkSteps.length === 0) {
+      return [];
+    }
+
+    return walkSteps
+      .map((step, index) => {
+        const coords = decodePolyline(step.polyline);
+        if (coords.length < 2) return null;
+
+        const isActive = index === currentStepIndex;
+        const isPast = index < currentStepIndex;
+
+        let strokeColor = theme.primary;
+        let strokeWidth = 14;
+        let zIndex = 5;
+        let lineDashPattern: number[] | undefined = undefined;
+
+        if (isPast) {
+          strokeColor = '#CBD5E1';
+          strokeWidth = 8;
+          zIndex = 3;
+        } else if (!isActive) {
+          strokeColor = theme.primary;
+          strokeWidth = 10;
+          zIndex = 4;
+          lineDashPattern = [1, 12];
+        }
+
+        return {
+          key: `walk-step-${index}`,
+          coords,
+          strokeColor,
+          strokeWidth,
+          lineDashPattern,
+          zIndex,
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+  }, [focusMode, walkSteps, currentStepIndex, theme.primary]);
+
+  const renderedTurnMarkers = useMemo(() => {
+    if (focusMode !== 'walking_to_stop' || !walkSteps || walkSteps.length === 0) {
+      return [];
+    }
+
+    return walkSteps
+      .map((step, index) => {
+        if (!step.endLocation || index === walkSteps.length - 1) return null;
+        const isPast = index < currentStepIndex;
+        if (isPast) return null;
+
+        return {
+          key: `turn-${index}`,
+          latitude: Number(step.endLocation.lat),
+          longitude: Number(step.endLocation.lng),
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+  }, [focusMode, walkSteps, currentStepIndex]);
+
+  const renderedMainMarkers = useMemo(() => {
+    if (!mapData?.markers) return [];
+
+    return mapData.markers
+      .filter(m => {
+        if (m.type === 'user') return false;
+        if (focusMode === 'full_route') return true;
+        return m.type === 'boarding_stop';
+      })
+      .map(marker => ({
+        id: marker.id,
+        latitude: Number(marker.lat),
+        longitude: Number(marker.lng),
+        title: marker.title,
+        description: marker.description,
+        type: marker.type,
+        pinColor: getMarkerColor(marker.type),
+      }));
+  }, [mapData?.markers, focusMode]);
+
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <MapView
@@ -225,121 +330,79 @@ const Map: React.FC<MapProps> = ({
         }}
       >
         {/* Renderização de Rota Geral (Full Route ou Fallback Walk) */}
-        {(!walkSteps || walkSteps.length === 0 || focusMode === 'full_route') && mapData?.polylines
-          .filter(p => focusMode === 'full_route' || p.type === 'walk')
-          .map((polyline: MapPolyline) => {
-            const coords = decodePolyline(polyline.encodedPolyline);
-            if (coords.length < 2) return null;
-            const isWalk = polyline.type === 'walk';
-            return (
-              <Polyline
-                key={polyline.id}
-                coordinates={coords}
-                strokeColor={isWalk ? theme.primary : '#22C55E'}
-                strokeWidth={isWalk ? 8 : 6}
-                lineDashPattern={isWalk ? [1, 10] : undefined} // Pontilhado estilo Google
-                zIndex={isWalk ? 2 : 1}
-                lineCap="round"
-              />
-            );
-          })}
+        {renderedGeneralPolylines.map((item) => (
+          <Polyline
+            key={item.id}
+            coordinates={item.coords}
+            strokeColor={item.strokeColor}
+            strokeWidth={item.strokeWidth}
+            lineDashPattern={item.lineDashPattern}
+            zIndex={item.zIndex}
+            lineCap="round"
+          />
+        ))}
 
         {/* Renderização Guiada de Passos de Caminhada */}
-        {(focusMode === 'walking_to_stop' && walkSteps && walkSteps.length > 0) && walkSteps.map((step, index) => {
-          const coords = decodePolyline(step.polyline);
-          if (coords.length < 2) return null;
-          
-          const isActive = index === currentStepIndex;
-          const isPast = index < currentStepIndex;
-          
-          let strokeColor = theme.primary; 
-          let strokeWidth = 14; // Ainda mais visível
-          let zIndex = 5;
-          let lineDashPattern: number[] | undefined = undefined; // Contínua por padrão
-          
-          if (isPast) {
-            strokeColor = '#CBD5E1'; // Cinza discreto
-            strokeWidth = 8;
-            zIndex = 3;
-          } else if (!isActive) {
-            strokeColor = theme.primary;
-            strokeWidth = 10;
-            zIndex = 4;
-            lineDashPattern = [1, 12]; // Próximos trechos pontilhados
-          }
-
-          return (
-            <Polyline
-              key={`walk-step-${index}`}
-              coordinates={coords}
-              strokeColor={strokeColor}
-              strokeWidth={strokeWidth}
-              lineDashPattern={lineDashPattern}
-              zIndex={zIndex}
-              lineCap="round"
-              lineJoin="round"
-            />
-          );
-        })}
+        {renderedWalkStepPolylines.map((item) => (
+          <Polyline
+            key={item.key}
+            coordinates={item.coords}
+            strokeColor={item.strokeColor}
+            strokeWidth={item.strokeWidth}
+            lineDashPattern={item.lineDashPattern}
+            zIndex={item.zIndex}
+            lineCap="round"
+            lineJoin="round"
+          />
+        ))}
 
         {/* Marcadores de Virada */}
-        {(focusMode === 'walking_to_stop' && walkSteps && walkSteps.length > 0) && walkSteps.map((step, index) => {
-           if (!step.endLocation || index === walkSteps.length - 1) return null;
-           const isPast = index < currentStepIndex;
-           if (isPast) return null; // Não mostra viradas antigas
-           
-           return (
-             <Marker
-               key={`turn-${index}`}
-               coordinate={{ latitude: step.endLocation.lat, longitude: step.endLocation.lng }}
-               anchor={{ x: 0.5, y: 0.5 }}
-               flat={true}
-               zIndex={10}
-             >
-               <View style={[styles.turnDot, { backgroundColor: 'white', borderColor: theme.primary }]} />
-             </Marker>
-           );
-        })}
+        {renderedTurnMarkers.map((turn) => (
+          <Marker
+            key={turn.key}
+            coordinate={{ latitude: turn.latitude, longitude: turn.longitude }}
+            anchor={{ x: 0.5, y: 0.5 }}
+            flat={true}
+            zIndex={10}
+          >
+            <View style={[styles.turnDot, { backgroundColor: 'white', borderColor: theme.primary }]} />
+          </Marker>
+        ))}
 
         {/* Marcadores Principais */}
-        {mapData?.markers
-          .filter(m => {
-            if (m.type === 'user') return false;
-            if (focusMode === 'full_route') return true;
-            return m.type === 'boarding_stop';
-          })
-          .map((marker: MapMarker) => (
-            <Marker
-              key={marker.id}
-              coordinate={{ latitude: Number(marker.lat), longitude: Number(marker.lng) }}
-              title={marker.title}
-              description={marker.description}
-              pinColor={getMarkerColor(marker.type)}
-              zIndex={20}
-              accessibilityLabel={`Ponto: ${marker.title}`}
-            >
-              {marker.type === 'boarding_stop' && (
-                <View style={styles.markerWithLabel}>
-                  <View style={[styles.boardingMarker, { backgroundColor: getMarkerColor('boarding_stop') }]}>
-                    <MaterialCommunityIcons name="bus" size={24} color="white" />
-                  </View>
-                  <View style={styles.markerLabelContainer}>
-                    <Text style={styles.markerLabelText}>Ponto</Text>
-                  </View>
+        {renderedMainMarkers.map((marker) => (
+          <Marker
+            key={marker.id}
+            coordinate={{ latitude: marker.latitude, longitude: marker.longitude }}
+            title={marker.title}
+            description={marker.description}
+            pinColor={marker.pinColor}
+            zIndex={20}
+            accessibilityLabel={`Ponto: ${marker.title}`}
+          >
+            {marker.type === 'boarding_stop' && (
+              <View style={styles.markerWithLabel}>
+                <View style={[styles.boardingMarker, { backgroundColor: getMarkerColor('boarding_stop') }]}>
+                  <MaterialCommunityIcons name="bus" size={24} color="white" />
                 </View>
-              )}
-              <Callout>
-                <View style={[styles.callout, { backgroundColor: theme.card }]}>
-                  <Text style={[styles.calloutTitle, { color: theme.text }]}>{marker.title}</Text>
-                  {!!marker.description && <Text style={[styles.calloutDesc, { color: theme.textMuted }]}>{marker.description}</Text>}
+                <View style={styles.markerLabelContainer}>
+                  <Text style={styles.markerLabelText}>Ponto</Text>
                 </View>
-              </Callout>
-            </Marker>
-          ))}
+              </View>
+            )}
+            <Callout>
+              <View style={[styles.callout, { backgroundColor: theme.card }]}>
+                <Text style={[styles.calloutTitle, { color: theme.text }]}>{marker.title}</Text>
+                {!!marker.description && <Text style={[styles.calloutDesc, { color: theme.textMuted }]}>{marker.description}</Text>}
+              </View>
+            </Callout>
+          </Marker>
+        ))}
 
         {/* Marcador do Ônibus ao Vivo (Crowdsourcing) */}
         {liveBusPosition && (
           <Marker
+            key="live-bus-marker"
             coordinate={{ latitude: liveBusPosition.lat, longitude: liveBusPosition.lng }}
             zIndex={30}
             anchor={{ x: 0.5, y: 0.5 }}
