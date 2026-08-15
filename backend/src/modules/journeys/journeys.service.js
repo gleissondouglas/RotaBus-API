@@ -243,7 +243,7 @@ async function planJourney({ origin, destination, departureTime, timePreference 
   const cacheKey = `${validatedData.origin.lat},${validatedData.origin.lng}-${validatedData.destination.text}-${validatedData.timePreference.type}-${validatedData.timePreference.dateTime}`;
 
   // Tentar buscar do cache primeiro para economizar chamadas à API do Google
-  const cachedResult = findCachedRoute(cacheKey);
+  const cachedResult = await findCachedRoute(cacheKey);
 
   if (cachedResult) {
     if (process.env.NODE_ENV !== "production") {
@@ -340,8 +340,8 @@ async function planJourney({ origin, destination, departureTime, timePreference 
     // Continua com a rota original se o enriquecimento falhar
   }
 
-  // Mantém a resposta por dois minutos na memória do processo.
-  createRouteCache({
+  // Mantém a resposta por dois minutos no Redis.
+  await createRouteCache({
     cacheKey,
     googleResponse,
     timePreference: validatedData.timePreference,
