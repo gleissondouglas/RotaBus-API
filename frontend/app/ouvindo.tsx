@@ -367,7 +367,7 @@ export default function ListeningScreen() {
           style={styles.cardShadow}
         >
           <View style={[styles.cardContent, { borderColor: theme.border }]}>
-            <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={50} fallbackColor={theme.card} />
+            <LiquidGlassView style={StyleSheet.absoluteFillObject} fallbackColor={theme.card} />
             <Text style={[styles.cardLabel, { color: theme.primary }]}>Transcrição ao vivo</Text>
             <View style={styles.transcriptWrapper}>
               <Text style={[styles.transcriptText, { color: theme.text }]}>
@@ -398,7 +398,7 @@ export default function ListeningScreen() {
           style={[styles.bottomBarShadow, { marginBottom: Math.max(insets.bottom, 24) }]}
         >
           <View style={[styles.bottomBarContent, { borderColor: theme.border }]}>
-            <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={50} fallbackColor={theme.card} />
+            <LiquidGlassView style={StyleSheet.absoluteFillObject} fallbackColor={theme.card} />
             <Pressable 
               style={[styles.cancelButton, { backgroundColor: theme.background }, isLoading && { opacity: 0.6 }]} 
               disabled={isLoading}

@@ -63,14 +63,12 @@ export function LiveTranscript({
       <View
         style={[
           styles.badge,
-          { backgroundColor: isFinal ? theme.primary : "rgba(37,99,235,0.08)" },
-        ]}
+          { backgroundColor: isFinal ? theme.primary : "rgba(37,99,235,0.08)" }]}
       >
         <Animated.Text
           style={[
             styles.badgeText,
-            { color: isFinal ? "white" : theme.primary },
-          ]}
+            { color: isFinal ? "white" : theme.primary }]}
         >
           {isFinal ? "Entendi" : "Ouvindo..."}
         </Animated.Text>

@@ -68,9 +68,9 @@ export default function DidNotUnderstandScreen() {
               </Text>
             </View>
 
-            <View style={[styles.cardShadow]}>
+            <View style={styles.cardShadow}>
               <View style={[styles.cardContent, { borderColor: theme.danger }]}>
-                <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={30} fallbackColor="rgba(239, 68, 68, 0.1)" />
+                <LiquidGlassView style={StyleSheet.absoluteFillObject} fallbackColor="rgba(239, 68, 68, 0.1)" />
                 <Text style={[styles.cardText, { color: theme.danger }]}>
                   Se preferir, você também pode digitar o destino usando o teclado.
                 </Text>

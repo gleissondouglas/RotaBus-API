@@ -145,7 +145,7 @@ export default function SettingsScreen() {
             </Text>
           </View>
 
-          <LiquidGlassView style={[styles.section, { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={80} fallbackColor={theme.card}>
+          <LiquidGlassView style={styles.section} fallbackColor={theme.card}>
             <Text style={[styles.sectionTitle, { color: theme.primary }]} maxFontSizeMultiplier={1.2}>Conta</Text>
             <SettingOption 
               icon="person-outline" 
@@ -164,7 +164,7 @@ export default function SettingsScreen() {
             />
           </LiquidGlassView>
 
-          <LiquidGlassView style={[styles.section, { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={80} fallbackColor={theme.card}>
+          <LiquidGlassView style={styles.section} fallbackColor={theme.card}>
             <Text style={[styles.sectionTitle, { color: theme.primary }]} maxFontSizeMultiplier={1.2}>Preferências</Text>
             <SettingOption 
               icon="accessibility-outline" 
@@ -175,7 +175,7 @@ export default function SettingsScreen() {
             />
           </LiquidGlassView>
 
-          <LiquidGlassView style={[styles.section, { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={80} fallbackColor={theme.card}>
+          <LiquidGlassView style={styles.section} fallbackColor={theme.card}>
             <Text style={[styles.sectionTitle, { color: theme.primary }]} maxFontSizeMultiplier={1.2}>Privacidade</Text>
             <SettingOption 
               icon="shield-checkmark-outline" 

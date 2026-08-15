@@ -128,8 +128,7 @@ function Bar({ maxHeight, delay, state, color, size }: BarProps) {
           minHeight,
           backgroundColor: color,
         },
-        animatedStyle,
-      ]}
+        animatedStyle]}
     />
   );
 }
@@ -149,8 +148,7 @@ export function VoiceVisualizer({ state, size = "compact" }: VoiceVisualizerProp
       style={[
         styles.container,
         size === "large" && styles.largeContainer,
-        { gap: size === "large" ? LARGE_BAR_GAP : COMPACT_BAR_GAP },
-      ]}
+        { gap: size === "large" ? LARGE_BAR_GAP : COMPACT_BAR_GAP }]}
       accessibilityLabel={
         state === "speaking"
           ? "Assistente falando"

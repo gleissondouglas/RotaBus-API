@@ -69,8 +69,7 @@ export const AssistantLoadingState: React.FC<AssistantLoadingStateProps> = ({
                       styles.stepText,
                       { fontSize: isSmallHeight ? layout.cardSubtitleFontSizeSmall : layout.cardSubtitleFontSize, color: theme.textMuted },
                       step.status === 'completed' && { color: theme.success },
-                      step.status === 'loading' && { color: theme.primary, fontWeight: '800' },
-                    ]}
+                      step.status === 'loading' && { color: theme.primary, fontWeight: '800' }]}
                   >
                     {step.label}
                   </Text>

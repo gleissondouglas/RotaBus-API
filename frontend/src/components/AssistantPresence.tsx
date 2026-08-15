@@ -77,8 +77,7 @@ export function AssistantPresence({ compact = false }: AssistantPresenceProps) {
             borderRadius: size / 2,
             backgroundColor: theme.primary,
             transform: [{ scale: breath }],
-          },
-        ]}
+          }]}
       />
 
       <Animated.View
@@ -88,8 +87,7 @@ export function AssistantPresence({ compact = false }: AssistantPresenceProps) {
             width: size * 0.72,
             height: size * 0.52,
             transform: [{ translateY: float }, { scale: breath }],
-          },
-        ]}
+          }]}
       >
         <View style={[styles.cloudBase, { backgroundColor: theme.primary }]} />
         <View style={[styles.cloudBubble, styles.cloudBubbleLeft, { backgroundColor: theme.primary }]} />

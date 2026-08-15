@@ -224,7 +224,6 @@ export default function ProcessingScreen() {
                   ? { backgroundColor: "rgba(30, 41, 59, 0.75)", borderColor: "rgba(255, 255, 255, 0.15)" }
                   : { backgroundColor: "rgba(255, 255, 255, 0.9)", borderColor: "rgba(255, 255, 255, 0.95)" }
               ]}
-              intensity={isDark ? 40 : 80}
               fallbackColor={theme.card}
             >
               <AdaptiveIcon 

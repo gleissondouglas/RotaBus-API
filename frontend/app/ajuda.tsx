@@ -66,8 +66,7 @@ export default function HelpScreen() {
             </View>
 
             <LiquidGlassView
-              style={[styles.section, { borderColor: "rgba(255, 255, 255, 0.6)" }]}
-              intensity={80}
+              style={styles.section}
               fallbackColor={theme.card}
             >
               <View style={styles.option}>

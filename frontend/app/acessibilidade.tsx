@@ -47,7 +47,7 @@ export default function AccessibilityScreen() {
             </Text>
           </View>
 
-          <LiquidGlassView style={[styles.card, { backgroundColor: "transparent" }]} intensity={80} fallbackColor={theme.card}>
+          <LiquidGlassView style={styles.card} fallbackColor={theme.card}>
             <View style={styles.option}>
               <View style={styles.optionTextBox}>
                 <Text style={[styles.optionTitle, { color: theme.text }]}>Texto maior</Text>

@@ -190,8 +190,7 @@ export default function WelcomeScreen() {
             style={[
               styles.assistantVisual,
               isCompact && styles.assistantVisualCompact,
-              { backgroundColor: "rgba(255, 255, 255, 0.4)", opacity: visualOpacity, transform: [{ scale: visualScale }] },
-            ]}
+              { backgroundColor: "rgba(255, 255, 255, 0.4)", opacity: visualOpacity, transform: [{ scale: visualScale }] }]}
           >
             <AssistantPresence compact={isCompact} />
           </Animated.View>

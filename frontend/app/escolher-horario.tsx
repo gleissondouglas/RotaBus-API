@@ -300,8 +300,7 @@ export default function ChooseTimeScreen() {
               style={({ pressed }) => [
                 styles.optionCard,
                 { padding: isSmallHeight ? layout.cardPaddingSmall : layout.cardPadding, backgroundColor: theme.card, borderColor: theme.border },
-                (pressed || isActionDisabled) && { opacity: 0.7, transform: [{ scale: 0.98 }] },
-              ]}
+                (pressed || isActionDisabled) && { opacity: 0.7, transform: [{ scale: 0.98 }] }]}
               disabled={isActionDisabled}
               onPress={handleGoNow}
               accessibilityRole="button"
@@ -343,8 +342,7 @@ export default function ChooseTimeScreen() {
               style={({ pressed }) => [
                 styles.optionCard,
                 { padding: isSmallHeight ? layout.cardPaddingSmall : layout.cardPadding, backgroundColor: theme.card, borderColor: theme.border },
-                (pressed || isActionDisabled) && { opacity: 0.7, transform: [{ scale: 0.98 }] },
-              ]}
+                (pressed || isActionDisabled) && { opacity: 0.7, transform: [{ scale: 0.98 }] }]}
               disabled={isActionDisabled}
               onPress={() => handleOpenTimeSelector("DEPARTURE")}
               accessibilityRole="button"
@@ -386,8 +384,7 @@ export default function ChooseTimeScreen() {
               style={({ pressed }) => [
                 styles.optionCard,
                 { padding: isSmallHeight ? layout.cardPaddingSmall : layout.cardPadding, backgroundColor: theme.card, borderColor: theme.border },
-                (pressed || isActionDisabled) && { opacity: 0.7, transform: [{ scale: 0.98 }] },
-              ]}
+                (pressed || isActionDisabled) && { opacity: 0.7, transform: [{ scale: 0.98 }] }]}
               disabled={isActionDisabled}
               onPress={() => handleOpenTimeSelector("ARRIVAL")}
               accessibilityRole="button"
@@ -436,7 +433,7 @@ export default function ChooseTimeScreen() {
         animationType="fade"
         onRequestClose={() => setIsModalOpen(false)}
       >
-        <LiquidGlassView style={StyleSheet.absoluteFill} intensity={50} fallbackColor="rgba(0,0,0,0.6)" />
+        <LiquidGlassView style={StyleSheet.absoluteFill} fallbackColor="rgba(0,0,0,0.6)" />
         <Pressable style={styles.modalOverlay} onPress={() => setIsModalOpen(false)}>
           <Pressable onPress={() => { /* Impede fechamento ao clicar no conteúdo */ }}>
             <Animated.View entering={PopMenuEntering} style={[styles.modalContent, { backgroundColor: theme.card }]}>

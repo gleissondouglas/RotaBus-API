@@ -120,8 +120,7 @@ const CarouselCardItem = ({
             backgroundColor: isCurrent ? 'rgba(30, 41, 59, 0.95)' : 'rgba(30, 41, 59, 0.75)',
             borderColor: isCurrent ? '#3B82F6' : 'rgba(255, 255, 255, 0.12)',
           },
-          (pressed || isActionDisabled) && { opacity: 0.8, transform: [{ scale: 0.99 }] },
-        ]}
+          (pressed || isActionDisabled) && { opacity: 0.8, transform: [{ scale: 0.99 }] }]}
         disabled={isActionDisabled}
         onPress={() => handleSelectSuggestion(option, index)}
         accessibilityRole="button"
@@ -133,8 +132,7 @@ const CarouselCardItem = ({
             <View
               style={[
                 styles.numberBadge,
-                { backgroundColor: isCurrent ? theme.primary : (isDark ? 'rgba(59,130,246,0.2)' : theme.primaryLight) },
-              ]}
+                { backgroundColor: isCurrent ? theme.primary : (isDark ? 'rgba(59,130,246,0.2)' : theme.primaryLight) }]}
             >
               <Text style={[styles.numberBadgeText, { color: isCurrent ? "#fff" : theme.primary }]}>
                 {index + 1}
@@ -434,7 +432,6 @@ export default function ConfirmDestinationScreen() {
                   ? { backgroundColor: "rgba(15, 23, 42, 0.6)", borderColor: "rgba(255, 255, 255, 0.15)" }
                   : { backgroundColor: "rgba(255, 255, 255, 0.8)", borderColor: "rgba(255, 255, 255, 0.9)" }
               ]}
-              intensity={isDark ? 40 : 80}
               fallbackColor={theme.card}
             >
               <Ionicons name="help-circle" size={18} color={theme.primary} />
@@ -452,8 +449,7 @@ export default function ConfirmDestinationScreen() {
           {
             paddingTop: insets.top + (isSmallHeight ? 64 : 82),
             paddingBottom: insets.bottom + 112,
-          },
-        ]}
+          }]}
       >
         <Animated.View 
           entering={FadeIn.duration(400)} 
@@ -523,8 +519,7 @@ export default function ConfirmDestinationScreen() {
                         index === currentSuggestionIndex && {
                           backgroundColor: theme.primary,
                           width: 18,
-                        },
-                      ]}
+                        }]}
                     />
                   ))}
                 </View>
@@ -540,8 +535,7 @@ export default function ConfirmDestinationScreen() {
                 isDark && {
                   backgroundColor: 'rgba(30, 41, 59, 0.85)',
                   borderColor: 'rgba(255, 255, 255, 0.12)',
-                },
-              ]}
+                }]}
             >
               <View style={styles.cardContent}>
                 {/* Centro do Card Único: Ícone + nome + detalhes */}
@@ -611,9 +605,9 @@ export default function ConfirmDestinationScreen() {
       </ScrollView>
 
       {/* BOTÕES FIXOS — idêntico ao rodapé da rota pronta */}
-      <View style={[styles.fixedBottomActionsShadow]}>
+      <View style={styles.fixedBottomActionsShadow}>
         <View style={[styles.fixedBottomActionsContent, { paddingBottom: insets.bottom + 16 }]}>
-          <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={50} fallbackColor={theme.card} />
+          <LiquidGlassView style={StyleSheet.absoluteFillObject} fallbackColor={theme.card} />
           <LinearGradient
             colors={['transparent', theme.background]}
             locations={[0.2, 1]}

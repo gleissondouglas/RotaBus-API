@@ -611,9 +611,7 @@ export default function HomeScreen() {
             isDark && {
               borderColor: 'rgba(255,255,255,0.12)',
               backgroundColor: 'rgba(255,255,255,0.06)',
-            },
-          ]}
-          intensity={isDark ? 40 : 80}
+            }]}
           fallbackColor={theme.card}
         >
           <Animated.View
@@ -623,8 +621,7 @@ export default function HomeScreen() {
                 backgroundColor: 'rgba(255,255,255,0.12)',
                 shadowOpacity: 0.25,
               },
-              tabAnimatedStyle,
-            ]}
+              tabAnimatedStyle]}
           />
           
           <Pressable 
@@ -695,9 +692,7 @@ export default function HomeScreen() {
                 isDark && {
                   borderColor: 'rgba(255,255,255,0.10)',
                   backgroundColor: 'rgba(255,255,255,0.05)',
-                },
-              ]}
-              intensity={isDark ? 30 : 80}
+                }]}
               fallbackColor={theme.card}
             >
               <VoicePromptText
@@ -748,8 +743,7 @@ export default function HomeScreen() {
       <View
         style={[
           styles.bottomContainer,
-          { paddingBottom: Math.max(insets.bottom, 24) },
-        ]}
+          { paddingBottom: Math.max(insets.bottom, 24) }]}
         pointerEvents="box-none"
       >
         <BottomActionBar
