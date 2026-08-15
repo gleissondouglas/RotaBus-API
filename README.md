@@ -5,9 +5,16 @@
 ![Mobile](https://img.shields.io/badge/Frontend-React_Native_%2F_Expo-black)
 ![Backend](https://img.shields.io/badge/Backend-Node.js_%2F_Express-green)
 
-O **RotaBus** (anteriormente chamado nuven) é um ecossistema de mobilidade urbana construído com foco em **Acessibilidade, Simplicidade (UI Touch-First) e Velocidade**. 
+O **RotaBus** (anteriormente chamado nuven) é um ecossistema de mobilidade urbana construído com foco absoluto em **Acessibilidade, Simplicidade e Desempenho**.
 
-Nasceu para ajudar passageiros de transporte público a encontrarem a melhor rota para os seus destinos sem precisarem decifrar mapas complexos, letras miúdas ou interfaces poluídas (focado no Design "RotaBus Apple" edge-to-edge).
+### 💡 O Problema (Por que criei este projeto?)
+A maioria dos aplicativos de transporte atuais (como Google Maps ou Moovit) foi desenhada para usuários com alta alfabetização digital. Eles oferecem interfaces repletas de botões, letreiros minúsculos e mapas confusos que, na prática, **excluem** idosos, pessoas com baixa visão ou usuários pouco habituados à tecnologia. Para esse público, descobrir "como ir ao hospital" torna-se uma barreira cognitiva frustrante.
+
+### 🎯 A Solução
+O RotaBus quebra esse paradigma ao oferecer uma **Assistente de Mobilidade Híbrida (Voz + Toque)**. 
+- Em vez de ler um mapa difícil, o app **fala** de forma resumida e humana: *"A rota mais rápida é pegar o ônibus 10 na esquina, ele chega em 5 minutos"*.
+- O design abandona os jargões confusos ("Opção 1, Opção 2") por nomes inteligentes dinâmicos ("Mais rápida", "Menos trocas").
+- Foi arquitetado do zero para não conflitar com leitores de tela nativos (TalkBack/VoiceOver), sendo uma ferramenta verdadeiramente inclusiva para Pessoas Com Deficiência (PCDs).
 
 ---
 
