@@ -414,23 +414,35 @@ export default function ConfirmDestinationScreen() {
   return (
     <View style={styles.screen}>
       <BackgroundGradient />
-      {/* TOP BAR — com fundo blur para não embolar o scroll */}
-      <LiquidGlassView
-        style={[styles.fixedHeaderBackground, { height: insets.top + 72 }]}
-        intensity={60}
-      >
-        <View style={[styles.fixedHeader, { top: insets.top + 12 }]}>
+      {/* TOP BAR — Floating Glass Pills */}
+      <View style={[styles.topBar, { top: insets.top + 8 }]} pointerEvents="box-none">
+        <View style={styles.topBarInner} pointerEvents="box-none">
           <BackButton label="Voltar" accessibilityLabel="Voltar para a tela anterior" />
           <Pressable
-            style={styles.helpButton}
+            style={({ pressed }) => [
+              styles.helpButtonPressable,
+              pressed && { opacity: 0.7, transform: [{ scale: 0.98 }] }
+            ]}
             onPress={handleHelp}
             accessibilityLabel="Abrir ajuda"
             accessibilityRole="button"
           >
-            <AdaptiveIcon iosSymbol="questionmark.circle" fallbackFamily="Ionicons" fallbackName="help-circle-outline" size={28} color={theme.primary} />
+            <LiquidGlassView
+              style={[
+                styles.glassPill,
+                isDark
+                  ? { backgroundColor: "rgba(15, 23, 42, 0.6)", borderColor: "rgba(255, 255, 255, 0.15)" }
+                  : { backgroundColor: "rgba(255, 255, 255, 0.8)", borderColor: "rgba(255, 255, 255, 0.9)" }
+              ]}
+              intensity={isDark ? 40 : 80}
+              fallbackColor={theme.card}
+            >
+              <AdaptiveIcon iosSymbol="questionmark.circle.fill" fallbackFamily="Ionicons" fallbackName="help-circle" size={18} color={theme.primary} />
+              <Text style={[styles.glassPillText, { color: theme.text }]}>Ajuda</Text>
+            </LiquidGlassView>
           </Pressable>
         </View>
-      </LiquidGlassView>
+      </View>
 
       {/* SCROLL — idêntico ao de melhor-rota */}
       <ScrollView
@@ -438,7 +450,7 @@ export default function ConfirmDestinationScreen() {
         contentContainerStyle={[
           styles.scrollContent,
           {
-            paddingTop: insets.top + 80,
+            paddingTop: insets.top + 60,
             paddingBottom: insets.bottom + 112,
           },
         ]}
@@ -630,28 +642,39 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  fixedHeaderBackground: {
+  topBar: {
     position: "absolute",
-    top: 0,
     left: 0,
     right: 0,
     zIndex: 50,
   },
-  fixedHeader: {
-    position: "absolute",
-    left: 16,
-    right: 16,
+  topBarInner: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    paddingHorizontal: 16,
   },
-  helpButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "rgba(255,255,255,0.15)",
+  helpButtonPressable: {
+    alignSelf: "flex-start",
+  },
+  glassPill: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 22,
+    borderWidth: 1,
+    gap: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  glassPillText: {
+    fontSize: 14,
+    fontWeight: "800",
+    letterSpacing: -0.2,
   },
 
   // ─── ScrollView (idêntico ao padrão de melhor-rota) ─────────────────

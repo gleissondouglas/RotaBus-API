@@ -235,21 +235,19 @@ export default function ChooseTimeScreen() {
   return (
     <View style={styles.screen}>
       <BackgroundGradient />
-      <LiquidGlassView
-        style={[styles.fixedHeaderBackground, { height: insets.top + 60 }]}
-        intensity={60}
-      >
-        <View style={[styles.fixedHeader, { top: insets.top + 8 }]}>
+      {/* Top Bar (Floating Glass Pill) */}
+      <View style={[styles.topBar, { top: insets.top + 8 }]} pointerEvents="box-none">
+        <View style={styles.topBarInner} pointerEvents="box-none">
           <BackButton accessibilityLabel="Voltar para a tela anterior" />
         </View>
-      </LiquidGlassView>
+      </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.scrollContent,
           { 
-            paddingTop: insets.top + (isSmallHeight ? 50 : 70),
+            paddingTop: insets.top + (isSmallHeight ? 48 : 56),
             paddingBottom: insets.bottom + 150
           }
         ]}
@@ -548,16 +546,17 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  fixedHeaderBackground: {
+  topBar: {
     position: "absolute",
-    top: 0,
     left: 0,
     right: 0,
     zIndex: 50,
   },
-  fixedHeader: {
-    position: "absolute",
-    left: 16,
+  topBarInner: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    paddingHorizontal: 16,
   },
   scrollContent: {
     flexGrow: 1,

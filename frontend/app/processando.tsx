@@ -1,12 +1,13 @@
 import { BackgroundGradient } from "../src/components/BackgroundGradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { StyleSheet, Text, View, Pressable, useWindowDimensions } from "react-native";
+import { StyleSheet, Text, View, Pressable, useWindowDimensions, useColorScheme } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
 import { AssistantLoadingState, LoadingStep } from "../src/components/AssistantLoadingState";
+import { LiquidGlassView } from "../src/components/LiquidGlassView";
 import { useAutoSpeak } from "../src/hooks/useAutoSpeak";
 import { journeyService } from "../src/services/journey.service";
 import { locationService } from "../src/services/location.service";
@@ -19,6 +20,8 @@ export default function ProcessingScreen() {
   const params = useLocalSearchParams();
   const insets = useSafeAreaInsets();
   const theme = useThemeColors();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
   const { height } = useWindowDimensions();
 
   const isSmallHeight = height < 740;
@@ -203,19 +206,35 @@ export default function ProcessingScreen() {
         <View style={[styles.fixedBottomActions, { paddingBottom: insets.bottom + 16, paddingHorizontal: isSmallHeight ? layout.screenHorizontalPaddingSmall : layout.screenHorizontalPadding }]}>
           <Pressable
             style={({ pressed }) => [
-              styles.cancelButton,
-              { backgroundColor: "rgba(255, 255, 255, 0.4)", borderColor: "rgba(255, 255, 255, 0.6)" },
-              { height: isSmallHeight ? layout.secondaryButtonHeight : 60 },
-              pressed && { opacity: 0.7 }
+              styles.cancelButtonShadow,
+              pressed && { opacity: 0.75, transform: [{ scale: 0.98 }] }
             ]}
             onPress={handleCancel}
             accessibilityRole="button"
             accessibilityLabel="Cancelar busca e voltar ao início"
           >
-            <AdaptiveIcon iosSymbol="xmark.circle" fallbackFamily="Ionicons" fallbackName="close-circle-outline" size={20} color={theme.textMuted} />
-            <Text style={[styles.cancelButtonText, { color: theme.textMuted }]} maxFontSizeMultiplier={1.2}>
-              Cancelar
-            </Text>
+            <LiquidGlassView
+              style={[
+                styles.cancelButtonContent,
+                { height: isSmallHeight ? layout.secondaryButtonHeight : 58 },
+                isDark
+                  ? { backgroundColor: "rgba(30, 41, 59, 0.75)", borderColor: "rgba(255, 255, 255, 0.15)" }
+                  : { backgroundColor: "rgba(255, 255, 255, 0.9)", borderColor: "rgba(255, 255, 255, 0.95)" }
+              ]}
+              intensity={isDark ? 40 : 80}
+              fallbackColor={theme.card}
+            >
+              <AdaptiveIcon 
+                iosSymbol="xmark.circle.fill" 
+                fallbackFamily="Ionicons" 
+                fallbackName="close-circle" 
+                size={20} 
+                color={theme.textMuted} 
+              />
+              <Text style={[styles.cancelButtonText, { color: theme.text }]} maxFontSizeMultiplier={1.2}>
+                Cancelar
+              </Text>
+            </LiquidGlassView>
           </Pressable>
         </View>
       </Animated.View>
@@ -242,7 +261,15 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     alignItems: "center",
   },
-  cancelButton: {
+  cancelButtonShadow: {
+    width: "100%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  cancelButtonContent: {
     width: "100%",
     borderRadius: layout.buttonBorderRadius,
     flexDirection: "row",
@@ -250,15 +277,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
     borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.03,
-    shadowRadius: 8,
-    elevation: 2,
   },
   cancelButtonText: {
     fontSize: 16,
     fontWeight: "800",
-    color: "#64748B",
   },
 });

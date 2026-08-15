@@ -289,10 +289,11 @@ export default function BestRouteScreen() {
   return (
     <View style={styles.screen}>
       <BackgroundGradient />
-      {/* FIXED HEADER */}
-      <View style={[styles.fixedHeader, { paddingTop: insets.top + 8 }]}>
-        <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={40} fallbackColor={theme.background} />
-        <BackButton label="Início" onPress={isLoadingCommand ? undefined : handleGoHome} accessibilityLabel="Voltar para a tela inicial" />
+      {/* Top Bar (Floating Glass Pill) */}
+      <View style={[styles.topBar, { top: insets.top + 8 }]} pointerEvents="box-none">
+        <View style={styles.topBarInner} pointerEvents="box-none">
+          <BackButton label="Início" onPress={isLoadingCommand ? undefined : handleGoHome} accessibilityLabel="Voltar para a tela inicial" />
+        </View>
       </View>
 
       <ScrollView
@@ -300,7 +301,7 @@ export default function BestRouteScreen() {
         contentContainerStyle={[
           styles.scrollContent, 
           { 
-            paddingTop: insets.top + 72, 
+            paddingTop: insets.top + 60, 
             paddingBottom: bottomBarHeight + insets.bottom + 24
           }
         ]}
@@ -552,14 +553,17 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  fixedHeader: {
+  topBar: {
     position: "absolute",
     left: 0,
     right: 0,
     zIndex: 50,
-    elevation: 5,
+  },
+  topBarInner: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    alignItems: "center",
     paddingHorizontal: 16,
-    overflow: "hidden",
   },
   scrollContent: {
     flexGrow: 1,
