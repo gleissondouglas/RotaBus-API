@@ -83,8 +83,7 @@ export function BottomVoiceMicButton({
           styles.glow,
           compact && styles.compactGlow,
           { backgroundColor: theme.primary },
-          glowStyle,
-        ]}
+          glowStyle]}
       />
       <Animated.View style={[compact && styles.compactAnimatedWrapper, micAnimatedStyle]}>
         <Pressable
@@ -104,8 +103,7 @@ export function BottomVoiceMicButton({
             },
             isError && styles.errorButton,
             isError && { borderWidth: 2, borderColor: theme.primary, shadowOpacity: 0.12 },
-            (pressed || isDisabled) && { opacity: isListening ? 0.9 : 0.65 },
-          ]}
+            (pressed || isDisabled) && { opacity: isListening ? 0.9 : 0.65 }]}
           disabled={isDisabled}
           onPress={onPress}
           accessibilityRole="button"

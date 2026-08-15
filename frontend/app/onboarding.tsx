@@ -94,8 +94,7 @@ export default function OnboardingScreen() {
                 style={({ pressed }) => [
                   styles.secondaryButton,
                   { backgroundColor: theme.card, borderColor: theme.border },
-                  pressed && styles.pressed,
-                ]}
+                  pressed && styles.pressed]}
                 accessibilityRole="button"
                 accessibilityLabel="Voltar para página anterior"
               >

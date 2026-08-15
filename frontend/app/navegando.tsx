@@ -591,7 +591,6 @@ export default function NavigatingScreen() {
                     ? { backgroundColor: "rgba(15, 23, 42, 0.5)", borderColor: "rgba(255, 255, 255, 0.15)" } 
                     : { backgroundColor: "rgba(255, 255, 255, 0.75)", borderColor: "rgba(255, 255, 255, 0.85)" }
                 ]} 
-                intensity={isDark ? 40 : 80} 
                 fallbackColor={theme.card}
               >
                 <Ionicons name="chevron-back" size={18} color={theme.text} />
@@ -610,7 +609,6 @@ export default function NavigatingScreen() {
                   ? { backgroundColor: "rgba(15, 23, 42, 0.5)", borderColor: "rgba(255, 255, 255, 0.15)" } 
                   : { backgroundColor: "rgba(255, 255, 255, 0.75)", borderColor: "rgba(255, 255, 255, 0.85)" }
               ]} 
-              intensity={isDark ? 40 : 80} 
               fallbackColor={theme.card}
             >
               {stage === "waiting_bus" ? (
@@ -651,7 +649,6 @@ export default function NavigatingScreen() {
                     ? { backgroundColor: "rgba(15, 23, 42, 0.55)", borderColor: "rgba(255, 255, 255, 0.12)" } 
                     : { backgroundColor: "rgba(255, 255, 255, 0.75)", borderColor: "rgba(255, 255, 255, 0.85)" }
                 ]} 
-                intensity={isDark ? 40 : 80} 
                 fallbackColor={theme.card}
               >
                 <View style={[styles.iconCircle, { backgroundColor: isDark ? 'rgba(59, 130, 246, 0.2)' : theme.primaryLight }]}>
@@ -693,7 +690,7 @@ export default function NavigatingScreen() {
               ]}
             >
               <View style={[styles.largeStatusCardContent, isDark ? { backgroundColor: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.05)' } : { borderColor: theme.border }]}>
-                <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={isDark ? 20 : 50} fallbackColor={theme.card} />
+                <LiquidGlassView style={StyleSheet.absoluteFillObject} fallbackColor={theme.card} />
               <View style={[styles.largeStatusIconBox, { backgroundColor: (stage === "on_bus" || stage === "arrived") ? "rgba(16, 185, 129, 0.15)" : (isDark ? 'rgba(59,130,246,0.15)' : theme.primaryLight) }]}>
                  {stage === "waiting_bus" ? (
                    <AdaptiveIcon iosSymbol="bus" fallbackFamily="FontAwesome6" fallbackName="bus-simple" size={40} color={theme.primary} />
@@ -737,11 +734,11 @@ export default function NavigatingScreen() {
 
                   return (
                     <View style={styles.infoCardsGrid}>
-                      <LiquidGlassView style={[styles.infoCard, isDark ? { backgroundColor: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.06)' } : { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={isDark ? 30 : 80} fallbackColor={theme.card}>
+                      <LiquidGlassView style={styles.infoCard} fallbackColor={theme.card}>
                         <Text style={[styles.infoCardLabel, { color: theme.textMuted }]}>LINHA {busLine}</Text>
                         <Text style={[styles.infoCardValue, { color: theme.text, fontSize: 18 }]} numberOfLines={2} adjustsFontSizeToFit>{lineDetails || busLine}</Text>
                       </LiquidGlassView>
-                      <LiquidGlassView style={[styles.infoCard, isDark ? { backgroundColor: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.06)' } : { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={isDark ? 30 : 80} fallbackColor={theme.card}>
+                      <LiquidGlassView style={styles.infoCard} fallbackColor={theme.card}>
                         <Text style={[styles.infoCardLabel, { color: theme.textMuted }]}>{chegaLabel}</Text>
                         <Text style={[styles.infoCardValue, { color: isDark ? '#60A5FA' : theme.primary }]} numberOfLines={1} adjustsFontSizeToFit>{chegaValue}</Text>
                         {!!stopName && stopName !== "ponto indicado" && (
@@ -762,7 +759,7 @@ export default function NavigatingScreen() {
           <Animated.View style={[styles.fixedStatusActionsShadow, { opacity: (stage === "on_bus" || stage === "arrived") ? buttonFadeAnim : fadeAnim }]} pointerEvents="box-none">
             <View style={[styles.fixedStatusActionsContent, { paddingBottom: insets.bottom + 16 }]} pointerEvents="box-none">
               <View style={StyleSheet.absoluteFill} pointerEvents="none">
-                <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={isDark ? 30 : 50} fallbackColor={theme.background} />
+                <LiquidGlassView style={StyleSheet.absoluteFillObject} fallbackColor={theme.background} />
                 <LinearGradient
                   colors={[isDark ? 'rgba(1, 16, 48, 0)' : 'rgba(241, 245, 249, 0)', theme.background]}
                   locations={[0.1, 1]}
@@ -801,7 +798,7 @@ export default function NavigatingScreen() {
               onLayout={(e) => setBottomCardHeight(e.nativeEvent.layout.height)}
               style={[styles.bottomCardContent, { paddingBottom: Math.max(insets.bottom, 12) + 4 }]}
             >
-              <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={isDark ? 40 : 80} fallbackColor={theme.card} />
+              <LiquidGlassView style={StyleSheet.absoluteFillObject} fallbackColor={theme.card} />
               <View style={[styles.dragHandle, { backgroundColor: isDark ? 'rgba(255,255,255,0.2)' : theme.border }]} />
 
             <View style={styles.bottomSheetHeader}>
@@ -840,11 +837,11 @@ export default function NavigatingScreen() {
 
               return (
                 <View style={styles.infoCardsGrid}>
-                  <LiquidGlassView style={[styles.infoCard, isDark ? { backgroundColor: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.08)' } : { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={isDark ? 30 : 80} fallbackColor={theme.card}>
+                  <LiquidGlassView style={styles.infoCard} fallbackColor={theme.card}>
                     <Text style={[styles.infoCardLabel, { color: theme.textMuted }]}>LINHA {busLine}</Text>
                     <Text style={[styles.infoCardValue, { color: theme.text, fontSize: 16 }]} numberOfLines={1} adjustsFontSizeToFit>{lineDetails || busLine}</Text>
                   </LiquidGlassView>
-                  <LiquidGlassView style={[styles.infoCard, isDark ? { backgroundColor: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.08)' } : { borderColor: "rgba(255, 255, 255, 0.6)" }]} intensity={isDark ? 30 : 80} fallbackColor={theme.card}>
+                  <LiquidGlassView style={styles.infoCard} fallbackColor={theme.card}>
                     <Text style={[styles.infoCardLabel, { color: theme.textMuted }]}>{chegaLabel}</Text>
                     <Text style={[styles.infoCardValue, { color: isDark ? '#60A5FA' : theme.primary, fontSize: 18 }]} numberOfLines={1} adjustsFontSizeToFit>{chegaValue}</Text>
                     {!!stopName && stopName !== "ponto indicado" && (
@@ -875,7 +872,7 @@ export default function NavigatingScreen() {
       </View>
 
       <Modal visible={showExitModal} transparent animationType="fade">
-        <LiquidGlassView style={styles.modalOverlay} intensity={50} fallbackColor="rgba(0,0,0,0.7)">
+        <LiquidGlassView style={styles.modalOverlay} fallbackColor="rgba(0,0,0,0.7)">
           <View style={[styles.modalContent, { backgroundColor: theme.card }]}>
             <Text style={[styles.modalTitle, { color: theme.text }]}>Sair da navegação?</Text>
             <View style={styles.modalActions}>

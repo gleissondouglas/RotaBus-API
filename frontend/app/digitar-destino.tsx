@@ -154,7 +154,7 @@ export default function TypeDestinationScreen() {
         style={styles.sheetShadow}
       >
         <View style={[styles.sheetContent, { paddingBottom: insets.bottom + 16 }]}>
-          <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={50} fallbackColor={theme.card} />
+          <LiquidGlassView style={StyleSheet.absoluteFillObject} fallbackColor={theme.card} />
           
           {/* Handle bar */}
           <View style={[styles.handle, { backgroundColor: theme.border }]} />
@@ -165,8 +165,7 @@ export default function TypeDestinationScreen() {
             style={[
               styles.input,
               { backgroundColor: theme.background, color: theme.text },
-              errorText ? { borderColor: theme.danger, backgroundColor: 'transparent' } : null,
-            ]}
+              errorText ? { borderColor: theme.danger, backgroundColor: 'transparent' } : null]}
             placeholder="Digite o destino"
             placeholderTextColor={theme.textMuted}
             value={address}
@@ -202,8 +201,7 @@ export default function TypeDestinationScreen() {
                 styles.btn,
                 { backgroundColor: theme.primaryLight },
                 pressed && { opacity: 0.7 },
-                isLoading && { opacity: 0.4 },
-              ]}
+                isLoading && { opacity: 0.4 }]}
               onPress={handleCancel}
               disabled={isLoading}
               accessibilityRole="button"
@@ -217,8 +215,7 @@ export default function TypeDestinationScreen() {
                 styles.btn,
                 styles.btnConfirm,
                 { backgroundColor: theme.primary },
-                (pressed || (!isInputValid && !isLoading)) && { opacity: 0.65 },
-              ]}
+                (pressed || (!isInputValid && !isLoading)) && { opacity: 0.65 }]}
               onPress={handleConfirm}
               disabled={isLoading}
               accessibilityRole="button"

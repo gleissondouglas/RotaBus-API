@@ -71,7 +71,7 @@ export default function RouteNotFoundScreen() {
             
             <View style={styles.messageCardShadow}>
               <View style={[styles.messageCardContent, { borderColor: theme.border }]}>
-                <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={50} fallbackColor={theme.card} />
+                <LiquidGlassView style={StyleSheet.absoluteFillObject} fallbackColor={theme.card} />
                 <Text style={[styles.messageText, { color: theme.text }]}>{message}</Text>
               </View>
             </View>

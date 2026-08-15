@@ -21,7 +21,7 @@ export function BottomActionBar({ status, micLabel, onTypeDestination, onMicPres
   const theme = useThemeColors();
 
   return (
-    <LiquidGlassView style={styles.pill} intensity={40} fallbackColor={theme.card}>
+    <LiquidGlassView style={styles.pill} fallbackColor={theme.card}>
       <View style={styles.row}>
         <Pressable
           style={({ pressed }) => [styles.typeButton, pressed && styles.typeButtonPressed, isTypingDisabled && styles.typeButtonDisabled]}

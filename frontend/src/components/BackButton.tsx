@@ -38,10 +38,9 @@ export function BackButton({ label = "Voltar", onPress, accessibilityLabel }: Ba
         style={[
           styles.glassPill, 
           isDark 
-            ? { backgroundColor: "rgba(15, 23, 42, 0.6)", borderColor: "rgba(255, 255, 255, 0.15)" } 
-            : { backgroundColor: "rgba(255, 255, 255, 0.8)", borderColor: "rgba(255, 255, 255, 0.9)" }
+            ? { backgroundColor: "rgba(15, 23, 42, 0.3)", borderColor: "rgba(255, 255, 255, 0.15)" } 
+            : { backgroundColor: "rgba(255, 255, 255, 0.2)", borderColor: "rgba(255, 255, 255, 0.4)" }
         ]} 
-        intensity={isDark ? 40 : 80} 
         fallbackColor={theme.card}
       >
         <Ionicons name="chevron-back" size={18} color={theme.text} />

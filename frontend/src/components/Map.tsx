@@ -5,6 +5,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { MapData, MapMarker, MapFocusMode } from '../types/journey.types';
 import { decodePolyline } from '../utils/polyline';
 import { useThemeColors } from '../theme/colors';
+import { LiquidGlassView } from './LiquidGlassView';
 
 interface MapProps {
   mapData?: MapData;
@@ -427,7 +428,7 @@ const Map: React.FC<MapProps> = ({
         )}
       </MapView>
       <View style={[styles.controls, { bottom: controlsBottomOffset + 16 }]} pointerEvents="box-none">
-        <View style={[styles.controlGroup, { backgroundColor: theme.card }]}>
+        <LiquidGlassView style={styles.controlGroup}>
           <TouchableOpacity 
             style={styles.controlButton} 
             onPress={handleRecenter} 
@@ -449,7 +450,7 @@ const Map: React.FC<MapProps> = ({
           >
             <Ionicons name={focusMode === 'full_route' ? "eye-off" : "map"} size={24} color={theme.primary} />
           </TouchableOpacity>
-        </View>
+        </LiquidGlassView>
       </View>
     </View>
   );
@@ -473,8 +474,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 10,
     elevation: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.08)',
   },
   controlButton: {
     width: 42,

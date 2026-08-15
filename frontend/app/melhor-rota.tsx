@@ -441,8 +441,7 @@ export default function BestRouteScreen() {
                         styles.routeCardOption,
                         isSelected
                           ? [styles.routeCardSelected, { borderColor: theme.primary }]
-                          : [styles.routeCardUnselected, isDark ? { backgroundColor: "rgba(255,255,255,0.06)" } : { backgroundColor: "rgba(255,255,255,0.7)" }],
-                      ]}
+                          : [styles.routeCardUnselected, isDark ? { backgroundColor: "rgba(255,255,255,0.06)" } : { backgroundColor: "rgba(255,255,255,0.7)" }]]}
                       activeOpacity={0.8}
                       accessibilityRole="button"
                       accessibilityLabel={`Opção ${r.tag}, ${dur} minutos`}
@@ -622,7 +621,7 @@ export default function BestRouteScreen() {
         style={styles.bottomActionsShadow}
       >
         <View style={[styles.bottomActionsContent, { paddingBottom: insets.bottom + 16 }]}>
-          <LiquidGlassView style={StyleSheet.absoluteFillObject} intensity={50} fallbackColor={theme.card} />
+          <LiquidGlassView style={StyleSheet.absoluteFillObject} fallbackColor={theme.card} />
           <LinearGradient
             colors={[isDark ? 'rgba(1, 16, 48, 0)' : 'rgba(241, 245, 249, 0)', theme.background]}
             locations={[0.2, 1]}
