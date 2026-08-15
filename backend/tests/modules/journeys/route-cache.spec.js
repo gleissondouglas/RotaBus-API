@@ -1,54 +1,64 @@
 const {
-  ROUTE_CACHE_TTL_MS,
   findCachedRoute,
   createRouteCache,
   clearRouteCache,
 } = require("../../../src/modules/journeys/route-cache");
 
-describe("RouteCache (In-Memory)", () => {
+jest.mock("../../../src/config/redis", () => {
+  const store = new Map();
+  return {
+    get: jest.fn().mockImplementation(async (key) => store.get(key) || null),
+    set: jest.fn().mockImplementation(async (key, value) => {
+      store.set(key, value);
+    }),
+    __store: store,
+  };
+});
+
+const redisClient = require("../../../src/config/redis");
+
+describe("RouteCache (Redis)", () => {
   beforeEach(() => {
-    clearRouteCache();
-    jest.useFakeTimers();
+    redisClient.__store.clear();
+    jest.clearAllMocks();
   });
 
-  afterEach(() => {
-    clearRouteCache();
-    jest.useRealTimers();
-  });
-
-  test("deve retornar uma rota armazenada dentro do TTL", () => {
+  test("deve retornar uma rota armazenada", async () => {
     const cachedRoute = {
       cacheKey: "origem-destino-horario",
       googleResponse: { routes: [{ duration: "600s" }] },
       timePreference: { type: "DEPARTURE", dateTime: "2026-07-11T12:00:00.000Z" },
     };
 
-    createRouteCache(cachedRoute);
-    jest.advanceTimersByTime(ROUTE_CACHE_TTL_MS - 1);
+    await createRouteCache(cachedRoute);
+    
+    expect(redisClient.set).toHaveBeenCalledWith(
+      cachedRoute.cacheKey,
+      expect.any(String),
+      "EX",
+      120
+    );
 
-    expect(findCachedRoute(cachedRoute.cacheKey)).toEqual({
+    const result = await findCachedRoute(cachedRoute.cacheKey);
+    expect(result).toEqual({
       googleResponse: cachedRoute.googleResponse,
       timePreference: cachedRoute.timePreference,
     });
   });
 
-  test("deve remover e ignorar uma rota expirada", () => {
-    createRouteCache({
-      cacheKey: "rota-expirada",
-      googleResponse: { routes: [] },
-      timePreference: null,
-    });
-    jest.advanceTimersByTime(ROUTE_CACHE_TTL_MS);
-
-    expect(findCachedRoute("rota-expirada")).toBeNull();
-    expect(findCachedRoute("rota-expirada")).toBeNull();
+  test("deve retornar null se a rota não existir no cache", async () => {
+    const result = await findCachedRoute("rota-inexistente");
+    expect(result).toBeNull();
   });
 
-  test("deve manter rotas diferentes isoladas por chave", () => {
-    createRouteCache({ cacheKey: "rota-a", googleResponse: { id: "a" } });
-    createRouteCache({ cacheKey: "rota-b", googleResponse: { id: "b" } });
+  test("deve manter rotas diferentes isoladas por chave", async () => {
+    await createRouteCache({ cacheKey: "rota-a", googleResponse: { id: "a" } });
+    await createRouteCache({ cacheKey: "rota-b", googleResponse: { id: "b" } });
 
-    expect(findCachedRoute("rota-a").googleResponse).toEqual({ id: "a" });
-    expect(findCachedRoute("rota-b").googleResponse).toEqual({ id: "b" });
+    const routeA = await findCachedRoute("rota-a");
+    const routeB = await findCachedRoute("rota-b");
+
+    expect(routeA.googleResponse).toEqual({ id: "a" });
+    expect(routeB.googleResponse).toEqual({ id: "b" });
   });
 });

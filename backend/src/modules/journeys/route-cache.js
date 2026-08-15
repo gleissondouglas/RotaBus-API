@@ -1,40 +1,43 @@
-const ROUTE_CACHE_TTL_MS = 2 * 60 * 1000;
+const redisClient = require("../../config/redis");
+const ROUTE_CACHE_TTL_SEC = 2 * 60; // 2 minutos em segundos
 
-const routeCache = new Map();
-
-function findCachedRoute(cacheKey) {
-  const cachedRoute = routeCache.get(cacheKey);
-
-  if (!cachedRoute) return null;
-
-  if (cachedRoute.expiresAt <= Date.now()) {
-    routeCache.delete(cacheKey);
-    return null;
+async function findCachedRoute(cacheKey) {
+  try {
+    const cachedData = await redisClient.get(cacheKey);
+    if (!cachedData) return null;
+    return JSON.parse(cachedData);
+  } catch (error) {
+    console.error("[RouteCache] Erro ao ler do Redis:", error.message);
+    return null; // Fallback graceful
   }
-
-  return cachedRoute.value;
 }
 
-function createRouteCache({ cacheKey, googleResponse, timePreference }) {
+async function createRouteCache({ cacheKey, googleResponse, timePreference }) {
   const cachedRoute = {
     googleResponse,
     timePreference,
   };
 
-  routeCache.set(cacheKey, {
-    value: cachedRoute,
-    expiresAt: Date.now() + ROUTE_CACHE_TTL_MS,
-  });
+  try {
+    await redisClient.set(
+      cacheKey,
+      JSON.stringify(cachedRoute),
+      "EX",
+      ROUTE_CACHE_TTL_SEC
+    );
+  } catch (error) {
+    console.error("[RouteCache] Erro ao salvar no Redis:", error.message);
+  }
 
   return cachedRoute;
 }
 
-function clearRouteCache() {
-  routeCache.clear();
+async function clearRouteCache() {
+  // Opcional: Se precisar limpar todo o cache de rotas no Redis
+  // Pode ser evitado ou implementado com SCAN/DEL dependendo do padrão de chaves.
 }
 
 module.exports = {
-  ROUTE_CACHE_TTL_MS,
   findCachedRoute,
   createRouteCache,
   clearRouteCache,
