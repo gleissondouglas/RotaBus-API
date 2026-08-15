@@ -380,6 +380,9 @@ export default function NavigatingScreen() {
            busCountdownDiff > -2;
   }, [stage, busCountdownDiff, walkTimeNum]);
 
+  const [userHeading, setUserHeading] = useState<number | null>(null);
+  const headingSubscriptionRef = useRef<Location.LocationSubscription | null>(null);
+
   // Location tracking init
   useEffect(() => {
     async function startTracking() {
@@ -400,10 +403,20 @@ export default function NavigatingScreen() {
         });
 
         locationSubscriptionRef.current = sub;
+
+        // Ativa a bússola nativa
+        const headingSub = await Location.watchHeadingAsync((headingData) => {
+          setUserHeading(headingData.trueHeading !== -1 ? headingData.trueHeading : headingData.magHeading);
+        });
+        headingSubscriptionRef.current = headingSub;
+
       } catch (err) { console.error("Erro GPS:", err); }
     }
     startTracking(); 
-    return () => { locationSubscriptionRef.current?.remove(); };
+    return () => { 
+      locationSubscriptionRef.current?.remove(); 
+      headingSubscriptionRef.current?.remove();
+    };
   }, []);
 
   const handleSair = () => { setShowExitModal(true); };
@@ -558,6 +571,7 @@ export default function NavigatingScreen() {
           <Map 
             mapData={mapData} 
             userLocation={currentLocation} 
+            userHeading={userHeading}
             initialRegion={initialRegion} 
             colors={theme} 
             focusMode={isWalkingOnly ? "walking_to_destination" : "walking_to_stop"} 
