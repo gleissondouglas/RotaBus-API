@@ -91,15 +91,23 @@ export default function ChooseTimeScreen() {
 
   useEffect(() => {
     if (isModalOpen) {
-      const now = new Date();
-      const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
-      let bestSlot = timeSlots[timeSlots.length - 1]; // fallback to last slot
-      
-      for (const slot of timeSlots) {
-        const [h, m] = slot.split(':').map(Number);
-        if (h * 60 + m >= currentTotalMinutes) {
-          bestSlot = slot;
-          break;
+      let bestSlot = timeText;
+
+      if (dateText === getTodayDateText()) {
+        const now = new Date();
+        const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
+        bestSlot = timeSlots[timeSlots.length - 1]; // fallback
+        
+        for (const slot of timeSlots) {
+          const [h, m] = slot.split(':').map(Number);
+          if (h * 60 + m >= currentTotalMinutes) {
+            bestSlot = slot;
+            break;
+          }
+        }
+      } else {
+        if (!timeSlots.includes(bestSlot)) {
+          bestSlot = timeSlots.includes("08:00") ? "08:00" : timeSlots[0];
         }
       }
       
@@ -108,14 +116,14 @@ export default function ChooseTimeScreen() {
       const index = timeSlots.indexOf(bestSlot);
       if (index !== -1 && scrollViewRef.current) {
         setTimeout(() => {
-          // approx 80px per item (72 width + 8 gap)
-          const itemX = index * 80;
-          const centerOffset = itemX - (width / 2) + 40;
+          // fixed width of 88px + 8px gap = 96px per item
+          const itemX = index * 96;
+          const centerOffset = itemX - (width / 2) + 44;
           scrollViewRef.current?.scrollTo({ x: Math.max(0, centerOffset), animated: true });
         }, 150); // wait a bit for modal to finish animating in
       }
     }
-  }, [isModalOpen, mode, timeSlots, width]);
+  }, [isModalOpen, mode, timeSlots, width, dateText]);
 
 
   function buildProcessingParams(type: "DEPARTURE" | "ARRIVAL", dateTime: string) {
@@ -734,8 +742,7 @@ const styles = StyleSheet.create({
   },
   timeChip: {
     height: 72,
-    minWidth: 72,
-    paddingHorizontal: 16,
+    width: 88,
     borderRadius: 16,
     borderWidth: 1.5,
     alignItems: "center",
