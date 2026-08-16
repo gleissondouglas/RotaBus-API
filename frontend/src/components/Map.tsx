@@ -26,6 +26,7 @@ interface MapProps {
     longitudeDelta: number;
   };
   colors: any;
+  userHeading?: number | null;
   focusMode?: MapFocusMode;
   onFocusModeChange?: (mode: MapFocusMode) => void;
   controlsBottomOffset?: number;
@@ -81,6 +82,7 @@ const Map: React.FC<MapProps> = ({
   walkSteps = [],
   currentStepIndex = 0,
   isNavigating = false,
+  userHeading,
 }) => {
   const mapRef = useRef<MapView>(null);
   // Estado para saber se o mapa deve "travar" a câmera no usuário
@@ -102,7 +104,7 @@ const Map: React.FC<MapProps> = ({
             longitude: userLocation.longitude,
           },
           pitch: 45,
-          heading: userLocation.heading || 0,
+          heading: userHeading ?? userLocation.heading ?? 0,
           zoom: 19,
         }, { duration: 1000 });
       } else {
@@ -142,7 +144,7 @@ const Map: React.FC<MapProps> = ({
           longitude: userLocation.longitude,
         },
         pitch: 50, // Inclinação para dar perspectiva 3D
-        heading: userLocation.heading || 0, // Gira o mapa conforme o usuário vira o corpo/celular
+        heading: userHeading ?? userLocation.heading ?? 0, // Gira o mapa conforme o usuário vira o corpo/celular
         zoom: 19,
       }, { duration: 800 });
       return;
@@ -210,7 +212,7 @@ const Map: React.FC<MapProps> = ({
     return () => {
       if (fitTimer) clearTimeout(fitTimer);
     };
-  }, [mapData, userLocation, focusMode, controlsBottomOffset, currentStepIndex, walkSteps, isFollowingUser, isNavigating]);
+  }, [mapData, userLocation, userHeading, focusMode, controlsBottomOffset, currentStepIndex, walkSteps, isFollowingUser, isNavigating]);
 
   const renderedGeneralPolylines = useMemo(() => {
     if ((walkSteps && walkSteps.length > 0) && focusMode !== 'full_route') {
