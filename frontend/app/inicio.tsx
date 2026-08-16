@@ -276,10 +276,16 @@ export default function HomeScreen() {
         setErrorMessage("Não encontrei esse lugar. Tente falar de forma diferente.");
         vibrationService.error();
       }
-    } catch (err) {
-      console.error("Erro ao processar destino:", err);
+    } catch (err: any) {
+      console.log("Aviso ao processar destino (limite ou erro esperado):", err?.message || err);
       setStatus("error");
-      setErrorMessage("Erro ao buscar destino. Verifique sua conexão.");
+      
+      let errorMsg = err?.message || "Erro ao buscar destino. Verifique sua conexão.";
+      if (errorMsg.toLowerCase().includes("muitas requisições") || errorMsg.includes("429")) {
+        errorMsg = "Muitas buscas seguidas. Por favor, aguarde uns minutos e tente novamente.";
+      }
+      
+      setErrorMessage(errorMsg);
       vibrationService.error();
     }
   }, [getOriginCoords]);
@@ -726,13 +732,19 @@ export default function HomeScreen() {
         {status === "error" && !!errorMessage && (
           <Animated.View
             entering={FadeIn.duration(300)}
-            style={styles.errorBanner}
+            style={{ width: '100%', alignItems: 'center', marginBottom: 12 }}
             pointerEvents="none"
             accessible
             accessibilityLiveRegion="assertive"
           >
-            <Ionicons name="alert-circle" size={16} color="#9F1239" style={styles.errorIcon} />
-            <Text style={styles.errorText}>{errorMessage}</Text>
+            <LiquidGlassView 
+              intensity={50} 
+              disableDefaultStyles 
+              style={[styles.errorBanner, { backgroundColor: "rgba(254, 226, 226, 0.4)", borderColor: "rgba(254, 205, 211, 0.5)" }]}
+            >
+              <Ionicons name="alert-circle" size={18} color="#9F1239" style={styles.errorIcon} />
+              <Text style={styles.errorText}>{errorMessage}</Text>
+            </LiquidGlassView>
           </Animated.View>
         )}
         </>
