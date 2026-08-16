@@ -82,33 +82,44 @@ export default function ChooseTimeScreen() {
 
   const timeSlots = useMemo(() => {
     const slots: string[] = [];
+    const isToday = dateText === getTodayDateText();
+    const now = new Date();
+    const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
+
     for (let i = startHour; i < 24; i++) {
       const hr = String(i).padStart(2, "0");
-      slots.push(`${hr}:00`, `${hr}:15`, `${hr}:30`, `${hr}:45`);
+      const subSlots = [`${hr}:00`, `${hr}:15`, `${hr}:30`, `${hr}:45`];
+      
+      for (const slot of subSlots) {
+        if (isToday) {
+          const [h, m] = slot.split(':').map(Number);
+          if (h * 60 + m >= currentTotalMinutes) {
+            slots.push(slot);
+          }
+        } else {
+          slots.push(slot);
+        }
+      }
     }
+    
+    // Garantir que exista ao menos uma opção caso seja tarde da noite
+    if (slots.length === 0) {
+      slots.push("23:45");
+    }
+    
     return slots;
-  }, [startHour]);
+  }, [startHour, dateText]);
 
   useEffect(() => {
     if (isModalOpen) {
       let bestSlot = timeText;
 
-      if (dateText === getTodayDateText()) {
-        const now = new Date();
-        const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
-        bestSlot = timeSlots[timeSlots.length - 1]; // fallback
-        
-        for (const slot of timeSlots) {
-          const [h, m] = slot.split(':').map(Number);
-          if (h * 60 + m >= currentTotalMinutes) {
-            bestSlot = slot;
-            break;
-          }
-        }
-      } else {
-        if (!timeSlots.includes(bestSlot)) {
-          bestSlot = timeSlots.includes("08:00") ? "08:00" : timeSlots[0];
-        }
+      // Como o array timeSlots já não tem horários passados quando é "Hoje", 
+      // basta verificar se o bestSlot atual ainda é uma opção válida.
+      if (!timeSlots.includes(bestSlot)) {
+         bestSlot = timeSlots.includes("08:00") && dateText !== getTodayDateText() 
+           ? "08:00" 
+           : timeSlots[0];
       }
       
       setTimeText(bestSlot);
