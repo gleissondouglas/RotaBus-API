@@ -1,4 +1,4 @@
-import { BackgroundGradient } from "../src/components/BackgroundGradient";
+
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState, useRef, useMemo } from "react";
 import { 
@@ -565,28 +565,21 @@ export default function NavigatingScreen() {
 
   return (
     <View style={styles.container}>
-      {/* MAP BACKGROUND */}
-      {(stage === "walking") && (
-        <View style={StyleSheet.absoluteFill}>
-          <Map 
-            mapData={mapData} 
-            userLocation={currentLocation} 
-            userHeading={userHeading}
-            initialRegion={initialRegion} 
-            colors={theme} 
-            focusMode={isWalkingOnly ? "walking_to_destination" : "walking_to_stop"} 
-            controlsBottomOffset={bottomCardHeight}
-            walkSteps={allSteps}
-            currentStepIndex={globalStepIndex}
-            isNavigating={true}
-          />
-        </View>
-      )}
-
-      {/* SOLID BACKGROUND (For status stages) */}
-      {(stage === "waiting_bus" || stage === "on_bus" || stage === "arrived") && (
-        <BackgroundGradient />
-      )}
+      {/* MAP BACKGROUND FICA SEMPRE VISÍVEL */}
+      <View style={StyleSheet.absoluteFill}>
+        <Map 
+          mapData={mapData} 
+          userLocation={currentLocation} 
+          userHeading={userHeading}
+          initialRegion={initialRegion} 
+          colors={theme} 
+          focusMode={stage === "on_bus" ? "on_bus" : (isWalkingOnly ? "walking_to_destination" : "walking_to_stop")} 
+          controlsBottomOffset={bottomCardHeight}
+          walkSteps={allSteps}
+          currentStepIndex={globalStepIndex}
+          isNavigating={true}
+        />
+      </View>
 
       {/* Top Bar (Floating Glass Pills over Map) */}
       <View style={[styles.topBar, { top: insets.top + 8 }]} pointerEvents="box-none">

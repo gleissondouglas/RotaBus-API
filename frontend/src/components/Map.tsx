@@ -166,23 +166,13 @@ const Map: React.FC<MapProps> = ({
           decoded.forEach(coord => coordinatesToFit.push({ latitude: Number(coord.latitude), longitude: Number(coord.longitude) }));
         });
       }
-    } else if (focusMode === 'walking_to_stop') {
-      // No modo caminhada, foca no usuário e no próximo ponto de embarque
-      const stop = mapData?.markers.find(m => m.type === 'boarding_stop');
-      if (stop) coordinatesToFit.push({ latitude: Number(stop.lat), longitude: Number(stop.lng) });
-      
-      if (walkSteps && walkSteps.length > 0) {
-        // Inclui também os próximos passos do trajeto a pé no enquadramento
+    } else if (focusMode === 'walking_to_stop' || focusMode === 'walking_to_destination' || focusMode === 'on_bus' || focusMode === 'transfer') {
+      // Sempre focamos a câmera no trecho atual em andamento
+      if (walkSteps && walkSteps.length > 0 && currentStepIndex !== undefined) {
         const currentStep = walkSteps[currentStepIndex];
-        const nextStep = walkSteps[currentStepIndex + 1];
-        
-        if (currentStep) {
+        if (currentStep && currentStep.polyline) {
           const decoded = decodePolyline(currentStep.polyline);
-          if (decoded.length >= 2) decoded.forEach(coord => coordinatesToFit.push({ latitude: Number(coord.latitude), longitude: Number(coord.longitude) }));
-        }
-        if (nextStep) {
-           const decodedNext = decodePolyline(nextStep.polyline);
-           if (decodedNext.length >= 2) decodedNext.forEach(coord => coordinatesToFit.push({ latitude: Number(coord.latitude), longitude: Number(coord.longitude) }));
+          decoded.forEach(coord => coordinatesToFit.push({ latitude: Number(coord.latitude), longitude: Number(coord.longitude) }));
         }
       }
     }
@@ -239,7 +229,7 @@ const Map: React.FC<MapProps> = ({
   }, [mapData?.polylines, walkSteps, focusMode, theme.primary]);
 
   const renderedWalkStepPolylines = useMemo(() => {
-    if (focusMode !== 'walking_to_stop' || !walkSteps || walkSteps.length === 0) {
+    if (!walkSteps || walkSteps.length === 0 || focusMode === 'full_route') {
       return [];
     }
 
@@ -250,21 +240,23 @@ const Map: React.FC<MapProps> = ({
 
         const isActive = index === currentStepIndex;
         const isPast = index < currentStepIndex;
+        const isTransit = step.type === 'transit';
 
-        let strokeColor = theme.primary;
-        let strokeWidth = 14;
+        let strokeColor = isTransit ? '#22C55E' : theme.primary;
+        let strokeWidth = isTransit ? 10 : 14;
         let zIndex = 5;
-        let lineDashPattern: number[] | undefined = undefined;
+        let lineDashPattern: number[] | undefined = isTransit ? undefined : [1, 10];
 
         if (isPast) {
           strokeColor = '#CBD5E1';
           strokeWidth = 8;
           zIndex = 3;
+          lineDashPattern = isTransit ? undefined : [1, 8];
         } else if (!isActive) {
-          strokeColor = theme.primary;
-          strokeWidth = 10;
+          strokeColor = isTransit ? 'rgba(34, 197, 94, 0.4)' : theme.primary;
+          strokeWidth = isTransit ? 8 : 10;
           zIndex = 4;
-          lineDashPattern = [1, 12];
+          lineDashPattern = isTransit ? undefined : [1, 12];
         }
 
         return {
@@ -280,7 +272,7 @@ const Map: React.FC<MapProps> = ({
   }, [focusMode, walkSteps, currentStepIndex, theme.primary]);
 
   const renderedTurnMarkers = useMemo(() => {
-    if (focusMode !== 'walking_to_stop' || !walkSteps || walkSteps.length === 0) {
+    if (!walkSteps || walkSteps.length === 0 || focusMode === 'full_route') {
       return [];
     }
 
