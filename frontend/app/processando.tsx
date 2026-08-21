@@ -221,8 +221,8 @@ export default function ProcessingScreen() {
                 styles.cancelButtonContent,
                 { height: isSmallHeight ? layout.secondaryButtonHeight : 58 },
                 isDark
-                  ? { backgroundColor: "rgba(30, 41, 59, 0.75)", borderColor: "rgba(255, 255, 255, 0.15)" }
-                  : { backgroundColor: "rgba(255, 255, 255, 0.9)", borderColor: "rgba(255, 255, 255, 0.95)" }
+                  ? { backgroundColor: "rgba(239, 68, 68, 0.15)", borderColor: "rgba(239, 68, 68, 0.25)" }
+                  : { backgroundColor: "rgba(254, 242, 242, 0.9)", borderColor: "rgba(254, 226, 226, 0.95)" }
               ]}
               fallbackColor={theme.card}
             >
@@ -231,9 +231,9 @@ export default function ProcessingScreen() {
                 fallbackFamily="Ionicons" 
                 fallbackName="close-circle" 
                 size={20} 
-                color={theme.textMuted} 
+                color={theme.danger} 
               />
-              <Text style={[styles.cancelButtonText, { color: theme.text }]} maxFontSizeMultiplier={1.2}>
+              <Text style={[styles.cancelButtonText, { color: theme.danger }]} maxFontSizeMultiplier={1.2}>
                 Cancelar
               </Text>
             </LiquidGlassView>
