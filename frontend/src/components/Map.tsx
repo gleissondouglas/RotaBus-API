@@ -33,6 +33,7 @@ interface MapProps {
   walkSteps?: any[];
   currentStepIndex?: number;
   isNavigating?: boolean;
+  hideControls?: boolean;
 }
 
 const cleanMapStyle = [
@@ -83,6 +84,7 @@ const Map: React.FC<MapProps> = ({
   currentStepIndex = 0,
   isNavigating = false,
   userHeading,
+  hideControls = false,
 }) => {
   const mapRef = useRef<MapView>(null);
   // Estado para saber se o mapa deve "travar" a câmera no usuário
@@ -421,31 +423,33 @@ const Map: React.FC<MapProps> = ({
           </Marker>
         )}
       </MapView>
-      <View style={[styles.controls, { bottom: controlsBottomOffset + 16 }]} pointerEvents="box-none">
-        <LiquidGlassView style={styles.controlGroup}>
-          <TouchableOpacity 
-            style={styles.controlButton} 
-            onPress={handleRecenter} 
-            activeOpacity={0.7}
-            accessibilityLabel="Centralizar minha localização"
-            accessibilityRole="button"
-          >
-            <MaterialCommunityIcons name="crosshairs-gps" size={24} color={theme.primary} />
-          </TouchableOpacity>
-          
-          <View style={[styles.divider, { backgroundColor: theme.border }]} />
+      {!hideControls && (
+        <View style={[styles.controls, { bottom: controlsBottomOffset + 32 }]} pointerEvents="box-none">
+          <LiquidGlassView style={styles.controlGroup}>
+            <TouchableOpacity 
+              style={styles.controlButton} 
+              onPress={handleRecenter} 
+              activeOpacity={0.7}
+              accessibilityLabel="Centralizar minha localização"
+              accessibilityRole="button"
+            >
+              <MaterialCommunityIcons name="crosshairs-gps" size={24} color={theme.primary} />
+            </TouchableOpacity>
+            
+            <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
-          <TouchableOpacity 
-            style={styles.controlButton} 
-            onPress={toggleFocusMode} 
-            activeOpacity={0.7}
-            accessibilityLabel={focusMode === 'full_route' ? "Focar na caminhada" : "Ver rota completa"}
-            accessibilityRole="button"
-          >
-            <Ionicons name={focusMode === 'full_route' ? "eye-off" : "map"} size={24} color={theme.primary} />
-          </TouchableOpacity>
-        </LiquidGlassView>
-      </View>
+            <TouchableOpacity 
+              style={styles.controlButton} 
+              onPress={toggleFocusMode} 
+              activeOpacity={0.7}
+              accessibilityLabel={focusMode === 'full_route' ? "Focar na caminhada" : "Ver rota completa"}
+              accessibilityRole="button"
+            >
+              <Ionicons name={focusMode === 'full_route' ? "eye-off" : "map"} size={24} color={theme.primary} />
+            </TouchableOpacity>
+          </LiquidGlassView>
+        </View>
+      )}
     </View>
   );
 };
