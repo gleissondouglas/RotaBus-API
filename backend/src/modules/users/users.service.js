@@ -45,7 +45,7 @@ async function createUserService(userData) {
   });
 
   return {
-    message: "Usuário criado com sucesso.",
+    message: "Usuário criado com sucesso!",
     user: newUser,
   };
 }
@@ -54,7 +54,7 @@ async function listUsersService() {
   const users = await findAllUsers();
 
   return {
-    message: "Usuários encontrados com sucesso.",
+    message: "Usuários encontrados com sucesso!",
     users,
   };
 }
@@ -69,7 +69,7 @@ async function getProfileService(userId) {
   }
 
   return {
-    message: "Perfil encontrado com sucesso.",
+    message: "Perfil encontrado com sucesso!",
     user,
   };
 }
@@ -79,14 +79,14 @@ async function deleteUserService({ userIdToDelete, authenticatedUserId }) {
   const authUserId = Number(authenticatedUserId);
 
   if (!Number.isInteger(userId) || userId <= 0) {
-    const error = new Error("ID do usuário inválido.");
+    const error = new Error("ID do usuário inválido!");
     error.statusCode = 400;
     throw error;
   }
 
   if (userId === authUserId) {
     const error = new Error(
-      "Você não pode deletar sua própria conta de administrador por essa rota.",
+      "Você não pode deletar sua própria conta de administrador por essa rota!",
     );
     error.statusCode = 400;
     throw error;
@@ -103,14 +103,14 @@ async function deleteUserService({ userIdToDelete, authenticatedUserId }) {
   const deletedUser = await deleteUserById(userId);
 
   return {
-    message: "Usuário deletado com sucesso.",
+    message: "Usuário deletado com sucesso!",
     user: deletedUser,
   };
 }
 
 async function deleteOwnUserService(userId) {
   if (!userId) {
-    const error = new Error("ID do usuário não fornecido.");
+    const error = new Error("ID do usuário não fornecido!");
     error.statusCode = 400;
     throw error;
   }
@@ -118,7 +118,7 @@ async function deleteOwnUserService(userId) {
   const user = await findUserById(userId);
 
   if (!user) {
-    const error = new Error("Usuário não encontrado.");
+    const error = new Error("Usuário não encontrado!");
     error.statusCode = 404;
     throw error;
   }
@@ -128,7 +128,7 @@ async function deleteOwnUserService(userId) {
     const adminCount = await countUsersByRole("ADMIN");
 
     if (adminCount <= 1) {
-      const error = new Error("Não é possível excluir o último administrador do sistema.");
+      const error = new Error("Não é possível excluir o último administrador do sistema!!!");
       error.statusCode = 400;
       throw error;
     }
@@ -145,7 +145,7 @@ async function deleteOwnUserService(userId) {
   const deletedUser = await deleteUserById(userId);
 
   return {
-    message: "Conta excluída com sucesso.",
+    message: "Conta excluída com sucesso!",
     user: deletedUser,
   };
 }
@@ -170,7 +170,7 @@ async function changePasswordService({ userId, currentPassword, newPassword }) {
   );
 
   if (!passwordMatches) {
-    const error = new Error("Senha atual incorreta.");
+    const error = new Error("Senha atual incorreta!");
     error.statusCode = 401;
     throw error;
   }
@@ -183,7 +183,7 @@ async function changePasswordService({ userId, currentPassword, newPassword }) {
   });
 
   return {
-    message: "Senha alterada com sucesso.",
+    message: "Senha alterada com sucesso!",
     user: updatedUser,
   };
 }
@@ -237,12 +237,12 @@ async function listSearchHistoryService(userId) {
 
 async function addSearchHistoryService({ userId, query, address, lat, lng }) {
   const history = await createUserSearchHistory({ userId, query, address, lat, lng });
-  return { message: "Histórico adicionado com sucesso.", history };
+  return { message: "Histórico adicionado com sucesso!", history };
 }
 
 async function clearSearchHistoryService(userId) {
   await clearUserSearchHistory(userId);
-  return { message: "Histórico limpo com sucesso." };
+  return { message: "Histórico limpo com sucesso!" };
 }
 
 module.exports = {

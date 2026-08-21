@@ -32,7 +32,7 @@ describe("Users Service", () => {
         email: validData.email,
         passwordHash: "hashedPassword"
       });
-      expect(result.message).toBe("Usuário criado com sucesso.");
+      expect(result.message).toBe("Usuário criado com sucesso!");
       expect(result.user.id).toBe(1);
     });
   });
@@ -69,12 +69,12 @@ describe("Users Service", () => {
   describe("deleteUserService", () => {
     it("should throw 400 for invalid user ID", async () => {
       await expect(usersService.deleteUserService({ userIdToDelete: "abc", authenticatedUserId: 2 }))
-        .rejects.toThrow("ID do usuário inválido.");
+        .rejects.toThrow("ID do usuário inválido!");
     });
 
     it("should throw 400 if user tries to delete themselves through this route", async () => {
       await expect(usersService.deleteUserService({ userIdToDelete: 1, authenticatedUserId: 1 }))
-        .rejects.toThrow("Você não pode deletar sua própria conta de administrador por essa rota.");
+        .rejects.toThrow("Você não pode deletar sua própria conta de administrador por essa rota!");
     });
 
     it("should throw 404 if user does not exist", async () => {
@@ -91,7 +91,7 @@ describe("Users Service", () => {
       const result = await usersService.deleteUserService({ userIdToDelete: 2, authenticatedUserId: 1 });
 
       expect(usersRepository.deleteUserById).toHaveBeenCalledWith(2);
-      expect(result.message).toBe("Usuário deletado com sucesso.");
+      expect(result.message).toBe("Usuário deletado com sucesso!");
     });
   });
 });
