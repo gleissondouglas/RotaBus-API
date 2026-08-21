@@ -130,8 +130,8 @@ export default function HomeScreen() {
 
   useEffect(() => {
     pillScale.value = withSequence(
-      withTiming(1.10, { duration: 120 }), // Aumentado para 1.10 para inchar mais
-      withSpring(1, { damping: 10, stiffness: 220 })
+      withTiming(0.97, { duration: 80 }),
+      withSpring(1, { damping: 20, stiffness: 400 })
     );
   }, [activeTab, pillScale]);
 
@@ -140,12 +140,12 @@ export default function HomeScreen() {
       return { opacity: 0 };
     }
     return {
-      opacity: withTiming(1, { duration: 150 }),
+      opacity: withTiming(1, { duration: 120 }),
       transform: [
-        { translateX: withSpring(activeMeasurement.x, { damping: 24, stiffness: 150 }) },
+        { translateX: withSpring(activeMeasurement.x, { damping: 28, stiffness: 300 }) },
         { scale: pillScale.value }
       ],
-      width: withSpring(activeMeasurement.width, { damping: 24, stiffness: 150 }),
+      width: withSpring(activeMeasurement.width, { damping: 28, stiffness: 300 }),
     };
   });
 
@@ -798,13 +798,13 @@ const styles = StyleSheet.create({
     top: 4,
     bottom: 4,
     left: 0,
-    backgroundColor: "rgba(255,255,255,0.9)", // Mais opaco para realçar a pílula
+    backgroundColor: "#FFFFFF",
     borderRadius: 16,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 3,
   },
   tabButton: {
     paddingVertical: 8,
@@ -817,7 +817,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: "700",
     color: "#64748B",
   },
   tabTextActive: {
