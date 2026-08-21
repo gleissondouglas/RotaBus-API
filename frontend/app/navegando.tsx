@@ -491,17 +491,13 @@ export default function NavigatingScreen() {
         speakControlled("Você chegou ao seu destino.", true);
       }
     } else if (stage === "waiting_bus") {
-      setStage("on_bus");
-      
-      // Encontra o índice real do passo de ônibus (transit), pois pode haver múltiplos passos de caminhada antes
-      const transitIndex = allSteps.findIndex((s, i) => i >= globalStepIndex && s.type === "transit");
-      if (transitIndex !== -1) {
-        setGlobalStepIndex(transitIndex);
-      } else {
-        setGlobalStepIndex(prev => prev + 1);
-      }
-      
-      speakControlled(`Tudo certo! Você embarcou no ônibus. Boa viagem. Eu aviso quando estiver perto de descer.`, true);
+      router.replace({
+        pathname: "/inicio",
+        params: {
+          latitude: String(userLocation?.latitude || params.latitude || ""),
+          longitude: String(userLocation?.longitude || params.longitude || "")
+        }
+      });
     } else if (stage === "on_bus") {
       const hasTransitAhead = allSteps.slice(globalStepIndex + 1).some(s => s.type === "transit");
       if (hasTransitAhead) {
@@ -529,7 +525,7 @@ export default function NavigatingScreen() {
       case "walking": 
         const hasTransitAhead = allSteps.slice(globalStepIndex).some(s => s.type === "transit");
         return hasTransitAhead ? "Cheguei ao ponto" : "Cheguei ao destino";
-      case "waiting_bus": return "Embarquei no ônibus";
+      case "waiting_bus": return "Ir para início";
       case "on_bus": return "Desci do ônibus";
       case "arrived": return "Ir para início";
       default: return "Continuar";
@@ -578,6 +574,7 @@ export default function NavigatingScreen() {
           walkSteps={allSteps}
           currentStepIndex={globalStepIndex}
           isNavigating={true}
+          hideControls={stage !== "walking"}
         />
       </View>
 
