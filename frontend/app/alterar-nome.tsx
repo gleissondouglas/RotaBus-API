@@ -12,10 +12,10 @@ import {
   View,
 } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { BackButton } from "../src/components/BackButton";
 import { PrimaryButton } from "../src/components/PrimaryButton";
-import { ScreenContainer } from "../src/components/ScreenContainer";
 import { TextField } from "../src/components/TextField";
 import { userService } from "../src/services/user.service";
 import { sessionService } from "../src/services/session.service";
@@ -23,6 +23,7 @@ import { useThemeColors } from "../src/theme/colors";
 
 export default function EditNameScreen() {
   const theme = useThemeColors();
+  const insets = useSafeAreaInsets();
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -60,11 +61,12 @@ export default function EditNameScreen() {
     return (
       <View style={{ flex: 1 }}>
         <BackgroundGradient />
-        <ScreenContainer backgroundColor="transparent">
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={theme.primary} />
-          </View>
-        </ScreenContainer>
+        <View style={[styles.topBar, { top: insets.top + 8 }]} pointerEvents="box-none">
+          <BackButton />
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={theme.primary} />
+        </View>
       </View>
     );
   }
@@ -72,18 +74,18 @@ export default function EditNameScreen() {
   return (
     <View style={{ flex: 1 }}>
       <BackgroundGradient />
-      <ScreenContainer withPadding={false} backgroundColor="transparent">
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={{ flex: 1 }}
-        >
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
+      <View style={[styles.topBar, { top: insets.top + 8 }]} pointerEvents="box-none">
+        <BackButton />
+      </View>
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 60, paddingBottom: insets.bottom + 40 }]}
           >
-            <View style={styles.topBar}>
-              <BackButton />
-            </View>
 
             <Animated.View entering={FadeInUp.duration(600)} style={styles.content}>
               <Text style={[styles.title, { color: theme.text }]}>Alterar nome</Text>
@@ -109,9 +111,8 @@ export default function EditNameScreen() {
                 </View>
               </View>
             </Animated.View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </ScreenContainer>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -123,6 +124,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   topBar: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    zIndex: 50,
     paddingHorizontal: 16,
     paddingTop: 8,
   },
@@ -132,7 +137,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingTop: 32,
+    paddingTop: 64,
     paddingHorizontal: 20,
     gap: 16,
   },
@@ -153,6 +158,6 @@ const styles = StyleSheet.create({
     gap: 24,
   },
   buttonWrapper: {
-    marginTop: 8,
+    
   },
 });

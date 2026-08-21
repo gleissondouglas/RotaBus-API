@@ -3,18 +3,19 @@ import { LiquidGlassView } from "../src/components/LiquidGlassView";
 import { router, useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
 import { BackButton } from "../src/components/BackButton";
 import { ListenOptionsButton } from "../src/components/ListenOptionsButton";
 import { PrimaryButton } from "../src/components/PrimaryButton";
-import { ScreenContainer } from "../src/components/ScreenContainer";
 import { useAutoSpeakOnce } from "../src/hooks/useAutoSpeakOnce";
 import { useThemeColors } from "../src/theme/colors";
 
 export default function HelpScreen() {
   const params = useLocalSearchParams();
   const theme = useThemeColors();
+  const insets = useSafeAreaInsets();
 
   const latitude = String(params.latitude || "");
   const longitude = String(params.longitude || "");
@@ -48,15 +49,14 @@ export default function HelpScreen() {
   return (
     <View style={{ flex: 1 }}>
       <BackgroundGradient />
-      <ScreenContainer withPadding={false} backgroundColor="transparent">
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
-          <View style={styles.topBar}>
-            <BackButton />
-          </View>
+      <View style={[styles.topBar, { top: insets.top + 8 }]} pointerEvents="box-none">
+        <BackButton />
+      </View>
 
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 60, paddingBottom: insets.bottom + 40 }]}
+      >
           <Animated.View entering={FadeInUp.duration(600)} style={styles.content}>
             <View style={styles.textHeader}>
               <Text style={[styles.title, { color: theme.text }]}>Ajuda</Text>
@@ -124,14 +124,17 @@ export default function HelpScreen() {
               </Pressable>
             </View>
           </Animated.View>
-        </ScrollView>
-      </ScreenContainer>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   topBar: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    zIndex: 50,
     paddingHorizontal: 16,
     paddingTop: 8,
   },
@@ -145,7 +148,7 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 20,
     paddingHorizontal: 20,
-    marginTop: 8,
+    
   },
 
   textHeader: {

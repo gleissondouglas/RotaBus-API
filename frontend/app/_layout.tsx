@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as Sentry from "@sentry/react-native";
 import "fast-text-encoding";
 
@@ -39,20 +40,18 @@ function RootLayout() {
   }, []);
 
   return (
-    // O AccessibilityProvider gerencia estados de acessibilidade (ex: alto contraste) para todo o app
-    <AccessibilityProvider>
-      {/* O Stack do expo-router gerencia a navegação em pilha (uma tela sobre a outra) */}
-      <Stack
-        screenOptions={{
-          headerShown: false, // Esconde o cabeçalho padrão para usarmos um customizado nas telas
-          animation: "slide_from_right", // Transição lateral suave entre telas
-          animationDuration: 260,
-        }}
-      />
-
-      {/* Controla a barra de status do celular (hora, bateria, etc) */}
-      <StatusBar style="auto" />
-    </AccessibilityProvider>
+    <SafeAreaProvider>
+      <AccessibilityProvider>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            animation: "slide_from_right",
+            animationDuration: 260,
+          }}
+        />
+        <StatusBar style="auto" />
+      </AccessibilityProvider>
+    </SafeAreaProvider>
   );
 }
 
