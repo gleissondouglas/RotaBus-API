@@ -12,10 +12,10 @@ import {
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Animated, { FadeInUp } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { BackButton } from "../src/components/BackButton";
 import { ListenOptionsButton } from "../src/components/ListenOptionsButton";
-import { ScreenContainer } from "../src/components/ScreenContainer";
 import { sessionService } from "../src/services/session.service";
 import { stopSpeaking } from "../src/services/speech.service";
 import { userService } from "../src/services/user.service";
@@ -25,6 +25,7 @@ import { AuthUser } from "../src/types/auth.types";
 export default function SettingsScreen() {
   const params = useLocalSearchParams();
   const theme = useThemeColors();
+  const insets = useSafeAreaInsets();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -123,14 +124,14 @@ export default function SettingsScreen() {
   return (
     <View style={{ flex: 1 }}>
       <BackgroundGradient />
-      <ScreenContainer withPadding={false} backgroundColor="transparent">
-        <ScrollView
+      <View style={[styles.topBar, { top: insets.top + 8 }]} pointerEvents="box-none">
+        <BackButton label="Início" onPress={handleGoHome} />
+      </View>
+
+      <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 60, paddingBottom: insets.bottom + 40 }]}
       >
-        <View style={styles.topBar}>
-          <BackButton label="Início" onPress={handleGoHome} />
-        </View>
 
         <Animated.View entering={FadeInUp.duration(600)} style={styles.content}>
           <View style={styles.header}>
@@ -224,7 +225,6 @@ export default function SettingsScreen() {
           </View>
         </Animated.View>
       </ScrollView>
-      </ScreenContainer>
     </View>
   );
 }
@@ -269,6 +269,10 @@ const SettingOption = ({ icon, iconLibrary = "Ionicons", title, description, onP
 
 const styles = StyleSheet.create({
   topBar: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    zIndex: 50,
     paddingHorizontal: 16,
     paddingTop: 8,
   },
@@ -281,7 +285,7 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 16,
     paddingHorizontal: 20,
-    marginTop: 8,
+    
   },
 
   header: {
@@ -368,7 +372,7 @@ const styles = StyleSheet.create({
   },
 
   footer: {
-    marginTop: 8,
+    
     gap: 24,
     alignItems: "center",
   },

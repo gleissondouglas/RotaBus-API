@@ -2,10 +2,10 @@ import { BackgroundGradient } from "../src/components/BackgroundGradient";
 import { LiquidGlassView } from "../src/components/LiquidGlassView";
 import { ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { BackButton } from "../src/components/BackButton";
 import { ListenOptionsButton } from "../src/components/ListenOptionsButton";
-import { ScreenContainer } from "../src/components/ScreenContainer";
 import { useAutoSpeakOnce } from "../src/hooks/useAutoSpeakOnce";
 import { useAccessibility } from "../src/contexts/AccessibilityContext";
 import { useThemeColors } from "../src/theme/colors";
@@ -21,6 +21,7 @@ export default function AccessibilityScreen() {
   } = useAccessibility();
 
   const theme = useThemeColors();
+  const insets = useSafeAreaInsets();
 
   const screenMessage =
     "Você está na tela de acessibilidade. Aqui você pode configurar texto maior, voz mais lenta, alto contraste, leitura automática das telas e vibração.";
@@ -30,15 +31,14 @@ export default function AccessibilityScreen() {
   return (
     <View style={{ flex: 1 }}>
       <BackgroundGradient />
-      <ScreenContainer withPadding={false} backgroundColor="transparent">
+      <View style={[styles.topBar, { top: insets.top + 8 }]} pointerEvents="box-none">
+        <BackButton />
+      </View>
+
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 60, paddingBottom: insets.bottom + 40 }]}
       >
-        <View style={styles.topBar}>
-          <BackButton />
-        </View>
-
         <Animated.View entering={FadeInUp.duration(600)} style={styles.content}>
           <View style={styles.textHeader}>
             <Text style={[styles.title, { color: theme.text }]}>Acessibilidade</Text>
@@ -145,13 +145,16 @@ export default function AccessibilityScreen() {
           </View>
         </Animated.View>
       </ScrollView>
-      </ScreenContainer>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   topBar: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    zIndex: 50,
     paddingHorizontal: 16,
     paddingTop: 8,
   },
@@ -159,12 +162,10 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: 40,
   },
-
   content: {
     flex: 1,
     gap: 32,
     paddingHorizontal: 20,
-    marginTop: 8,
   },
 
   textHeader: {
