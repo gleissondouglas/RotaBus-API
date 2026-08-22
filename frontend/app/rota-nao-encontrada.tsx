@@ -22,9 +22,18 @@ export default function RouteNotFoundScreen() {
   const isVoiceSearch = String(params.isVoiceSearch || "false");
 
   const isDailyLimit = message.toLowerCase().includes("limite") || message.toLowerCase().includes("requisições");
+  const isConnectionError = 
+    message.toLowerCase().includes("conexão") || 
+    message.toLowerCase().includes("internet") || 
+    message.toLowerCase().includes("servidor") || 
+    message.toLowerCase().includes("rede") || 
+    message.toLowerCase().includes("enotfound") ||
+    message.toLowerCase().includes("timeout");
 
   const screenMessage = isDailyLimit
     ? "O limite de buscas para hoje foi atingido. Por favor, tente novamente amanhã ou mais tarde."
+    : isConnectionError
+    ? "Não foi possível conectar aos serviços de mapas. Verifique sua conexão com a internet e tente novamente."
     : `Não consegui encontrar uma rota para ${destination}. ${message}`;
 
   useAutoSpeakOnce(`not-found-${destination}`, screenMessage, isVoiceSearch === "true");
@@ -37,11 +46,31 @@ export default function RouteNotFoundScreen() {
   }
 
   function handleTryAgain() {
+    if (isConnectionError && destination) {
+      router.replace({
+        pathname: "/processando",
+        params: { latitude, longitude, destination, isVoiceSearch },
+      });
+      return;
+    }
+
     router.replace({
       pathname: "/digitar-destino",
       params: { latitude, longitude },
     });
   }
+
+  const getHeaderTitle = () => {
+    if (isDailyLimit) return "Limite atingido";
+    if (isConnectionError) return "Sem conexão";
+    return "Rota não encontrada";
+  };
+
+  const getHintText = () => {
+    if (isDailyLimit) return "O RotaBus tem um limite diário de buscas. Tente novamente amanhã.";
+    if (isConnectionError) return "Verifique seu Wi-Fi ou dados móveis e tente fazer a busca novamente.";
+    return "Você pode tentar digitar o endereço novamente ou escolher outro local próximo.";
+  };
 
   return (
     <View style={styles.screen}>
@@ -54,19 +83,38 @@ export default function RouteNotFoundScreen() {
         <BackButton label="Início" onPress={handleGoHome} />
 
         <View style={styles.content}>
-          <View style={[styles.iconContainer, isDailyLimit ? { backgroundColor: "rgba(255, 152, 0, 0.1)" } : { backgroundColor: "rgba(239, 68, 68, 0.1)" }]}>
+          <View 
+            style={[
+              styles.iconContainer, 
+              (isDailyLimit || isConnectionError) 
+                ? { backgroundColor: "rgba(255, 152, 0, 0.1)" } 
+                : { backgroundColor: "rgba(239, 68, 68, 0.1)" }
+            ]}
+          >
             <AdaptiveIcon 
-              iosSymbol={isDailyLimit ? "clock.badge.exclamationmark" : "mappin.slash"} 
+              iosSymbol={
+                isDailyLimit 
+                  ? "clock.badge.exclamationmark" 
+                  : isConnectionError 
+                  ? "wifi.slash" 
+                  : "mappin.slash"
+              } 
               fallbackFamily="MaterialCommunityIcons"
-              fallbackName={isDailyLimit ? "clock-alert" : "map-marker-off"} 
+              fallbackName={
+                isDailyLimit 
+                  ? "clock-alert" 
+                  : isConnectionError 
+                  ? "wifi-off" 
+                  : "map-marker-off"
+              } 
               size={64} 
-              color={isDailyLimit ? "#FF9800" : theme.danger} 
+              color={(isDailyLimit || isConnectionError) ? "#FF9800" : theme.danger} 
             />
           </View>
 
           <View style={styles.textContainer}>
             <Text style={[styles.title, { color: theme.text }]}>
-              {isDailyLimit ? "Limite atingido" : "Rota não encontrada"}
+              {getHeaderTitle()}
             </Text>
             
             <View style={styles.messageCardShadow}>
@@ -77,16 +125,14 @@ export default function RouteNotFoundScreen() {
             </View>
 
             <Text style={[styles.hintText, { color: theme.textMuted }]}>
-              {isDailyLimit 
-                ? "O RotaBus tem um limite diário de buscas. Tente novamente amanhã." 
-                : "Você pode tentar digitar o endereço novamente ou escolher outro local próximo."}
+              {getHintText()}
             </Text>
           </View>
 
           <View style={styles.actions}>
             {!isDailyLimit && (
               <PrimaryButton 
-                title="Tentar outro destino" 
+                title={isConnectionError ? "Tentar novamente" : "Tentar outro destino"} 
                 onPress={handleTryAgain} 
               />
             )}
