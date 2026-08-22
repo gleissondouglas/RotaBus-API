@@ -58,8 +58,13 @@ export async function request<T>(url: string, options: RequestOptions = {}): Pro
     return result as T;
   } catch (error) {
     clearTimeout(id);
-    if (error instanceof Error && error.name === "AbortError") {
-      throw new Error("O servidor demorou muito para responder. Verifique sua conexão.");
+    if (error instanceof Error) {
+      if (error.name === "AbortError") {
+        throw new Error("O servidor demorou muito para responder. Verifique sua conexão.");
+      }
+      if (error.message.includes("Network request failed") || error.message.includes("Failed to fetch")) {
+        throw new Error("Não foi possível conectar ao servidor. Verifique sua conexão com a internet.");
+      }
     }
     throw error;
   }

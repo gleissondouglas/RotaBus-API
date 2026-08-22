@@ -14,7 +14,11 @@ function sanitizeContextData(data) {
 
 function errorMiddleware(error, req, res, _next) {
   const statusCode = error.statusCode || 500;
-  const message = error.message || "Erro interno do servidor";
+  let message = error.message || "Erro interno do servidor";
+
+  if (error.code === "ENOTFOUND" || error.code === "ECONNREFUSED" || error.code === "ETIMEDOUT" || error.code === "EHOSTUNREACH") {
+    message = "Falha de conexão com os serviços externos de mapas. Verifique sua conexão e tente novamente.";
+  }
 
   // Captura o erro no Sentry se for um erro 500
   if (statusCode >= 500) {
