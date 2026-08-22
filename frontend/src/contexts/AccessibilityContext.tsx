@@ -16,8 +16,8 @@ interface AccessibilityContextData extends AccessibilitySettings {
   isLoading: boolean;
 }
 
-const AccessibilityContext = createContext<AccessibilityContextData>(
-  {} as AccessibilityContextData
+const AccessibilityContext = createContext<AccessibilityContextData | null>(
+  null
 );
 
 const defaultSettings: AccessibilitySettings = {
