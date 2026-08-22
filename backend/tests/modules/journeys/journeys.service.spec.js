@@ -53,6 +53,8 @@ const journeyMapper = require("../../../src/modules/journeys/journey.mapper");
 const routeCache = require("../../../src/modules/journeys/route-cache");
 const geocodingProvider = require("../../../src/modules/journeys/providers/geocoding.provider");
 const speechProvider = require("../../../src/modules/journeys/providers/speech.provider");
+const destinationProvider = require("../../../src/modules/journeys/providers/destination.provider");
+const localIntelligenceService = require("../../../src/modules/journeys/local-intelligence/local-intelligence.service");
 
 describe("Journeys Service", () => {
   beforeEach(() => {
@@ -84,15 +86,14 @@ describe("Journeys Service", () => {
   });
 
   describe("resolveDestinationService", () => {
-    it("deve limpar o texto e buscar no places", async () => {
-      const destinationProvider = require("../../../src/modules/journeys/providers/destination.provider");
+    it("deve limpar o texto e buscar no places quando specific_place", async () => {
       destinationProvider.searchPlaces.mockResolvedValue([
         {
           name: "Hospital de Teste",
           address: "Rua H, Uberaba",
-          location: { lat: 1, lng: 1 },
-          placeId: "123",
-          category: "hospital",
+          lat: 1,
+          lng: 1,
+          id: "123",
         },
       ]);
       const result = await resolveDestinationService({
@@ -106,12 +107,79 @@ describe("Journeys Service", () => {
       );
       expect(result.resolvedDestination.name).toBe("Hospital de Teste");
     });
+
+    it("deve usar geocoding quando o queryType for address", async () => {
+      localIntelligenceService.guessQueryType.mockReturnValueOnce("address");
+      geocodingProvider.geocodeAddress.mockResolvedValue([
+        {
+          name: "Rua Leopoldino",
+          address: "Rua Leopoldino, Uberaba",
+          lat: -19.74,
+          lng: -47.93,
+          isUberaba: true,
+        }
+      ]);
+
+      const result = await resolveDestinationService({
+        text: "Rua Leopoldino de Oliveira",
+        origin: { lat: 0, lng: 0 }
+      });
+
+      expect(geocodingProvider.geocodeAddress).toHaveBeenCalled();
+      expect(result.resolvedDestination.name).toBe("Rua Leopoldino");
+    });
+
+    it("deve retornar not_found se nenhum candidato for encontrado", async () => {
+      destinationProvider.searchPlaces.mockResolvedValue([]);
+      geocodingProvider.geocodeAddress.mockResolvedValue([]);
+
+      const result = await resolveDestinationService({
+        text: "lugar_inexistente_123",
+        origin: { lat: 0, lng: 0 }
+      });
+
+      expect(result.mode).toBe("not_found");
+      expect(result.resolvedDestination).toBeNull();
+      expect(result.candidates).toEqual([]);
+    });
+
+    it("deve retornar suggestions se for categoria genérica com múltiplos resultados com distâncias similares", async () => {
+      localIntelligenceService.guessQueryType.mockReturnValueOnce("generic_category");
+      destinationProvider.searchPlaces.mockResolvedValue([
+        { name: "Farmácia 1", address: "Rua 1, Uberaba", id: "1", lat: -19.7410, lng: -47.9310 },
+        { name: "Farmácia 2", address: "Rua 2, Uberaba", id: "2", lat: -19.7415, lng: -47.9315 },
+      ]);
+
+      const result = await resolveDestinationService({
+        text: "farmacia",
+        origin: { lat: -19.7400, lng: -47.9300 }
+      });
+
+      expect(result.mode).toBe("suggestions");
+      expect(result.candidates.length).toBe(2);
+    });
+
+    it("deve aplicar auto-seleção se o primeiro lugar for muito mais próximo que o segundo", async () => {
+      localIntelligenceService.guessQueryType.mockReturnValueOnce("generic_category");
+      destinationProvider.searchPlaces.mockResolvedValue([
+        { name: "Farmácia Perto", address: "Rua A, Uberaba", id: "1", lat: -19.7401, lng: -47.9301 },
+        { name: "Farmácia Longe", address: "Rua B, Uberaba", id: "2", lat: -19.7900, lng: -47.9900 },
+      ]);
+
+      const result = await resolveDestinationService({
+        text: "farmacia",
+        origin: { lat: -19.7400, lng: -47.9300 }
+      });
+
+      expect(result.mode).toBe("resolved");
+      expect(result.resolvedDestination.name).toBe("Farmácia Perto");
+    });
   });
 
   describe("planJourney", () => {
     const defaultParams = {
       origin: { lat: -19, lng: -47 },
-      destination: { lat: -20, lng: -48, name: "Destino" },
+      destination: { lat: -20, lng: -48, name: "Destino", text: "Destino" },
       timePreference: { type: "DEPARTURE", dateTime: "2026-08-15T12:00:00Z" }
     };
 
@@ -147,6 +215,74 @@ describe("Journeys Service", () => {
       expect(routeCache.createRouteCache).toHaveBeenCalled();
       expect(result.source).toBe("PROVIDER");
       expect(result.journey.summary.totalDurationMin).toBe(16);
+    });
+
+    it("deve fazer fallback para rota a pé se não houver rota de ônibus para distância curta", async () => {
+      routeCache.findCachedRoute.mockResolvedValue(null);
+      routesProvider.computeTransitRoute.mockResolvedValue({ routes: [] });
+      routesProvider.computeWalkingRoute.mockResolvedValue({
+        routes: [{ duration: "300s", distanceMeters: 800 }]
+      });
+      journeyMapper.mapWalkingOnlyRouteToJourney.mockReturnValue({
+        summary: { totalDurationMin: 10, isWalkingOnly: true }
+      });
+
+      const result = await planJourney(defaultParams);
+
+      expect(routesProvider.computeWalkingRoute).toHaveBeenCalled();
+      expect(result.source).toBe("WALKING_FALLBACK");
+      expect(result.journey.summary.isWalkingOnly).toBe(true);
+    });
+
+    it("deve enriquecer passos de caminhada inicial quando rota de ônibus possuir perna transit", async () => {
+      routeCache.findCachedRoute.mockResolvedValue(null);
+      const mockTransitRoute = {
+        routes: [
+          {
+            legs: [
+              {
+                steps: [
+                  {
+                    travelMode: "TRANSIT",
+                    transitDetails: {
+                      stopDetails: {
+                        departureStop: {
+                          location: { latLng: { latitude: -19.74, longitude: -47.93 } }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      };
+      routesProvider.computeTransitRoute.mockResolvedValue(mockTransitRoute);
+      routesProvider.computeWalkingRoute.mockResolvedValue({
+        routes: [
+          {
+            legs: [
+              {
+                steps: [
+                  { travelMode: "WALK", navigationInstruction: { instructions: "Siga em frente" } }
+                ]
+              }
+            ]
+          }
+        ]
+      });
+      journeyMapper.mapGoogleRouteToJourney.mockReturnValue({
+        summary: { totalDurationMin: 20 }
+      });
+
+      const result = await planJourney(defaultParams);
+
+      expect(routesProvider.computeWalkingRoute).toHaveBeenCalledWith({
+        origin: defaultParams.origin,
+        destination: { lat: -19.74, lng: -47.93 }
+      });
+      expect(result.source).toBe("PROVIDER");
     });
   });
 });
