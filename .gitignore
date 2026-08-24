@@ -3,7 +3,7 @@ node_modules/
 
 # AI assistant config
 .gemini/
-.gemini.md
+/GEMINI.md
 
 # Environment files
 .env
