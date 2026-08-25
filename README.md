@@ -18,7 +18,7 @@ O RotaBus quebra esse paradigma ao oferecer uma **Assistente de Mobilidade Híbr
 
 ---
 
-## 🏗 Estrutura do Monorepo
+## Estrutura do Monorepo
 
 Este repositório principal orquestra todo o projeto e é dividido em duas grandes partes:
 
@@ -27,7 +27,7 @@ Este repositório principal orquestra todo o projeto e é dividido em duas grand
 
 ---
 
-## 📚 Documentação e Decisões Arquiteturais
+## Documentação e Decisões Arquiteturais
 
 Todo o ecossistema é extensamente documentado para fins de portfólio e histórico de desenvolvimento. Para explorar a arquitetura e as soluções técnicas adotadas, leia a pasta [`/docs`](./docs):
 
