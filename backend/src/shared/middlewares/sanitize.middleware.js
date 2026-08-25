@@ -20,14 +20,23 @@ function sanitizeObject(obj) {
   return obj;
 }
 
+const EXCLUDED_FIELDS = new Set(["audioBase64", "password", "currentPassword", "newPassword"]);
+
 function sanitizeMiddleware(req, res, next) {
-  if (req.body) {
-    // Não sanitiza o campo audioBase64 pois ele contém dados binários legítimos
-    const { audioBase64, ...rest } = req.body;
+  if (req.body && typeof req.body === "object") {
+    const preserved = {};
+    const toSanitize = {};
 
-    const sanitizedRest = sanitizeObject(rest);
+    for (const key of Object.keys(req.body)) {
+      if (EXCLUDED_FIELDS.has(key)) {
+        preserved[key] = req.body[key];
+      } else {
+        toSanitize[key] = req.body[key];
+      }
+    }
 
-    req.body = audioBase64 ? { ...sanitizedRest, audioBase64 } : sanitizedRest;
+    const sanitized = sanitizeObject(toSanitize);
+    req.body = { ...sanitized, ...preserved };
   }
 
   if (req.query) {

@@ -28,8 +28,20 @@ function getResendClient() {
   return resendClient;
 }
 
+function escapeHtml(str) {
+  if (!str || typeof str !== "string") return "";
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function buildResetEmailHtml({ name, resetLink }) {
-  const firstName = name ? name.split(" ")[0] : "Usuário";
+  const rawFirstName = name ? name.split(" ")[0] : "Usuário";
+  const firstName = escapeHtml(rawFirstName);
+  const safeResetLink = escapeHtml(resetLink);
 
   return `
 <!DOCTYPE html>
@@ -51,7 +63,7 @@ function buildResetEmailHtml({ name, resetLink }) {
           Clique no botão abaixo para criar uma nova senha:
         </td></tr>
         <tr><td align="center" style="padding-bottom:24px;">
-          <a href="${resetLink}" 
+          <a href="${safeResetLink}" 
              style="display:inline-block;background:#3B82F6;color:white;font-size:16px;font-weight:700;padding:14px 32px;border-radius:12px;text-decoration:none;">
             Redefinir minha senha
           </a>

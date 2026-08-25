@@ -13,8 +13,8 @@ function generateToken(payload, options = {}) {
     throw error;
   }
 
-  // Mantendo o padrão de 7 dias conforme uso atual no sistema
-  const defaultOptions = { expiresIn: "7d" };
+  // Mantendo o padrão de 7 dias e forçando o algoritmo seguro HS256
+  const defaultOptions = { expiresIn: "7d", algorithm: "HS256" };
   return jwt.sign(payload, secret, { ...defaultOptions, ...options });
 }
 
@@ -27,7 +27,7 @@ function verifyToken(token) {
   }
 
   try {
-    return jwt.verify(token, secret);
+    return jwt.verify(token, secret, { algorithms: ["HS256"] });
   } catch (error) {
     // Preserva mensagens específicas de erro do JWT para compatibilidade
     if (error.name === "JsonWebTokenError") {

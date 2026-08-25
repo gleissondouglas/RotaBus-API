@@ -231,8 +231,8 @@ export default function ConfirmDestinationScreen() {
   const isVoiceSearch = getSingleParam(params.isVoiceSearch, "false");
 
   const [sessionId] = useState(getSingleParam(params.sessionId));
-  const [displayData] = useState<any>(
-    params.displayData ? JSON.parse(String(params.displayData)) : null,
+  const [displayData] = useState<any>(() =>
+    parseJsonParam(params.displayData, null),
   );
   const [conversationState] = useState(getSingleParam(params.conversationState));
   const [isLoadingCommand, setIsLoadingCommand] = useState(false);

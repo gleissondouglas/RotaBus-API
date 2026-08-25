@@ -245,15 +245,17 @@ const conversationCommandSchema = z.preprocess(
         invalid_type_error: "O ID da sessão deve ser um texto válido.",
       })
       .uuid("O ID da sessão deve ser um UUID válido."),
-    command: z.enum(["CONFIRM", "CANCEL", "REPEAT", "SELECT_OPTION"], {
+    command: z.enum(["CONFIRM", "CANCEL", "REPEAT", "SELECT_OPTION", "SELECT_TIME"], {
       error_map: () => ({
-        message: "Comando inválido. Escolha entre CONFIRM, CANCEL, REPEAT ou SELECT_OPTION.",
+        message: "Comando inválido. Escolha entre CONFIRM, CANCEL, REPEAT, SELECT_OPTION ou SELECT_TIME.",
       }),
     }),
     payload: z
       .object({
         optionIndex: z.number().int().nonnegative().optional(),
         optionName: z.string().trim().optional(),
+        targetDatetime: z.string().optional(),
+        timeMode: z.string().optional(),
       })
       .optional(),
   }),

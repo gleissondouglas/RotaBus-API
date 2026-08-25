@@ -90,7 +90,7 @@ module.exports = {
         {
           android: {
             kotlinVersion: "2.0.21",
-            usesCleartextTraffic: true,
+            usesCleartextTraffic: process.env.NODE_ENV !== "production",
             memoryMaxHeapSize: "2048M",
           },
         },

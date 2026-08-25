@@ -16,7 +16,6 @@ function createDailyLimitMiddleware(endpoint, limit, errorMessage, errorCode) {
       const now = new Date();
       const spTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
       // Calcula o offset UTC dinâmico baseado no fuso horário configurado
-      const offsetMinutes = -spTime.getTimezoneOffset() - (new Date().getTimezoneOffset() - new Date(now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })).getTimezoneOffset());
       const spOffset = (() => {
         const formatter = new Intl.DateTimeFormat("en-US", {
           timeZone: "America/Sao_Paulo",
