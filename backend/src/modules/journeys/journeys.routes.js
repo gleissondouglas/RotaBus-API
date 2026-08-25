@@ -26,7 +26,7 @@ router.get("/reverse-geocode", authMiddleware, dailyGeocodeLimit, journeysContro
 // /transcribe — consome apenas quota de transcrição (20/dia)
 router.post(
   "/transcribe",
-  express.json({ limit: "50mb" }),
+  express.json({ limit: "10mb" }),
   authMiddleware,
   dailyTranscribeLimit,
   journeysController.transcribeAudio,

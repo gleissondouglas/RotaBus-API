@@ -385,35 +385,51 @@ export default function NavigatingScreen() {
 
   // Location tracking init
   useEffect(() => {
+    let isMounted = true;
+
     async function startTracking() {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') return;
+        if (status !== 'granted' || !isMounted) return;
 
         const sub = await Location.watchPositionAsync({ 
           accuracy: Location.Accuracy.High, 
           distanceInterval: 2,
           timeInterval: 2000
         }, (location) => {
-          setUserLocation({ 
-            latitude: location.coords.latitude, 
-            longitude: location.coords.longitude,
-            heading: location.coords.heading
-          });
+          if (isMounted) {
+            setUserLocation({ 
+              latitude: location.coords.latitude, 
+              longitude: location.coords.longitude,
+              heading: location.coords.heading
+            });
+          }
         });
 
+        if (!isMounted) {
+          sub.remove();
+          return;
+        }
         locationSubscriptionRef.current = sub;
 
         // Ativa a bússola nativa
         const headingSub = await Location.watchHeadingAsync((headingData) => {
-          setUserHeading(headingData.trueHeading !== -1 ? headingData.trueHeading : headingData.magHeading);
+          if (isMounted) {
+            setUserHeading(headingData.trueHeading !== -1 ? headingData.trueHeading : headingData.magHeading);
+          }
         });
+
+        if (!isMounted) {
+          headingSub.remove();
+          return;
+        }
         headingSubscriptionRef.current = headingSub;
 
       } catch (err) { console.error("Erro GPS:", err); }
     }
     startTracking(); 
     return () => { 
+      isMounted = false;
       locationSubscriptionRef.current?.remove(); 
       headingSubscriptionRef.current?.remove();
     };
