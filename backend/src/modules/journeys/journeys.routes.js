@@ -11,6 +11,7 @@ const journeysController = require("./journeys.controller");
 
 const router = express.Router();
 
+// /plan — consome quota diária de jornadas (5/dia)
 router.post(
   "/plan",
   authMiddleware,
@@ -18,27 +19,32 @@ router.post(
   validate(planJourneySchema),
   journeysController.planJourney,
 );
-router.get("/reverse-geocode", authMiddleware, dailyJourneyLimit, dailyGeocodeLimit, journeysController.reverseGeocode);
+
+// /reverse-geocode — consome apenas quota de geocodificação (20/dia)
+router.get("/reverse-geocode", authMiddleware, dailyGeocodeLimit, journeysController.reverseGeocode);
+
+// /transcribe — consome apenas quota de transcrição (20/dia)
 router.post(
   "/transcribe",
   express.json({ limit: "50mb" }),
   authMiddleware,
-  dailyJourneyLimit,
   dailyTranscribeLimit,
   journeysController.transcribeAudio,
 );
+
+// /resolve-destination — consome apenas quota de buscas de lugares (10/dia)
 router.post(
   "/resolve-destination",
   authMiddleware,
-  dailyJourneyLimit,
   dailyPlacesLimit,
   validate(resolveDestinationSchema),
   journeysController.resolveDestination,
 );
+
+// /command — sem limite diário (faz parte do fluxo conversacional ativo)
 router.post(
   "/command",
   authMiddleware,
-  dailyJourneyLimit,
   validate(conversationCommandSchema),
   journeysController.handleConversationCommand,
 );

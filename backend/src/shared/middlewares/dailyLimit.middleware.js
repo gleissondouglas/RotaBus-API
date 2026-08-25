@@ -15,7 +15,21 @@ function createDailyLimitMiddleware(endpoint, limit, errorMessage, errorCode) {
       // Define o início do dia atual considerando o fuso horário de Brasília (UTC-3)
       const now = new Date();
       const spTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
-      const isoDate = `${spTime.getFullYear()}-${String(spTime.getMonth() + 1).padStart(2, "0")}-${String(spTime.getDate()).padStart(2, "0")}T00:00:00.000-03:00`;
+      // Calcula o offset UTC dinâmico baseado no fuso horário configurado
+      const offsetMinutes = -spTime.getTimezoneOffset() - (new Date().getTimezoneOffset() - new Date(now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })).getTimezoneOffset());
+      const spOffset = (() => {
+        const formatter = new Intl.DateTimeFormat("en-US", {
+          timeZone: "America/Sao_Paulo",
+          timeZoneName: "shortOffset",
+        });
+        const parts = formatter.formatToParts(now);
+        const tzPart = parts.find((p) => p.type === "timeZoneName")?.value || "GMT-3";
+        const match = tzPart.match(/GMT([+-]?\d+)/);
+        const hours = match ? parseInt(match[1], 10) : -3;
+        const sign = hours >= 0 ? "+" : "-";
+        return `${sign}${String(Math.abs(hours)).padStart(2, "0")}:00`;
+      })();
+      const isoDate = `${spTime.getFullYear()}-${String(spTime.getMonth() + 1).padStart(2, "0")}-${String(spTime.getDate()).padStart(2, "0")}T00:00:00.000${spOffset}`;
       const startOfToday = new Date(isoDate);
 
       const usageCount = await apiUsageRepository.countUsage({

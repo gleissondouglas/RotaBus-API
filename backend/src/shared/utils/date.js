@@ -135,8 +135,21 @@ function buildDateTimeFromTimeText(timeText, referenceDateTime) {
   const hourFormatted = String(hour).padStart(2, "0");
   const minuteFormatted = String(minute).padStart(2, "0");
 
-  // TODO: Tornar o offset dinâmico baseado no APP_TIME_ZONE se necessário no futuro.
-  const localDateTimeText = `${localDateKey}T${hourFormatted}:${minuteFormatted}:00-03:00`;
+  // Calcula o offset UTC dinâmico baseado no APP_TIME_ZONE
+  const offset = (() => {
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: APP_TIME_ZONE,
+      timeZoneName: "shortOffset",
+    });
+    const parts = formatter.formatToParts(reference);
+    const tzPart = parts.find((p) => p.type === "timeZoneName")?.value || "GMT-3";
+    const match = tzPart.match(/GMT([+-]?\d+)/);
+    const hours = match ? parseInt(match[1], 10) : -3;
+    const sign = hours >= 0 ? "+" : "-";
+    return `${sign}${String(Math.abs(hours)).padStart(2, "0")}:00`;
+  })();
+
+  const localDateTimeText = `${localDateKey}T${hourFormatted}:${minuteFormatted}:00${offset}`;
 
   let candidate = new Date(localDateTimeText);
 
