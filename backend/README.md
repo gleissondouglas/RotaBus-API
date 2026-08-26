@@ -1,4 +1,4 @@
-# 🚌 RotaBus API
+# RotaBus API
 
 API back-end para planejamento de rotas de ônibus, criada com foco em mobilidade urbana, autenticação de usuários e respostas simples para o usuário final.
 
@@ -6,7 +6,7 @@ O projeto recebe a localização atual do usuário, o destino desejado e uma pre
 
 ---
 
-## 📌 Sobre o projeto
+## Sobre o projeto
 
 O **RotaBus API** é um projeto desenvolvido para ajudar usuários a encontrarem rotas de ônibus de forma mais simples.
 
@@ -18,7 +18,7 @@ O projeto também possui cadastro de usuários, login com JWT, rotas protegidas,
 
 ---
 
-## 🚀 Funcionalidades
+## Funcionalidades
 
 - Cadastro de usuário
 - Login com autenticação JWT
@@ -39,7 +39,7 @@ O projeto também possui cadastro de usuários, login com JWT, rotas protegidas,
 
 ---
 
-## 🛠️ Tecnologias utilizadas
+## Tecnologias utilizadas
 
 - Node.js
 - Express
@@ -56,7 +56,7 @@ O projeto também possui cadastro de usuários, login com JWT, rotas protegidas,
 
 ---
 
-## 🏗️ Arquitetura do projeto
+## Arquitetura do projeto
 
 O projeto segue uma arquitetura modular, separando responsabilidades por módulo e camada.
 
@@ -110,7 +110,7 @@ prisma.config.ts
 
 ---
 
-## 🧩 Responsabilidade de cada camada
+## Responsabilidade de cada camada
 
 ### Routes
 
@@ -146,7 +146,7 @@ Intercepta requisições antes do controller. No projeto, existem middlewares pa
 
 ---
 
-## 🔐 Autenticação e autorização
+## Autenticação e autorização
 
 O projeto utiliza autenticação baseada em JWT.
 
@@ -181,7 +181,7 @@ Pode:
 
 ---
 
-## 🔄 Fluxo principal da aplicação
+## Fluxo principal da aplicação
 
 ```text
 Usuário cria conta
@@ -205,7 +205,7 @@ API devolve uma mensagem simples
 
 ---
 
-## 👤 Fluxo de usuários
+## Fluxo de usuários
 
 ### Criar usuário
 
@@ -381,7 +381,7 @@ Resposta esperada:
 
 ---
 
-## 🔑 Fluxo de autenticação
+## Fluxo de autenticação
 
 ### Login
 
@@ -415,7 +415,7 @@ Resposta esperada:
 
 ---
 
-## 🔁 Recuperação de senha
+## Recuperação de senha
 
 O projeto possui um fluxo de recuperação de senha usando token temporário.
 
@@ -486,7 +486,7 @@ Depois disso, a senha antiga deixa de funcionar e o usuário deve fazer login co
 
 ---
 
-## 🚌 Fluxo de jornada de ônibus
+## Fluxo de jornada de ônibus
 
 ### Planejar jornada
 
