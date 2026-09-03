@@ -4,26 +4,27 @@ import Constants from "expo-constants";
 
 function getBaseUrl() {
   const extraApiUrl = Constants.expoConfig?.extra?.apiBaseUrl;
-  
-  // No simulador iOS, localhost costuma ser mais estável que o IP externo
-  if (__DEV__ && Platform.OS === "ios" && !Device.isDevice) {
-    return "http://localhost:3000";
+
+  // ==========================================
+  // PRIORIDADE MÁXIMA: URL configurada no .env
+  // Se foi configurada uma URL externa (Render, ngrok, etc.), ela sempre vence.
+  // ==========================================
+  if (extraApiUrl && !extraApiUrl.includes("localhost") && !extraApiUrl.includes("192.168.")) {
+    return extraApiUrl;
   }
 
   // Em PRODUÇÃO (EAS Build/Lojas), sempre força a URL da rotaBus
   if (!__DEV__) {
-    return (extraApiUrl && !extraApiUrl.includes("localhost") && !extraApiUrl.includes("192.168.")) 
-      ? extraApiUrl 
-      : "https://rotabus-api.onrender.com";
+    return "https://rotabus-api.onrender.com";
   }
 
   // ==========================================
   // APENAS AMBIENTE LOCAL DE DESENVOLVIMENTO
   // ==========================================
 
-  // Se configurou ngrok ou Render no .env local, usa ela
-  if (extraApiUrl && (extraApiUrl.includes("ngrok") || extraApiUrl.includes("onrender"))) {
-    return extraApiUrl;
+  // No simulador iOS, localhost é a opção padrão quando não há URL externa
+  if (__DEV__ && Platform.OS === "ios" && !Device.isDevice) {
+    return "http://localhost:3000";
   }
 
   // Android Emulator
@@ -40,7 +41,7 @@ function getBaseUrl() {
   }
 
   // Fallback seguro
-  return extraApiUrl || "http://localhost:3000";
+  return "http://localhost:3000";
 }
 
 export const API_BASE_URL = getBaseUrl();
