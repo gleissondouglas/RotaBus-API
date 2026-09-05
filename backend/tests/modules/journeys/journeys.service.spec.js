@@ -217,6 +217,25 @@ describe("Journeys Service", () => {
       expect(result.journey.summary.totalDurationMin).toBe(16);
     });
 
+    it("deve salvar no cache repassando leaveHomeDateTime quando calculado pela rota", async () => {
+      routeCache.findCachedRoute.mockResolvedValue(null);
+      routesProvider.computeTransitRoute.mockResolvedValue({
+        routes: [{ duration: "1000s" }]
+      });
+      const expectedLeaveTime = "2026-08-15T12:15:00Z";
+      journeyMapper.mapGoogleRouteToJourney.mockReturnValue({
+        summary: { totalDurationMin: 20, leaveHomeDateTime: expectedLeaveTime }
+      });
+
+      await planJourney(defaultParams);
+
+      expect(routeCache.createRouteCache).toHaveBeenCalledWith(
+        expect.objectContaining({
+          leaveHomeDateTime: expectedLeaveTime,
+        })
+      );
+    });
+
     it("deve fazer fallback para rota a pé se não houver rota de ônibus para distância curta", async () => {
       routeCache.findCachedRoute.mockResolvedValue(null);
       routesProvider.computeTransitRoute.mockResolvedValue({ routes: [] });

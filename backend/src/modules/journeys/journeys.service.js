@@ -4,7 +4,7 @@ const {
 } = require("./journeys.validator");
 const { computeTransitRoute, computeWalkingRoute } = require("./providers/routes.provider");
 const { mapGoogleRouteToJourney, mapWalkingOnlyRouteToJourney } = require("./journey.mapper");
-const { findCachedRoute, createRouteCache } = require("./route-cache");
+const { findCachedRoute, createRouteCache, buildRouteCacheKey } = require("./route-cache");
 const { getAddressFromCoordinates, geocodeAddress } = require("./providers/geocoding.provider");
 const speechProvider = require("./providers/speech.provider");
 const destinationProvider = require("./providers/destination.provider");
@@ -239,8 +239,14 @@ async function planJourney({ origin, destination, departureTime, timePreference 
     timePreference,
   });
 
-  // Criar uma chave única para o cache baseada na origem, destino, tipo de preferência de horário e a própria data/hora
-  const cacheKey = `${validatedData.origin.lat},${validatedData.origin.lng}-${validatedData.destination.text}-${validatedData.timePreference.type}-${validatedData.timePreference.dateTime}`;
+  // Criar uma chave única e inteligente para o cache (normalizada e com janela de reúso)
+  const cacheKey = typeof buildRouteCacheKey === "function"
+    ? buildRouteCacheKey({
+        origin: validatedData.origin,
+        destination: validatedData.destination,
+        timePreference: validatedData.timePreference,
+      })
+    : `${validatedData.origin.lat},${validatedData.origin.lng}-${validatedData.destination.text}-${validatedData.timePreference?.type}-${validatedData.timePreference?.dateTime}`;
 
   // Tentar buscar do cache primeiro para economizar chamadas à API do Google
   const cachedResult = await findCachedRoute(cacheKey);
@@ -253,7 +259,7 @@ async function planJourney({ origin, destination, departureTime, timePreference 
       journey: mapGoogleRouteToJourney(
         cachedResult.googleResponse,
         validatedData.origin,
-        cachedResult.timePreference,
+        validatedData.timePreference,
       ),
       source: "CACHE",
     };
@@ -340,19 +346,24 @@ async function planJourney({ origin, destination, departureTime, timePreference 
     // Continua com a rota original se o enriquecimento falhar
   }
 
-  // Mantém a resposta por dois minutos no Redis.
+  const mappedJourney = mapGoogleRouteToJourney(
+    googleResponse,
+    validatedData.origin,
+    validatedData.timePreference,
+  );
+
+  const leaveHomeDateTime = mappedJourney.summary?.leaveHomeDateTime || null;
+
+  // Salva no Redis com TTL dinâmico baseado no horário limite de saída
   await createRouteCache({
     cacheKey,
     googleResponse,
     timePreference: validatedData.timePreference,
+    leaveHomeDateTime,
   });
 
   return {
-    journey: mapGoogleRouteToJourney(
-      googleResponse,
-      validatedData.origin,
-      validatedData.timePreference,
-    ),
+    journey: mappedJourney,
     source: "PROVIDER",
   };
 }

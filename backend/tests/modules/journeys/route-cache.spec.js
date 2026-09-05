@@ -61,4 +61,53 @@ describe("RouteCache (Redis)", () => {
     expect(routeA.googleResponse).toEqual({ id: "a" });
     expect(routeB.googleResponse).toEqual({ id: "b" });
   });
+
+  test("buildRouteCacheKey deve usar prefixo route:live para buscas imediatas e normalizar coordenadas", () => {
+    const { buildRouteCacheKey } = require("../../../src/modules/journeys/route-cache");
+    const key = buildRouteCacheKey({
+      origin: { lat: -19.747231, lng: -47.939284 },
+      destination: { text: "Shopping Uberaba" },
+      timePreference: { type: "DEPARTURE", dateTime: new Date().toISOString() },
+    });
+
+    expect(key).toBe("route:live:-19.747,-47.939:shopping uberaba:DEPARTURE");
+  });
+
+  test("buildRouteCacheKey deve usar prefixo route:sched para buscas futuras (> 30 min)", () => {
+    const { buildRouteCacheKey } = require("../../../src/modules/journeys/route-cache");
+    const futureDate = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
+    const key = buildRouteCacheKey({
+      origin: { lat: -19.747, lng: -47.939 },
+      destination: { text: "Terminal Oeste" },
+      timePreference: { type: "DEPARTURE", dateTime: futureDate },
+    });
+
+    expect(key).toContain("route:sched:-19.747,-47.939:terminal oeste:DEPARTURE:");
+  });
+
+  test("findCachedRoute deve retornar null se o horário limite de saída já passou há mais de 60s", async () => {
+    const pastLeaveTime = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+    await createRouteCache({
+      cacheKey: "rota-expirada",
+      googleResponse: { id: "passada" },
+      leaveHomeDateTime: pastLeaveTime,
+    });
+
+    const result = await findCachedRoute("rota-expirada");
+    expect(result).toBeNull();
+  });
+
+  test("findCachedRoute deve retornar rota se o horário de saída ainda estiver no futuro", async () => {
+    const futureLeaveTime = new Date(Date.now() + 8 * 60 * 1000).toISOString();
+    await createRouteCache({
+      cacheKey: "rota-valida",
+      googleResponse: { id: "futura" },
+      leaveHomeDateTime: futureLeaveTime,
+    });
+
+    const result = await findCachedRoute("rota-valida");
+    expect(result).not.toBeNull();
+    expect(result.googleResponse).toEqual({ id: "futura" });
+    expect(result.leaveHomeDateTime).toBe(futureLeaveTime);
+  });
 });

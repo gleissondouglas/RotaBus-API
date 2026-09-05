@@ -1,5 +1,9 @@
 const axios = require("axios");
+const crypto = require("crypto");
 const { googleMapsApiKey } = require("../../../config/env");
+const redisClient = require("../../../config/redis");
+
+const SPEECH_CACHE_TTL_SECONDS = 24 * 60 * 60; // 24 horas
 
 /**
  * Transcreve um áudio em base64 usando a Google Cloud Speech-to-Text API.
@@ -10,6 +14,21 @@ const { googleMapsApiKey } = require("../../../config/env");
 async function transcribe(audioBase64, mimeType) {
   if (!googleMapsApiKey) {
     throw new Error("GOOGLE_MAPS_API_KEY não configurada no backend.");
+  }
+
+  const audioHash = crypto.createHash("sha256").update(audioBase64 || "").digest("hex");
+  const cacheKey = `speech:transcribe:${audioHash}`;
+
+  try {
+    const cachedTranscript = await redisClient.get(cacheKey);
+    if (cachedTranscript !== null && cachedTranscript !== undefined) {
+      if (process.env.NODE_ENV !== "production") {
+        console.log(`[GoogleSpeechProvider] Retornando transcrição do cache: "${cacheKey}" -> "${cachedTranscript}"`);
+      }
+      return cachedTranscript;
+    }
+  } catch (cacheError) {
+    console.error("[GoogleSpeechProvider] Erro ao ler cache de áudio:", cacheError.message);
   }
 
   const url = `https://speech.googleapis.com/v1p1beta1/speech:recognize?key=${googleMapsApiKey}`;
@@ -60,6 +79,15 @@ async function transcribe(audioBase64, mimeType) {
         if (process.env.NODE_ENV !== "production") {
           console.log(`[GoogleSpeechProvider] Transcrição bem-sucedida: "${transcript}"`);
         }
+
+        if (transcript && transcript.trim()) {
+          try {
+            await redisClient.set(cacheKey, transcript, "EX", SPEECH_CACHE_TTL_SECONDS);
+          } catch (saveError) {
+            console.error("[GoogleSpeechProvider] Erro ao salvar transcrição no cache:", saveError.message);
+          }
+        }
+
         return transcript;
       }
 
