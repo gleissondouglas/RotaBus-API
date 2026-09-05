@@ -87,8 +87,9 @@ const Map: React.FC<MapProps> = ({
   hideControls = false,
 }) => {
   const mapRef = useRef<MapView>(null);
-  // Estado para saber se o mapa deve "travar" a câmera no usuário
-  const [isFollowingUser, setIsFollowingUser] = useState(isNavigating);
+  // No início da caminhada, mostramos a rota inteira até o ponto enquadrada próxima.
+  // O modo de seguir em 3D só é ativado se o usuário clicar no botão de centralizar GPS.
+  const [isFollowingUser, setIsFollowingUser] = useState(false);
   const colorScheme = useColorScheme();
   const theme = useThemeColors();
 
@@ -108,24 +109,33 @@ const Map: React.FC<MapProps> = ({
           pitch: 45,
           heading: userHeading ?? userLocation.heading ?? 0,
           zoom: 19,
-        }, { duration: 1000 });
+          altitude: 260,
+        }, { duration: 800 });
       } else {
         mapRef.current.animateToRegion({
           latitude: userLocation.latitude,
           longitude: userLocation.longitude,
-          latitudeDelta: 0.003,
-          longitudeDelta: 0.003,
-        }, 1000);
+          latitudeDelta: 0.0016,
+          longitudeDelta: 0.0016,
+        }, 800);
       }
     }
   };
+
+  const [overrideFocusMode, setOverrideFocusMode] = useState<MapFocusMode | null>(null);
+  const effectiveFocusMode = overrideFocusMode || focusMode;
+
+  useEffect(() => {
+    setOverrideFocusMode(null);
+  }, [focusMode]);
 
   /**
    * Alterna entre ver apenas o caminho até o ponto ou a rota inteira.
    */
   const toggleFocusMode = () => {
+    const nextMode = effectiveFocusMode === 'full_route' ? 'walking_to_stop' : 'full_route';
+    setOverrideFocusMode(nextMode);
     if (onFocusModeChange) {
-      const nextMode = focusMode === 'full_route' ? 'walking_to_stop' : 'full_route';
       onFocusModeChange(nextMode);
     }
   };
@@ -138,37 +148,54 @@ const Map: React.FC<MapProps> = ({
     if (!mapRef.current) return;
     let fitTimer: ReturnType<typeof setTimeout> | undefined;
 
-    // Se estiver no modo de navegação ativa, a câmera segue o usuário como um GPS
+    // Se estiver no modo de navegação ativa com GPS travado no usuário
     if (isNavigating && userLocation && isFollowingUser) {
       mapRef.current.animateCamera({
         center: {
           latitude: userLocation.latitude,
           longitude: userLocation.longitude,
         },
-        pitch: 50, // Inclinação para dar perspectiva 3D
-        heading: userHeading ?? userLocation.heading ?? 0, // Gira o mapa conforme o usuário vira o corpo/celular
+        pitch: 45,
+        heading: userHeading ?? userLocation.heading ?? 0,
         zoom: 19,
+        altitude: 260,
       }, { duration: 800 });
       return;
     }
 
     // Se o usuário arrastou o mapa manualmente, paramos de seguir automaticamente
-    if (!isFollowingUser && isNavigating) return;
+    if (!isFollowingUser && isNavigating && userLocation) {
+      // Deixa o usuário navegar livremente se arrastou
+    }
 
     // Lógica para decidir o enquadramento (quais marcadores e linhas devem caber na tela)
     const coordinatesToFit: { latitude: number; longitude: number }[] = [];
-    if (userLocation) coordinatesToFit.push({ latitude: Number(userLocation.latitude), longitude: Number(userLocation.longitude) });
+    if (userLocation) {
+      const uLat = Number(userLocation.latitude);
+      const uLng = Number(userLocation.longitude);
+      let isNearRoute = true;
+      if (mapData?.markers && mapData.markers.length > 0) {
+        const firstMarker = mapData.markers[0];
+        const distKm = Math.abs(uLat - Number(firstMarker.lat)) * 111;
+        if (distKm > 40) isNearRoute = false;
+      }
+      if (isNearRoute) {
+        coordinatesToFit.push({ latitude: uLat, longitude: uLng });
+      }
+    }
     
-    if (focusMode === 'full_route') {
+    if (effectiveFocusMode === 'full_route') {
       // No modo rota cheia, tenta colocar todos os marcadores e polilinhas na visão
-      if (mapData?.markers) mapData.markers.forEach(marker => coordinatesToFit.push({ latitude: Number(marker.lat), longitude: Number(marker.lng) }));
+      if (mapData?.markers) {
+        mapData.markers.forEach(marker => coordinatesToFit.push({ latitude: Number(marker.lat), longitude: Number(marker.lng) }));
+      }
       if (mapData?.polylines) {
         mapData.polylines.forEach(polyline => {
           const decoded = decodePolyline(polyline.encodedPolyline);
           decoded.forEach(coord => coordinatesToFit.push({ latitude: Number(coord.latitude), longitude: Number(coord.longitude) }));
         });
       }
-    } else if (focusMode === 'walking_to_stop' || focusMode === 'walking_to_destination' || focusMode === 'on_bus' || focusMode === 'transfer') {
+    } else if (effectiveFocusMode === 'walking_to_stop' || effectiveFocusMode === 'walking_to_destination' || effectiveFocusMode === 'on_bus' || effectiveFocusMode === 'transfer') {
       // Sempre focamos a câmera no trecho atual em andamento
       if (walkSteps && walkSteps.length > 0 && currentStepIndex !== undefined) {
         const currentStep = walkSteps[currentStepIndex];
@@ -177,9 +204,26 @@ const Map: React.FC<MapProps> = ({
           decoded.forEach(coord => coordinatesToFit.push({ latitude: Number(coord.latitude), longitude: Number(coord.longitude) }));
         }
       }
+
+      // Se for caminhada até o ponto, inclui explicitamente o ponto de embarque
+      if (effectiveFocusMode === 'walking_to_stop' && mapData?.markers) {
+        const boardingMarker = mapData.markers.find(m => m.type === 'boarding_stop');
+        if (boardingMarker) {
+          coordinatesToFit.push({ latitude: Number(boardingMarker.lat), longitude: Number(boardingMarker.lng) });
+        }
+      }
+
+      // Fallback para polilinha geral de caminhada se o passo estiver sem pontos
+      if (coordinatesToFit.length <= 1 && mapData?.polylines) {
+        const walkPoly = mapData.polylines.find(p => p.type === 'walk');
+        if (walkPoly) {
+          const decoded = decodePolyline(walkPoly.encodedPolyline);
+          decoded.forEach(coord => coordinatesToFit.push({ latitude: Number(coord.latitude), longitude: Number(coord.longitude) }));
+        }
+      }
     }
     
-    // Aplica o ajuste de visão (fitToCoordinates) com proteção para coordenadas inválidas (NaN)
+    // Aplica o ajuste de visão com proteção para coordenadas inválidas (NaN)
     const isValidCoord = (c: any) => c && typeof c.latitude === 'number' && !isNaN(c.latitude) && isFinite(c.latitude) && typeof c.longitude === 'number' && !isNaN(c.longitude) && isFinite(c.longitude);
     const validCoords = coordinatesToFit.filter(isValidCoord);
 
@@ -188,32 +232,102 @@ const Map: React.FC<MapProps> = ({
       fitTimer = setTimeout(() => {
         try {
           if (uniqueCoords.length === 1) {
-            mapRef.current?.animateToRegion({ ...uniqueCoords[0], latitudeDelta: 0.003, longitudeDelta: 0.003 }, 1000);
+            mapRef.current?.animateToRegion({ 
+              ...uniqueCoords[0], 
+              latitudeDelta: 0.0016, 
+              longitudeDelta: 0.0016 
+            }, 800);
           } else if (uniqueCoords.length > 1) {
-            mapRef.current?.fitToCoordinates(uniqueCoords, { 
-              edgePadding: { top: 60, right: 20, bottom: controlsBottomOffset + 20, left: 20 }, 
-              animated: true 
+            let minLat = 90, maxLat = -90, minLng = 180, maxLng = -180;
+            uniqueCoords.forEach(c => {
+              if (c.latitude < minLat) minLat = c.latitude;
+              if (c.latitude > maxLat) maxLat = c.latitude;
+              if (c.longitude < minLng) minLng = c.longitude;
+              if (c.longitude > maxLng) maxLng = c.longitude;
             });
+
+            const diffLat = maxLat - minLat;
+            const diffLng = maxLng - minLng;
+            const centerLat = (minLat + maxLat) / 2;
+            const centerLng = (minLng + maxLng) / 2;
+
+            if (isNavigating) {
+              // Navegação ativa em tela cheia (navegando.tsx)
+              const isShortWalk = (effectiveFocusMode === 'walking_to_stop' || effectiveFocusMode === 'walking_to_destination') && diffLat < 0.004 && diffLng < 0.004;
+
+              if (isShortWalk) {
+                const STREET_MIN_DELTA = 0.0015;
+                const latDelta = Math.max(diffLat * 2.2, STREET_MIN_DELTA);
+                const lngDelta = Math.max(diffLng * 2.2, STREET_MIN_DELTA);
+
+                // Compensação óptica vertical: o card inferior tem ~260-300px e o topo tem ~160px.
+                // Deslocar o centro ligeiramente para o sul traz a rota para o centro da área livre visível.
+                const verticalOffsetRatio = Math.max(0, (controlsBottomOffset - 140) / 750);
+                const adjustedCenterLat = centerLat - (verticalOffsetRatio * latDelta * 0.45);
+
+                mapRef.current?.animateToRegion({
+                  latitude: adjustedCenterLat,
+                  longitude: centerLng,
+                  latitudeDelta: latDelta,
+                  longitudeDelta: lngDelta,
+                }, 800);
+              } else {
+                mapRef.current?.fitToCoordinates(uniqueCoords, { 
+                  edgePadding: { 
+                    top: 160, 
+                    right: 36, 
+                    bottom: controlsBottomOffset + 36, 
+                    left: 36 
+                  }, 
+                  animated: true 
+                });
+              }
+            } else {
+              // Modo Preview (ex: tela de Melhor Rota em card de 220px)
+              if ((effectiveFocusMode === 'walking_to_stop' || effectiveFocusMode === 'walking_to_destination') && diffLat < 0.004 && diffLng < 0.004) {
+                const STREET_MIN_DELTA = 0.0015;
+                const latDelta = Math.max(diffLat * 2.0, STREET_MIN_DELTA);
+                const lngDelta = Math.max(diffLng * 2.0, STREET_MIN_DELTA);
+
+                mapRef.current?.animateToRegion({
+                  latitude: centerLat,
+                  longitude: centerLng,
+                  latitudeDelta: latDelta,
+                  longitudeDelta: lngDelta,
+                }, 600);
+              } else {
+                // Enquadramento da rota com margem confortável de 35% no card de preview
+                const latDelta = Math.max(diffLat * 1.35, 0.006);
+                const lngDelta = Math.max(diffLng * 1.35, 0.006);
+
+                mapRef.current?.animateToRegion({
+                  latitude: centerLat,
+                  longitude: centerLng,
+                  latitudeDelta: latDelta,
+                  longitudeDelta: lngDelta,
+                }, 600);
+              }
+            }
           }
         } catch (err) {
           console.warn("[Map] Falha ao ajustar visão:", err);
         }
-      }, 500);
+      }, 400);
     }
 
     return () => {
       if (fitTimer) clearTimeout(fitTimer);
     };
-  }, [mapData, userLocation, userHeading, focusMode, controlsBottomOffset, currentStepIndex, walkSteps, isFollowingUser, isNavigating]);
+  }, [mapData, userLocation, userHeading, effectiveFocusMode, controlsBottomOffset, currentStepIndex, walkSteps, isFollowingUser, isNavigating]);
 
   const renderedGeneralPolylines = useMemo(() => {
-    if ((walkSteps && walkSteps.length > 0) && focusMode !== 'full_route') {
+    if ((walkSteps && walkSteps.length > 0) && effectiveFocusMode !== 'full_route') {
       return [];
     }
     if (!mapData?.polylines) return [];
 
     return mapData.polylines
-      .filter(p => focusMode === 'full_route' || p.type === 'walk')
+      .filter(p => effectiveFocusMode === 'full_route' || p.type === 'walk')
       .map(polyline => {
         const coords = decodePolyline(polyline.encodedPolyline);
         if (coords.length < 2) return null;
@@ -221,17 +335,21 @@ const Map: React.FC<MapProps> = ({
         return {
           id: polyline.id,
           coords,
-          strokeColor: isWalk ? theme.primary : '#22C55E',
-          strokeWidth: isWalk ? 8 : 6,
-          lineDashPattern: isWalk ? [1, 10] : undefined,
+          strokeColor: isWalk ? '#2563EB' : '#22C55E',
+          strokeWidth: isWalk ? 6 : 6,
+          lineDashPattern: isWalk ? [0, 16] : undefined,
+          baseTrackColor: isWalk 
+            ? (colorScheme === 'dark' ? 'rgba(59, 130, 246, 0.25)' : 'rgba(37, 99, 235, 0.16)') 
+            : undefined,
+          baseTrackWidth: isWalk ? 12 : undefined,
           zIndex: isWalk ? 2 : 1,
         };
       })
       .filter((item): item is NonNullable<typeof item> => item !== null);
-  }, [mapData?.polylines, walkSteps, focusMode, theme.primary]);
+  }, [mapData?.polylines, walkSteps, effectiveFocusMode, colorScheme]);
 
   const renderedWalkStepPolylines = useMemo(() => {
-    if (!walkSteps || walkSteps.length === 0 || focusMode === 'full_route') {
+    if (!walkSteps || walkSteps.length === 0 || effectiveFocusMode === 'full_route') {
       return [];
     }
 
@@ -244,21 +362,29 @@ const Map: React.FC<MapProps> = ({
         const isPast = index < currentStepIndex;
         const isTransit = step.type === 'transit';
 
-        let strokeColor = isTransit ? '#22C55E' : theme.primary;
-        let strokeWidth = isTransit ? 10 : 14;
+        let strokeColor = isTransit ? '#22C55E' : '#2563EB';
+        let strokeWidth = isTransit ? 8 : 6;
         let zIndex = 5;
-        let lineDashPattern: number[] | undefined = isTransit ? undefined : [1, 10];
+        let lineDashPattern: number[] | undefined = isTransit ? undefined : [0, 16];
+        let baseTrackColor: string | undefined = isTransit 
+          ? undefined 
+          : (colorScheme === 'dark' ? 'rgba(59, 130, 246, 0.25)' : 'rgba(37, 99, 235, 0.16)');
+        let baseTrackWidth: number | undefined = isTransit ? undefined : 12;
 
         if (isPast) {
-          strokeColor = '#CBD5E1';
-          strokeWidth = 8;
+          strokeColor = '#94A3B8';
+          strokeWidth = isTransit ? 6 : 5;
           zIndex = 3;
-          lineDashPattern = isTransit ? undefined : [1, 8];
+          lineDashPattern = isTransit ? undefined : [0, 14];
+          baseTrackColor = isTransit ? undefined : 'rgba(148, 163, 184, 0.15)';
+          baseTrackWidth = isTransit ? undefined : 10;
         } else if (!isActive) {
-          strokeColor = isTransit ? 'rgba(34, 197, 94, 0.4)' : theme.primary;
-          strokeWidth = isTransit ? 8 : 10;
+          strokeColor = isTransit ? 'rgba(34, 197, 94, 0.4)' : 'rgba(37, 99, 235, 0.65)';
+          strokeWidth = isTransit ? 6 : 5;
           zIndex = 4;
-          lineDashPattern = isTransit ? undefined : [1, 12];
+          lineDashPattern = isTransit ? undefined : [0, 16];
+          baseTrackColor = isTransit ? undefined : (colorScheme === 'dark' ? 'rgba(59, 130, 246, 0.15)' : 'rgba(37, 99, 235, 0.10)');
+          baseTrackWidth = isTransit ? undefined : 10;
         }
 
         return {
@@ -267,14 +393,16 @@ const Map: React.FC<MapProps> = ({
           strokeColor,
           strokeWidth,
           lineDashPattern,
+          baseTrackColor,
+          baseTrackWidth,
           zIndex,
         };
       })
       .filter((item): item is NonNullable<typeof item> => item !== null);
-  }, [focusMode, walkSteps, currentStepIndex, theme.primary]);
+  }, [effectiveFocusMode, walkSteps, currentStepIndex, colorScheme]);
 
   const renderedTurnMarkers = useMemo(() => {
-    if (!walkSteps || walkSteps.length === 0 || focusMode === 'full_route') {
+    if (!walkSteps || walkSteps.length === 0 || effectiveFocusMode === 'full_route') {
       return [];
     }
 
@@ -291,7 +419,7 @@ const Map: React.FC<MapProps> = ({
         };
       })
       .filter((item): item is NonNullable<typeof item> => item !== null);
-  }, [focusMode, walkSteps, currentStepIndex]);
+  }, [effectiveFocusMode, walkSteps, currentStepIndex]);
 
   const renderedMainMarkers = useMemo(() => {
     if (!mapData?.markers) return [];
@@ -303,7 +431,7 @@ const Map: React.FC<MapProps> = ({
         const lng = Number(m.lng);
         if (isNaN(lat) || !isFinite(lat) || isNaN(lng) || !isFinite(lng)) return false;
         if (m.type === 'user') return false;
-        if (focusMode === 'full_route') return true;
+        if (effectiveFocusMode === 'full_route') return true;
         return m.type === 'boarding_stop';
       })
       .map((marker, idx) => ({
@@ -315,7 +443,7 @@ const Map: React.FC<MapProps> = ({
         type: marker.type,
         pinColor: getMarkerColor(marker.type),
       }));
-  }, [mapData?.markers, focusMode]);
+  }, [mapData?.markers, effectiveFocusMode]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -339,29 +467,52 @@ const Map: React.FC<MapProps> = ({
       >
         {/* Renderização de Rota Geral (Full Route ou Fallback Walk) */}
         {renderedGeneralPolylines.map((item) => (
-          <Polyline
-            key={item.id}
-            coordinates={item.coords}
-            strokeColor={item.strokeColor}
-            strokeWidth={item.strokeWidth}
-            lineDashPattern={item.lineDashPattern}
-            zIndex={item.zIndex}
-            lineCap="round"
-          />
+          <React.Fragment key={item.id}>
+            {item.baseTrackColor && (
+              <Polyline
+                coordinates={item.coords}
+                strokeColor={item.baseTrackColor}
+                strokeWidth={item.baseTrackWidth || 10}
+                zIndex={item.zIndex - 1}
+                lineCap="round"
+                lineJoin="round"
+              />
+            )}
+            <Polyline
+              coordinates={item.coords}
+              strokeColor={item.strokeColor}
+              strokeWidth={item.strokeWidth}
+              lineDashPattern={item.lineDashPattern}
+              zIndex={item.zIndex}
+              lineCap="round"
+              lineJoin="round"
+            />
+          </React.Fragment>
         ))}
 
         {/* Renderização Guiada de Passos de Caminhada */}
         {renderedWalkStepPolylines.map((item) => (
-          <Polyline
-            key={item.key}
-            coordinates={item.coords}
-            strokeColor={item.strokeColor}
-            strokeWidth={item.strokeWidth}
-            lineDashPattern={item.lineDashPattern}
-            zIndex={item.zIndex}
-            lineCap="round"
-            lineJoin="round"
-          />
+          <React.Fragment key={item.key}>
+            {item.baseTrackColor && (
+              <Polyline
+                coordinates={item.coords}
+                strokeColor={item.baseTrackColor}
+                strokeWidth={item.baseTrackWidth || 10}
+                zIndex={item.zIndex - 1}
+                lineCap="round"
+                lineJoin="round"
+              />
+            )}
+            <Polyline
+              coordinates={item.coords}
+              strokeColor={item.strokeColor}
+              strokeWidth={item.strokeWidth}
+              lineDashPattern={item.lineDashPattern}
+              zIndex={item.zIndex}
+              lineCap="round"
+              lineJoin="round"
+            />
+          </React.Fragment>
         ))}
 
         {/* Marcadores de Virada */}
@@ -378,34 +529,61 @@ const Map: React.FC<MapProps> = ({
         ))}
 
         {/* Marcadores Principais */}
-        {renderedMainMarkers.map((marker) => (
-          <Marker
-            key={marker.id}
-            coordinate={{ latitude: marker.latitude, longitude: marker.longitude }}
-            title={marker.title}
-            description={marker.description}
-            pinColor={marker.pinColor}
-            zIndex={20}
-            accessibilityLabel={`Ponto: ${marker.title}`}
-          >
-            {marker.type === 'boarding_stop' && (
-              <View style={styles.markerWithLabel}>
-                <View style={[styles.boardingMarker, { backgroundColor: getMarkerColor('boarding_stop') }]}>
-                  <MaterialCommunityIcons name="bus" size={24} color="white" />
+        {renderedMainMarkers.map((marker) => {
+          const isBoardingStop = marker.type === 'boarding_stop';
+
+          return (
+            <Marker
+              key={marker.id}
+              coordinate={{ latitude: marker.latitude, longitude: marker.longitude }}
+              title={isBoardingStop ? undefined : marker.title}
+              description={isBoardingStop ? undefined : marker.description}
+              pinColor={isBoardingStop ? undefined : marker.pinColor}
+              anchor={isBoardingStop ? { x: 0.5, y: 1.0 } : undefined}
+              zIndex={20}
+              accessibilityLabel={`Ponto: ${marker.title || 'Ponto de Embarque'}`}
+            >
+              {isBoardingStop ? (
+                <View style={styles.modernStopPinContainer}>
+                  {/* Badge Flutuante com Nome do Ponto */}
+                  <View style={[styles.modernStopBadge, { backgroundColor: colorScheme === 'dark' ? '#1E293B' : '#FFFFFF' }]}>
+                    <View style={styles.modernStopBadgeDot} />
+                    <Text 
+                      style={[styles.modernStopBadgeText, { color: colorScheme === 'dark' ? '#F1F5F9' : '#0F172A' }]} 
+                      numberOfLines={1}
+                    >
+                      {marker.title || 'Ponto de Embarque'}
+                    </Text>
+                  </View>
+
+                  {/* Pin Circular com Ícone de Ônibus */}
+                  <View style={styles.modernStopPinCircle}>
+                    <MaterialCommunityIcons name="bus" size={19} color="#FFFFFF" />
+                  </View>
+
+                  {/* Ponta da Agulha do Pin */}
+                  <View style={styles.modernStopPinTip} />
+
+                  {/* Sombra de Contato com o Solo */}
+                  <View style={styles.modernStopGroundShadow} />
                 </View>
-                <View style={styles.markerLabelContainer}>
-                  <Text style={styles.markerLabelText}>Ponto</Text>
+              ) : null}
+
+              <Callout>
+                <View style={[styles.callout, { backgroundColor: theme.card }]}>
+                  <Text style={[styles.calloutTitle, { color: theme.text }]}>
+                    {marker.title || 'Ponto de Embarque'}
+                  </Text>
+                  {!!marker.description && (
+                    <Text style={[styles.calloutDesc, { color: theme.textMuted }]}>
+                      {marker.description}
+                    </Text>
+                  )}
                 </View>
-              </View>
-            )}
-            <Callout>
-              <View style={[styles.callout, { backgroundColor: theme.card }]}>
-                <Text style={[styles.calloutTitle, { color: theme.text }]}>{marker.title}</Text>
-                {!!marker.description && <Text style={[styles.calloutDesc, { color: theme.textMuted }]}>{marker.description}</Text>}
-              </View>
-            </Callout>
-          </Marker>
-        ))}
+              </Callout>
+            </Marker>
+          );
+        })}
 
         {/* Marcador do Ônibus ao Vivo (Crowdsourcing) */}
         {liveBusPosition && (
@@ -442,10 +620,10 @@ const Map: React.FC<MapProps> = ({
               style={styles.controlButton} 
               onPress={toggleFocusMode} 
               activeOpacity={0.7}
-              accessibilityLabel={focusMode === 'full_route' ? "Focar na caminhada" : "Ver rota completa"}
+              accessibilityLabel={effectiveFocusMode === 'full_route' ? "Focar na caminhada" : "Ver rota completa"}
               accessibilityRole="button"
             >
-              <Ionicons name={focusMode === 'full_route' ? "eye-off" : "map"} size={24} color={theme.primary} />
+              <Ionicons name={effectiveFocusMode === 'full_route' ? "eye-off" : "map"} size={24} color={theme.primary} />
             </TouchableOpacity>
           </LiquidGlassView>
         </View>
@@ -485,33 +663,73 @@ const styles = StyleSheet.create({
     height: 20,
     marginHorizontal: 4,
   },
-  boardingMarker: {
-    padding: 8,
-    borderRadius: 24,
-    borderWidth: 3,
-    borderColor: 'white',
+  modernStopPinContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingBottom: 2,
+  },
+  modernStopBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 3.5,
+    borderRadius: 12,
+    marginBottom: 4,
+    maxWidth: 160,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.18,
     shadowRadius: 4,
-    elevation: 5,
-  },
-  markerWithLabel: {
-    alignItems: 'center',
-  },
-  markerLabelContainer: {
-    backgroundColor: 'white',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-    marginTop: 4,
+    elevation: 4,
     borderWidth: 1,
-    borderColor: '#3B82F6',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
+    borderColor: 'rgba(0, 0, 0, 0.08)',
+  },
+  modernStopBadgeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#2563EB',
+    marginRight: 5,
+  },
+  modernStopBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  modernStopPinCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#2563EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2.5,
+    borderColor: '#FFFFFF',
+    shadowColor: '#1D4ED8',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 5,
+    elevation: 6,
+  },
+  modernStopPinTip: {
+    width: 0,
+    height: 0,
+    backgroundColor: 'transparent',
+    borderStyle: 'solid',
+    borderLeftWidth: 5,
+    borderRightWidth: 5,
+    borderBottomWidth: 0,
+    borderTopWidth: 6,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderTopColor: '#2563EB',
+    marginTop: -1,
+  },
+  modernStopGroundShadow: {
+    width: 14,
+    height: 4,
+    borderRadius: 7,
+    backgroundColor: 'rgba(0, 0, 0, 0.22)',
+    marginTop: 2,
   },
   liveBusMarker: {
     backgroundColor: '#F59E0B',
@@ -525,16 +743,16 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 8,
   },
-  markerLabelText: {
-    fontSize: 10,
-    fontWeight: '900',
-    color: '#3B82F6',
-  },
   turnDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     borderWidth: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.25,
+    shadowRadius: 2,
+    elevation: 3,
   },
   callout: { padding: 10, minWidth: 140, borderRadius: 12 },
   calloutTitle: { fontWeight: '800', fontSize: 15 },
