@@ -3,6 +3,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import { useThemeColors } from "../theme/colors";
+import { logUserInteraction } from "../utils/devLogger";
 
 export function VoiceResponseButton({ status, onPress }: { status: VoiceLoopStatus; onPress: () => void }) {
   const theme = useThemeColors();
@@ -12,9 +13,20 @@ export function VoiceResponseButton({ status, onPress }: { status: VoiceLoopStat
   const label = status === "listening" ? "Ouvindo..." : status === "processing" ? "Processando..." : status === "speaking" ? "Falando..." : isError ? "Tentar novamente" : "Responder por voz";
   const icon = status === "error" ? "refresh" : status === "speaking" ? "volume-high" : "mic";
 
+  function handlePress() {
+    logUserInteraction({
+      component: "<VoiceResponseButton />",
+      label,
+      fileOrScreen: "src/components/VoiceResponseButton.tsx",
+      action: "Responder por voz",
+      details: { status },
+    });
+    onPress();
+  }
+
   return (
     <Pressable
-      onPress={onPress}
+      onPress={handlePress}
       disabled={disabled}
       accessibilityRole="button"
       accessibilityLabel={label}

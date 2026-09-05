@@ -1,6 +1,7 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text, ViewStyle } from "react-native";
 
 import { useThemeColors } from "../theme/colors";
+import { logUserInteraction } from "../utils/devLogger";
 
 type PrimaryButtonProps = {
   title: string;
@@ -9,6 +10,8 @@ type PrimaryButtonProps = {
   disabled?: boolean;
   style?: ViewStyle | ViewStyle[];
   accessibilityLabel?: string;
+  actionDescription?: string;
+  fileOrScreen?: string;
 };
 
 export function PrimaryButton({
@@ -18,9 +21,21 @@ export function PrimaryButton({
   disabled = false,
   style,
   accessibilityLabel,
+  actionDescription,
+  fileOrScreen,
 }: PrimaryButtonProps) {
   const theme = useThemeColors();
   const isDisabled = disabled || isLoading;
+
+  function handlePress() {
+    logUserInteraction({
+      component: "<PrimaryButton />",
+      label: accessibilityLabel || title,
+      fileOrScreen: fileOrScreen || "src/components/PrimaryButton.tsx",
+      action: actionDescription || "Executou onPress",
+    });
+    onPress();
+  }
 
   return (
     <Pressable
@@ -30,7 +45,7 @@ export function PrimaryButton({
         isDisabled && styles.buttonDisabled,
         style
       ]}
-      onPress={onPress}
+      onPress={handlePress}
       disabled={isDisabled}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel || title}
