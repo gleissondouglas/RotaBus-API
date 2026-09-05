@@ -17,15 +17,15 @@ import { LiquidGlassView } from "../src/components/LiquidGlassView";
 import { LinearGradient } from "expo-linear-gradient";
 import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
 import { useThemeColors } from "../src/theme/colors";
-import { journeyService } from "../src/services/journey.service";
-import { sessionService } from "../src/services/session.service";
 import { vibrationService } from "../src/services/vibration.service";
 import { speak } from "../src/services/speech.service";
 import { trackingService } from "../src/services/tracking.service";
-import { isConnected } from "../src/utils/network";
 import { JourneyStep, MapFocusMode } from "../src/types/journey.types";
 import { formatMinutesToFriendlyText } from "../src/utils/date-time";
 import { parseJsonParam, calculateDistance } from "../src/utils/helpers";
+import { routeReminderService } from "../src/services/routeReminder.service";
+import { logUserInteraction } from "../src/utils/devLogger";
+import { decodePolyline } from "../src/utils/polyline";
 
 
 function getTransitSteps(steps: JourneyStep[]) {
@@ -309,41 +309,106 @@ export default function BestRouteScreen() {
     }
   }, [selectedRouteIndex, allRoutes.length, width]);
 
-  const initialRegion = {
-    latitude: Number(latitude) || -19.7472,
-    longitude: Number(longitude) || -47.9392,
-    latitudeDelta: 0.05,
-    longitudeDelta: 0.05,
-  };
-
-  async function handleGoHome() {
-    setIsLoadingCommand(true);
-    vibrationService.light();
-    try {
-      const connected = await isConnected();
-      const activeSessionId = sessionIdParam || sessionService.getSessionId();
-      if (connected && activeSessionId) {
-        await journeyService.executeCommand({
-          sessionId: activeSessionId,
-          command: "CANCEL"
-        });
-      }
-    } catch (err) {
-      console.log("[BestRoute] Erro ao executar CANCEL no backend:", err);
-    } finally {
-      setIsLoadingCommand(false);
-      sessionService.clearSessionId();
-      router.replace({
-        pathname: "/inicio",
-        params: { latitude, longitude },
+  const initialRegion = useMemo(() => {
+    const coords: { latitude: number; longitude: number }[] = [];
+    if (latitude && longitude) {
+      coords.push({ latitude: Number(latitude), longitude: Number(longitude) });
+    }
+    if (activeMapData?.markers) {
+      activeMapData.markers.forEach((m: any) => {
+        const lat = Number(m.lat);
+        const lng = Number(m.lng);
+        if (!isNaN(lat) && !isNaN(lng) && isFinite(lat) && isFinite(lng)) {
+          coords.push({ latitude: lat, longitude: lng });
+        }
       });
     }
-  }
+    if (activeMapData?.polylines) {
+      activeMapData.polylines.forEach((p: any) => {
+        const decoded = decodePolyline(p.encodedPolyline);
+        decoded.forEach((c) => coords.push(c));
+      });
+    }
+
+    if (coords.length >= 2) {
+      let minLat = 90, maxLat = -90, minLng = 180, maxLng = -180;
+      coords.forEach((c) => {
+        if (c.latitude < minLat) minLat = c.latitude;
+        if (c.latitude > maxLat) maxLat = c.latitude;
+        if (c.longitude < minLng) minLng = c.longitude;
+        if (c.longitude > maxLng) maxLng = c.longitude;
+      });
+
+      const diffLat = maxLat - minLat;
+      const diffLng = maxLng - minLng;
+      return {
+        latitude: (minLat + maxLat) / 2,
+        longitude: (minLng + maxLng) / 2,
+        latitudeDelta: Math.max(diffLat * 1.35, 0.006),
+        longitudeDelta: Math.max(diffLng * 1.35, 0.006),
+      };
+    }
+
+    return {
+      latitude: Number(latitude) || -19.7472,
+      longitude: Number(longitude) || -47.9392,
+      latitudeDelta: 0.008,
+      longitudeDelta: 0.008,
+    };
+  }, [latitude, longitude, activeMapData]);
+
 
   const handleHearRoute = useCallback(() => {
     vibrationService.selection();
     speak(voiceText);
   }, [voiceText]);
+
+  const [scheduledReminderTime, setScheduledReminderTime] = useState<string | null>(null);
+  const [isSchedulingReminder, setIsSchedulingReminder] = useState(false);
+
+  const isFutureTrip = useMemo(() => {
+    if (!activeSummary?.leaveHomeDateTime) return false;
+    const leaveMs = new Date(activeSummary.leaveHomeDateTime).getTime();
+    const diffMin = (leaveMs - Date.now()) / (1000 * 60);
+    // Mais de 30 minutos no futuro
+    return diffMin > 30;
+  }, [activeSummary?.leaveHomeDateTime]);
+
+  async function handleScheduleReminder() {
+    if (!activeSummary?.leaveHomeDateTime) return;
+
+    logUserInteraction({
+      component: '<TouchableOpacity id="btn-agendar-lembrete" />',
+      label: "Me avisar 10 min antes de sair",
+      fileOrScreen: "app/melhor-rota.tsx",
+      action: "Agendar notificação local de saída",
+      details: {
+        destination,
+        leaveHomeDateTime: activeSummary.leaveHomeDateTime,
+      },
+    });
+
+    setIsSchedulingReminder(true);
+    vibrationService.light();
+
+    const result = await routeReminderService.scheduleReminder({
+      destination,
+      busLine: isWalkingOnly ? "a pé" : busLine,
+      leaveHomeDateTime: activeSummary.leaveHomeDateTime,
+      beAtStopAt: activeSummary.beAtStopAt,
+      minutesBefore: 10,
+    });
+
+    setIsSchedulingReminder(false);
+
+    if (result.success && result.scheduledTime) {
+      vibrationService.success();
+      setScheduledReminderTime(result.scheduledTime);
+      speak(`Lembrete agendado! Avisaremos você às ${result.scheduledTime} para sair.`);
+    } else {
+      vibrationService.error();
+    }
+  }
 
   function handleStartNavigation() {
     setIsLoadingCommand(true);
@@ -560,6 +625,47 @@ export default function BestRouteScreen() {
                   ) : null}
                 </View>
               </>
+            )}
+
+            {/* Lembrete de saída antecipada */}
+            {isFutureTrip && (
+              <View style={[styles.reminderCard, { backgroundColor: "rgba(59, 130, 246, 0.16)", borderColor: "rgba(96, 165, 250, 0.45)" }]}>
+                <View style={styles.reminderHeader}>
+                  <Ionicons 
+                    name={scheduledReminderTime ? "checkmark-circle" : "notifications"} 
+                    size={22} 
+                    color={scheduledReminderTime ? "#34D399" : "#60A5FA"} 
+                  />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.reminderTitle}>
+                      {scheduledReminderTime
+                        ? `Lembrete agendado para às ${scheduledReminderTime}`
+                        : "Viagem programada para mais tarde"}
+                    </Text>
+                    <Text style={styles.reminderSubtitle}>
+                      {scheduledReminderTime
+                        ? `Avisaremos você 10 minutos antes de sair (saída prevista às ${activeSummary?.leaveHomeAt}).`
+                        : `Você só precisa sair de onde está às ${activeSummary?.leaveHomeAt}. Quer que eu te avise 10 min antes?`}
+                    </Text>
+                  </View>
+                </View>
+
+                {!scheduledReminderTime && (
+                  <TouchableOpacity
+                    style={[styles.reminderButton, { backgroundColor: theme.primary }]}
+                    onPress={handleScheduleReminder}
+                    disabled={isSchedulingReminder}
+                    activeOpacity={0.8}
+                    accessibilityRole="button"
+                    accessibilityLabel="Me avisar dez minutos antes de sair"
+                  >
+                    <Ionicons name="alarm-outline" size={18} color="#FFF" />
+                    <Text style={styles.reminderButtonText}>
+                      {isSchedulingReminder ? "Agendando..." : "Me avisar 10 min antes de sair"}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             )}
           </View>
 
@@ -932,5 +1038,43 @@ const styles = StyleSheet.create({
   mainButton: {
     height: 64,
     borderRadius: 32,
+  },
+  reminderCard: {
+    borderRadius: 20,
+    borderWidth: 1.5,
+    padding: 16,
+    gap: 12,
+    marginTop: 8,
+  },
+  reminderHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  reminderTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#FFFFFF",
+  },
+  reminderSubtitle: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: "rgba(255, 255, 255, 0.85)",
+    marginTop: 2,
+    lineHeight: 18,
+  },
+  reminderButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  reminderButtonText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "700",
   },
 });

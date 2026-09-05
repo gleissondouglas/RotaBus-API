@@ -43,6 +43,7 @@ import { BottomActionBar } from "../src/components/BottomActionBar";
 import { FavoritesAndHistoryView } from "../src/components/FavoritesAndHistoryView";
 import { LiquidGlassView } from "../src/components/LiquidGlassView";
 import { AdaptiveIcon } from "../src/components/AdaptiveIcon";
+import { logUserInteraction } from "../src/utils/devLogger";
 
 type ScreenStatus = "idle" | "listening" | "processing" | "error" | "success";
 type VoiceScreenStatus = ScreenStatus | "speaking";
@@ -515,6 +516,14 @@ export default function HomeScreen() {
    */
   const handleMicPress = usePreventDoublePress(
     function () {
+      logUserInteraction({
+        component: "<BottomVoiceMicButton />",
+        label: getMicActionLabel(),
+        fileOrScreen: "app/inicio.tsx",
+        action: status === "listening" ? "Parar escuta e enviar" : "Iniciar captura de voz no microfone",
+        details: { status },
+      });
+
       if (status === "listening") {
         void stopListeningAndSubmit();
         return;
@@ -555,6 +564,13 @@ export default function HomeScreen() {
   }
 
   const handleTypeDestination = usePreventDoublePress(async function () {
+    logUserInteraction({
+      component: '<Pressable id="btn-digitar-destino" />',
+      label: "Digitar destino",
+      fileOrScreen: "app/inicio.tsx",
+      action: "Navegar para /digitar-destino",
+    });
+
     vibrationService.light();
     void stopAll();
     const origin = await getOriginCoords();
@@ -568,6 +584,13 @@ export default function HomeScreen() {
   }, 1000);
 
   const handleHelp = usePreventDoublePress(async function () {
+    logUserInteraction({
+      component: '<Pressable id="card-ajuda" />',
+      label: "Central de Ajuda",
+      fileOrScreen: "app/inicio.tsx",
+      action: "Navegar para /ajuda",
+    });
+
     vibrationService.light();
     void stopAll();
     const origin = await getOriginCoords();
@@ -579,6 +602,13 @@ export default function HomeScreen() {
 
   const handleSettings = usePreventDoublePress(
     function () {
+      logUserInteraction({
+        component: '<Pressable id="card-configuracoes" />',
+        label: "Minha Conta e App",
+        fileOrScreen: "app/inicio.tsx",
+        action: "Navegar para /configuracoes",
+      });
+
       vibrationService.light();
       void stopAll();
       router.push("/configuracoes");
@@ -633,21 +663,45 @@ export default function HomeScreen() {
           <Pressable 
             onLayout={(e) => handleTabLayout("voice", e)}
             style={styles.tabButton}
-            onPress={() => setActiveTab("voice")}
+            onPress={() => {
+              logUserInteraction({
+                component: '<Pressable id="tab-voice" />',
+                label: "Assistente",
+                fileOrScreen: "app/inicio.tsx",
+                action: "Alternar para a aba Assistente",
+              });
+              setActiveTab("voice");
+            }}
           >
             <Animated.Text style={[styles.tabText, voiceTextStyle]}>Assistente</Animated.Text>
           </Pressable>
           <Pressable 
             onLayout={(e) => handleTabLayout("favorites", e)}
             style={styles.tabButton}
-            onPress={() => setActiveTab("favorites")}
+            onPress={() => {
+              logUserInteraction({
+                component: '<Pressable id="tab-favorites" />',
+                label: "Favoritos",
+                fileOrScreen: "app/inicio.tsx",
+                action: "Alternar para a aba Favoritos",
+              });
+              setActiveTab("favorites");
+            }}
           >
             <Animated.Text style={[styles.tabText, favoritesTextStyle]}>Favoritos</Animated.Text>
           </Pressable>
           <Pressable 
             onLayout={(e) => handleTabLayout("settings", e)}
             style={styles.tabButton}
-            onPress={() => setActiveTab("settings")}
+            onPress={() => {
+              logUserInteraction({
+                component: '<Pressable id="tab-settings" />',
+                label: "Ajustes",
+                fileOrScreen: "app/inicio.tsx",
+                action: "Alternar para a aba Ajustes",
+              });
+              setActiveTab("settings");
+            }}
           >
             <Animated.Text style={[styles.tabText, settingsTextStyle]}>Ajustes</Animated.Text>
           </Pressable>

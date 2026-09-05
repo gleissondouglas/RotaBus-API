@@ -213,6 +213,8 @@ export default function WelcomeScreen() {
             onPress={handleStart}
             accessibilityLabel="Entrar ou criar conta"
             style={styles.button}
+            fileOrScreen="app/index.tsx"
+            actionDescription="Navegar para a tela de login (/login)"
           />
         </Animated.View>
       </View>

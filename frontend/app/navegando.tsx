@@ -571,8 +571,8 @@ export default function NavigatingScreen() {
   const initialRegion = useMemo(() => ({ 
     latitude: currentLocation?.latitude || -19.7472, 
     longitude: currentLocation?.longitude || -47.9392, 
-    latitudeDelta: 0.005, 
-    longitudeDelta: 0.005 
+    latitudeDelta: 0.002, 
+    longitudeDelta: 0.002 
   }), [currentLocation?.latitude, currentLocation?.longitude]);
 
   return (

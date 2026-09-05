@@ -34,3 +34,15 @@ O uso de cores não deve ser estético, mas comunicativo, com uma forte pegada *
 - **`VoicePromptText.tsx`:** O balão da Assistente. Grande, centrado, altamente contrastado.
 - **`BottomActionBar.tsx`:** Container flutuante que hospeda atalhos que não sujam a visualização principal do conteúdo.
 - **`VoiceOrb.tsx`:** Não usa imagens externas, usa renderização vetorial e de `react-native-reanimated` para pulsar os tokens do estado sensorial.
+
+## 6. Elementos de Mapa e Navegação (`Map.tsx`)
+
+- **Trilha Pedestre em Dupla Camada (Pedestrian Halo Track):**
+  - **Camada Inferior (Trilha suave):** Linha contínua translúcida (`rgba(37, 99, 235, 0.16)` no modo claro e `rgba(59, 130, 246, 0.25)` no modo escuro) com `strokeWidth: 12`, `lineCap: "round"` e `lineJoin: "round"`. Cria o corredor visual do pedestre sem ruído.
+  - **Camada Superior (Pontos nítidos):** Pontos circulares nítidos (`#2563EB`) com `strokeWidth: 6`, `lineDashPattern: [0, 16]` e `lineCap: "round"`. A proporção de 6px encaixa com precisão nas calçadas do mapa, evitando o visual desproporcional de círculos grandes.
+- **Marcador de Ponto de Embarque Modern Transit:**
+  - **Badge Flutuante:** Cápsula arredondada com sombra suave (`elevation: 4`), ponto indicador azul de 6px e nome legível do ponto (`Ponto de Embarque`).
+  - **Pin Circular com Agulha:** Círculo de 36px em azul primário com borda branca de 2.5px e ícone vetorial de ônibus, acompanhado por agulha direcional apontando para a calçada exata.
+  - **Sombra de Contato no Solo:** Elipse sutil na base com âncora `{ x: 0.5, y: 1.0 }` para ancoragem perfeita no meio-fio.
+- **Marcadores de Virada (Turn Dots):**
+  - Círculos brancos de 10px com anel externo primário de 2px e sombra de elevação para destacar decisões de rota.
