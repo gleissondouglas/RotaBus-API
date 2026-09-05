@@ -13,6 +13,7 @@ import { useEffect } from "react";
 
 import { useThemeColors } from "../theme/colors";
 import type { VoiceLoopStatus } from "../hooks/useVoiceConversationLoop";
+import { logUserInteraction } from "../utils/devLogger";
 
 type BottomVoiceMicButtonProps = {
   status: VoiceLoopStatus | "success";
@@ -23,6 +24,7 @@ type BottomVoiceMicButtonProps = {
   accessibilityLabel?: string;
   compact?: boolean;
   tone?: "soft" | "primary";
+  fileOrScreen?: string;
 };
 
 export function BottomVoiceMicButton({
@@ -34,6 +36,7 @@ export function BottomVoiceMicButton({
   accessibilityLabel,
   compact = false,
   tone = "soft",
+  fileOrScreen,
 }: BottomVoiceMicButtonProps) {
   const theme = useThemeColors();
   const pulse = useSharedValue(1);
@@ -75,6 +78,21 @@ export function BottomVoiceMicButton({
     transform: [{ scale: interpolate(pulse.value, [1, 1.04], [1.04, 1.16]) }],
   }));
 
+  function handlePress() {
+    logUserInteraction({
+      component: "<BottomVoiceMicButton />",
+      label: accessibilityLabel || label,
+      fileOrScreen: fileOrScreen || "src/components/BottomVoiceMicButton.tsx",
+      action: isListening
+        ? "Parar escuta e enviar"
+        : isError
+          ? "Tentar escuta novamente"
+          : "Iniciar captura de voz",
+      details: { status },
+    });
+    onPress?.();
+  }
+
   return (
     <View style={[styles.wrapper, compact && styles.compactWrapper]}>
       <Animated.View
@@ -105,7 +123,7 @@ export function BottomVoiceMicButton({
             isError && { borderWidth: 2, borderColor: theme.primary, shadowOpacity: 0.12 },
             (pressed || isDisabled) && { opacity: isListening ? 0.9 : 0.65 }]}
           disabled={isDisabled}
-          onPress={onPress}
+          onPress={handlePress}
           accessibilityRole="button"
           accessibilityLabel={accessibilityLabel || label}
         >

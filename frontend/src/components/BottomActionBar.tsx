@@ -5,6 +5,7 @@ import { BottomVoiceMicButton } from "./BottomVoiceMicButton";
 import { LiquidGlassView } from "./LiquidGlassView";
 import { AdaptiveIcon } from "./AdaptiveIcon";
 import { useThemeColors } from "../theme/colors";
+import { logUserInteraction } from "../utils/devLogger";
 
 type BottomActionBarStatus = VoiceLoopStatus | "success";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -20,12 +21,22 @@ export function BottomActionBar({ status, micLabel, onTypeDestination, onMicPres
   const isTypingDisabled = status === "speaking" || status === "processing" || status === "success";
   const theme = useThemeColors();
 
+  function handleTypePress() {
+    logUserInteraction({
+      component: "<BottomActionBar (Botão Digitar)>",
+      label: "Digitar destino",
+      fileOrScreen: "src/components/BottomActionBar.tsx",
+      action: "Abrir digitação de destino",
+    });
+    onTypeDestination();
+  }
+
   return (
     <LiquidGlassView style={styles.pill} fallbackColor={theme.card}>
       <View style={styles.row}>
         <Pressable
           style={({ pressed }) => [styles.typeButton, pressed && styles.typeButtonPressed, isTypingDisabled && styles.typeButtonDisabled]}
-          onPress={onTypeDestination}
+          onPress={handleTypePress}
           disabled={isTypingDisabled}
           accessibilityLabel="Digitar destino"
           accessibilityRole="button"
@@ -34,7 +45,15 @@ export function BottomActionBar({ status, micLabel, onTypeDestination, onMicPres
           <Text style={[styles.typeText, { color: theme.text }]}>Digitar destino</Text>
         </Pressable>
         <View style={[styles.divider, { backgroundColor: theme.border }]} />
-        <BottomVoiceMicButton status={status} label={micLabel} compact tone="primary" onPress={onMicPress} accessibilityLabel={micLabel} />
+        <BottomVoiceMicButton
+          status={status}
+          label={micLabel}
+          compact
+          tone="primary"
+          onPress={onMicPress}
+          accessibilityLabel={micLabel}
+          fileOrScreen="src/components/BottomActionBar.tsx"
+        />
       </View>
     </LiquidGlassView>
   );

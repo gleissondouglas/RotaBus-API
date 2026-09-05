@@ -2,6 +2,7 @@ import { speak } from "../services/speech.service";
 import { Pressable, StyleSheet, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeColors } from "../theme/colors";
+import { logUserInteraction } from "../utils/devLogger";
 
 type ListenOptionsButtonProps = {
   textToSpeak?: string;
@@ -19,6 +20,14 @@ export function ListenOptionsButton({
   const theme = useThemeColors();
 
   function handlePress() {
+    logUserInteraction({
+      component: "<ListenOptionsButton />",
+      label: accessibilityLabel || label,
+      fileOrScreen: "src/components/ListenOptionsButton.tsx",
+      action: "Falar orientações da tela (TTS)",
+      details: textToSpeak ? { text: textToSpeak } : undefined,
+    });
+
     if (onPress) {
       onPress();
       return;

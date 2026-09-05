@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ActivityIndicator, Pressable, Alert } from "rea
 import { Ionicons } from "@expo/vector-icons";
 import { userService, UserFavorite, SearchHistoryItem } from "../services/user.service";
 import { useThemeColors } from "../theme/colors";
+import { logUserInteraction } from "../utils/devLogger";
 
 type Props = {
   onSelectDestination: (text: string) => void;
@@ -35,6 +36,14 @@ export function FavoritesAndHistoryView({ onSelectDestination }: Props) {
   }
 
   async function handleRemoveFavorite(id: number) {
+    logUserInteraction({
+      component: '<Pressable id="btn-remover-favorito" />',
+      label: "Remover favorito",
+      fileOrScreen: "src/components/FavoritesAndHistoryView.tsx",
+      action: "Excluir favorito",
+      details: { id },
+    });
+
     try {
       await userService.deleteFavorite(id);
       setFavorites(prev => prev.filter(f => f.id !== id));
@@ -44,6 +53,13 @@ export function FavoritesAndHistoryView({ onSelectDestination }: Props) {
   }
 
   async function handleClearHistory() {
+    logUserInteraction({
+      component: '<Pressable id="btn-limpar-historico" />',
+      label: "Limpar histórico",
+      fileOrScreen: "src/components/FavoritesAndHistoryView.tsx",
+      action: "Solicitar limpeza de histórico",
+    });
+
     Alert.alert("Limpar histórico", "Tem certeza que deseja apagar todo seu histórico?", [
       { text: "Cancelar", style: "cancel" },
       { text: "Sim, apagar", style: "destructive", onPress: async () => {
@@ -73,7 +89,19 @@ export function FavoritesAndHistoryView({ onSelectDestination }: Props) {
       ) : (
         favorites.map(fav => (
           <View key={`fav-${fav.id}`} style={styles.itemCard}>
-            <Pressable style={styles.itemContent} onPress={() => onSelectDestination(fav.name)}>
+            <Pressable
+              style={styles.itemContent}
+              onPress={() => {
+                logUserInteraction({
+                  component: '<Pressable id="item-favorito" />',
+                  label: fav.name,
+                  fileOrScreen: "src/components/FavoritesAndHistoryView.tsx",
+                  action: "Selecionar destino favorito",
+                  details: { id: fav.id, address: fav.address },
+                });
+                onSelectDestination(fav.name);
+              }}
+            >
               <Ionicons name="star" size={24} color="#F59E0B" />
               <View style={styles.itemTextContainer}>
                 <Text style={styles.itemName}>{fav.name}</Text>
@@ -103,7 +131,16 @@ export function FavoritesAndHistoryView({ onSelectDestination }: Props) {
           <Pressable 
             key={`hist-${item.id}`} 
             style={styles.itemCard}
-            onPress={() => onSelectDestination(item.query)}
+            onPress={() => {
+              logUserInteraction({
+                component: '<Pressable id="item-historico" />',
+                label: item.query,
+                fileOrScreen: "src/components/FavoritesAndHistoryView.tsx",
+                action: "Selecionar busca do histórico",
+                details: { id: item.id, address: item.address },
+              });
+              onSelectDestination(item.query);
+            }}
           >
             <Ionicons name="time-outline" size={24} color="#64748B" />
             <View style={styles.itemTextContainer}>

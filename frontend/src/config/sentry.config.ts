@@ -15,7 +15,7 @@ export function initSentry() {
   Sentry.init({
     dsn: dsn || "",
     enabled: !!dsn,
-    debug: __DEV__,
+    debug: false,
     environment: __DEV__ ? "development" : "production",
     enableAutoSessionTracking: true,
     

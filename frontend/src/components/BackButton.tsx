@@ -3,19 +3,28 @@ import { Pressable, StyleSheet, Text, useColorScheme } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LiquidGlassView } from "./LiquidGlassView";
 import { useThemeColors } from "../theme/colors";
+import { logUserInteraction } from "../utils/devLogger";
 
 type BackButtonProps = {
   label?: string;
   onPress?: () => void;
   accessibilityLabel?: string;
+  fileOrScreen?: string;
 };
 
-export function BackButton({ label = "Voltar", onPress, accessibilityLabel }: BackButtonProps) {
+export function BackButton({ label = "Voltar", onPress, accessibilityLabel, fileOrScreen }: BackButtonProps) {
   const theme = useThemeColors();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
 
   function handlePress() {
+    logUserInteraction({
+      component: "<BackButton />",
+      label: accessibilityLabel || label,
+      fileOrScreen: fileOrScreen || "src/components/BackButton.tsx",
+      action: onPress ? "Disparou onPress customizado" : "Retornou à tela anterior (router.back)",
+    });
+
     if (onPress) {
       onPress();
       return;
