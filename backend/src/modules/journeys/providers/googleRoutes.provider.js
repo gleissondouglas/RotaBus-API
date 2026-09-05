@@ -1,5 +1,8 @@
 const axios = require("axios");
 const env = require("../../../config/env");
+const redisClient = require("../../../config/redis");
+
+const WALKING_ROUTE_CACHE_TTL_SECONDS = 7 * 24 * 60 * 60; // 7 dias
 
 function applyTimePreference(body, timePreference) {
   if (!timePreference || !timePreference.dateTime) {
@@ -117,6 +120,24 @@ async function computeWalkingRoute({ origin, destination }) {
     throw new Error("GOOGLE_MAPS_BACKEND_API_KEY não configurada.");
   }
 
+  const roundedOrigLat = Number(origin?.lat || 0).toFixed(4);
+  const roundedOrigLng = Number(origin?.lng || 0).toFixed(4);
+  const roundedDestLat = Number(destination?.lat || 0).toFixed(4);
+  const roundedDestLng = Number(destination?.lng || 0).toFixed(4);
+  const cacheKey = `route:walk:${roundedOrigLat},${roundedOrigLng}:${roundedDestLat},${roundedDestLng}`;
+
+  try {
+    const cachedData = await redisClient.get(cacheKey);
+    if (cachedData) {
+      if (process.env.NODE_ENV !== "production") {
+        console.log(`[GoogleRoutes] Retornando rota walking do cache: "${cacheKey}"`);
+      }
+      return JSON.parse(cachedData);
+    }
+  } catch (cacheError) {
+    console.error("[GoogleRoutes] Erro ao ler cache de caminhada:", cacheError.message);
+  }
+
   const url = "https://routes.googleapis.com/directions/v2:computeRoutes";
 
   const body = {
@@ -166,6 +187,14 @@ async function computeWalkingRoute({ origin, destination }) {
         ].join(","),
       },
     });
+
+    if (response.data && response.data.routes && response.data.routes.length > 0) {
+      try {
+        await redisClient.set(cacheKey, JSON.stringify(response.data), "EX", WALKING_ROUTE_CACHE_TTL_SECONDS);
+      } catch (saveCacheError) {
+        console.error("[GoogleRoutes] Erro ao salvar rota walking no Redis:", saveCacheError.message);
+      }
+    }
 
     return response.data;
   } catch (axiosError) {

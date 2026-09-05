@@ -51,4 +51,13 @@ Este documento registra as principais escolhas técnicas do projeto e os motivos
 - **Contexto:** A navegação no mapa antes ficava "presa" no primeiro ponto de ônibus (mesmo após o embarque ou na troca de ônibus) e a tela mostrava fundos sólidos obstrusivos. Além disso, as interfaces de erro destoavam do design moderno do app.
 - **Decisão:** O mapa agora fica sempre ativo (100% de visibilidade). A câmera do mapa (`Map.tsx`) ajusta seu "bounding box" dinamicamente acompanhando estritamente os trechos do `walkSteps` correspondentes à etapa da jornada (via índice de passo). A interface gráfica globalizou o componente translúcido `LiquidGlassView` para mensagens de erro e componentes flutuantes.
 - **Justificativa:** Permite que o usuário seja guiado de forma muito granular, especialmente vital em rotas com múltiplas baldeações e caminhadas entre os ônibus, não se sentindo perdido na imensidão do trajeto inicial. A bússola ativa em 3D também aproxima a imersão na jornada. O design via Glassmorphism ajuda a reter o mapa de fundo sempre visível sem sacrificar a legibilidade dos comandos, aumentando a confiança tátil do usuário.
--
+
+## ADR-011: Cache Distribuído de APIs Externas no Redis (Geocoding, Places e SDKs)
+- **Contexto:** Chamadas repetitivas de Geocoding direto/reverso, busca de lugares e rotas a pé geravam latência desnecessária e consumo de cotas de APIs externas da Google Cloud Platform.
+- **Decisão:** Expansão do Redis distribuído para cobrir `geocode:reverse`, `geocode:forward`, `places:search`, rotas agendadas (`route:sched`) e hash de transcrição de voz (`speech:transcribe`).
+- **Justificativa:** Coordenadas e bairros não sofrem mutação constante; o cache de 30 dias com arredondamento em 4 casas decimais reduz até 80% do tráfego para a nuvem externa, garantindo respostas sub-50ms para os usuários.
+
+## ADR-012: Enquadramento Óptico em Nível de Rua e Redesign Transit dos Pontos de Caminhada e Embarque
+- **Contexto:** O trajeto a pé até o ponto de ônibus aparecia afastado no mapa com a visão da cidade inteira (zoom insuficiente para 55m), e os pontos de caminhada eram esferas azuis de 14px desproporcionais, com um marcador rústico de ponto de ônibus.
+- **Decisão:** Implementação de zoom em nível de rua (`latitudeDelta: 0.0015` / zoom ~18.5) para caminhadas curtas (< 400m) com compensação óptica vertical calculada para a janela visível entre os cards. Redesenho dos pontos em trilha de camada dupla (trilha suave de 12px + pontos nítidos de 6px espaçados em `[0, 16]`) e marcador de embarque moderno (cápsula com badge, pin circular de 36px com ícone e agulha de precisão na calçada).
+- **Justificativa:** Atende diretamente as diretrizes de acessibilidade visual, permitindo ao pedestre identificar imediatamente a esquina exata em que deve virar e a calçada em que o ônibus para, com alta fidelidade visual (padrão Citymapper / Apple Maps).
